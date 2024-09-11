@@ -79,6 +79,8 @@ export default function CotizacionPage() {
   const [costoVenta, setCostoVenta] = useState(0);
   const [margenVenta, setMargenVenta] = useState(0);
 
+  const [indiceEdicion, setIndiceEdicion] = useState<number | null>(null);  // Índice del ítem que se está editando
+
   const cotizacionMap: Record<CotizacionTipo, string[]> = {
     'Licencia + Mantenimiento': ['Licencias SAP', 'Licencias Seidor', 'Licencias Boyum'],
     'Servicio': ['Consultoría', 'Soporte', 'Capacitación'],
@@ -260,8 +262,21 @@ export default function CotizacionPage() {
       margen : margenVenta,
       total : totalVenta,
     };
-    setItemsCotizados([...itemsCotizados, nuevoItem]);
+    
+    if (indiceEdicion !== null) {
+      const nuevasCotizaciones = [...itemsCotizados];
+      nuevasCotizaciones[indiceEdicion] = nuevoItem;
+      setItemsCotizados(nuevasCotizaciones);
+    } else {
+      setItemsCotizados([...itemsCotizados, nuevoItem]);
+    }
+
+    setIndiceEdicion(null);
+
     setMostrarModalLicencias(false);
+
+    handleClosePopup();
+
   };
 
   const handleEliminarCotizacion = (index: number) => {
@@ -271,7 +286,15 @@ export default function CotizacionPage() {
   };
 
   const handleEditarCotizacion = (index: number) => {
-    // Lógica para editar el item seleccionado
+    const item = itemsCotizados[index];
+
+    setSubtipoCotizacion(item.grupo);
+    setCostoVenta(item.costo);
+    setMargenVenta(item.margen);
+    setTotalVenta(item.total);
+
+    setIndiceEdicion(index);
+    setMostrarModalLicencias(true);
   };
 
   const calcularDescuento = (subtotalUsuario: number, subtotalBD: number): void => {
@@ -343,6 +366,11 @@ export default function CotizacionPage() {
     calcularDescuento(totalUsuario, totalBD);
 
   };
+
+  const handleClosePopup = () => {
+    setIndiceEdicion(null);  // Reiniciar el índice de edición
+    setMostrarModalLicencias(false);  // Cerrar el pop-up
+  };  
 
   const formatNumber = (number: number) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -658,8 +686,11 @@ export default function CotizacionPage() {
             </div>
           </div>
           <div className="flex justify-end">
+            <Button onClick={handleClosePopup} className="bg-gray-500 text-white px-4 py-2 mr-2">
+              Cancelar
+            </Button>
             <Button className="bg-blue-500 text-white px-4 py-2" onClick={() => handleAgregarCotizacion(subtipoCotizacion)}>
-              Agregar Cotización
+              {indiceEdicion !== null ? 'Confirmar cambios' : 'Agregar Cotización'}
             </Button>
           </div>
         </DialogContent>
