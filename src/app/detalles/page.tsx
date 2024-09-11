@@ -74,6 +74,7 @@ export default function CotizacionPage() {
 
   const [descuentoEspecial, setDescuentoEspecial] = useState(0);
   const [descuentoEspecialPartner, setDescuentoEspecialPartner] = useState(0);
+
   const [totalVenta, setTotalVenta] = useState(0);
   const [costoVenta, setCostoVenta] = useState(0);
   const [margenVenta, setMargenVenta] = useState(0);
@@ -103,7 +104,31 @@ export default function CotizacionPage() {
           costoOP: 1400, 
           costoOC: 57,
           parametro: "Licencia de Unica Vez"
-        }
+        },
+        { 
+          tipo: "SAP Business One Indirect Access User",  
+          salesUnit: 1,
+          metricas: "Users",
+          costoOP: 250, 
+          costoOC: 8,
+          parametro: "Licencia de Unica Vez"
+        },
+        { 
+          tipo: "SAP Business One Mobile Application User", 
+          salesUnit: 1,
+          metricas: "Users",
+          costoOP: 450, 
+          costoOC: 15,
+          parametro: "Licencia de Unica Vez"
+        },
+        { 
+          tipo: "SAP B1 Limited to SAP B1 Professional User", 
+          salesUnit: 1,
+          metricas: "Users",
+          costoOP: 1350, 
+          costoOC: 0,
+          parametro: "Licencia de Unica Vez"
+        },
       ],
     },
     {
@@ -127,7 +152,7 @@ export default function CotizacionPage() {
         },
       ],
     },
-  ];
+  ];  
 
   const [cantidades, setCantidades] = useState<number[][]>(() =>
     licenciasSAP.map(grupo => Array(grupo.licencias.length).fill(0))
@@ -230,7 +255,10 @@ export default function CotizacionPage() {
 
   const handleAgregarCotizacion = (grupo: string) => {
     const nuevoItem = {
-      grupo,
+      grupo : subtipoCotizacion,
+      costo : costoVenta,
+      margen : margenVenta,
+      total : totalVenta,
     };
     setItemsCotizados([...itemsCotizados, nuevoItem]);
     setMostrarModalLicencias(false);
@@ -245,13 +273,6 @@ export default function CotizacionPage() {
   const handleEditarCotizacion = (index: number) => {
     // Lógica para editar el item seleccionado
   };
-
-  // Este useEffect se ejecutará cada vez que descuentoPorVolumen cambie
-  useEffect(() => {
-    if (subtotalUsuario > 0) {
-      calcularCostoVenta(subtotalUsuario);  // Recalcula el costo de venta cuando descuentoPorVolumen cambie
-    }
-  }, [descuentoPorVolumen, subtotalUsuario]);
 
   const calcularDescuento = (subtotalUsuario: number, subtotalBD: number): void => {
     const totalConBD = subtotalUsuario + subtotalBD;
@@ -272,23 +293,26 @@ export default function CotizacionPage() {
 
   };  
 
-  const calcularTotalVenta = (subtotalUsuario: number) => {
-    const dsctoEspecial = subtotalUsuario * (descuentoEspecial / 100);
-    const total = subtotalUsuario - descuentoPorVolumen - dsctoEspecial;
-    setTotalVenta(total);
-  };
-  
-  const calcularCostoVenta = (subtotalUsuario: number) => {
-    const totalVnta = subtotalUsuario - descuentoPorVolumen;
-    const dsctoAdicionalPartner = (descuentoEspecialPartner / 100) * totalVnta;
-    const costo = ( totalVnta / 2 ) - dsctoAdicionalPartner;
-    setCostoVenta(costo);
-  };  
+  const calcularTotales = (subtotalUsuario : number) => {
+    const totalVenta = subtotalUsuario - (subtotalUsuario * (dsctoVolumenPorcentaje / 100)) - (subtotalUsuario * (descuentoEspecial / 100))
+    setTotalVenta(totalVenta);
 
-  const calcularMargenVenta = () => {
-    const margen = totalVenta - costoVenta;
-    setMargenVenta(margen);
-  };  
+    const costoVenta = ((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2) -
+    (descuentoEspecialPartner / 100 * (subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)));
+    setCostoVenta(costoVenta);
+
+    const MargenVenta = ((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100) - 
+    (subtotalUsuario * (descuentoEspecial / 100))) - 
+    (((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2) - 
+    (descuentoEspecialPartner / 100 * (subtotalUsuario - 
+    (subtotalUsuario * dsctoVolumenPorcentaje / 100)))));
+    setMargenVenta(MargenVenta);
+  }
+
+   // Actualizar los valores cuando se cambien los descuentos, etc.
+  useEffect(() => {
+    calcularTotales(subtotalUsuario);
+  }, [subtotalUsuario, descuentoPorVolumen, descuentoEspecial, descuentoEspecialPartner]);
 
   const calcularSubtotales = () => {
     let totalUsuario = 0;
@@ -317,10 +341,7 @@ export default function CotizacionPage() {
   
     // Llamar a la función de descuento
     calcularDescuento(totalUsuario, totalBD);
-    calcularTotalVenta(totalUsuario);
-    calcularCostoVenta(totalUsuario);
 
-    calcularMargenVenta();
   };
 
   const formatNumber = (number: number) => {
@@ -429,6 +450,9 @@ export default function CotizacionPage() {
           <thead>
             <tr>
               <th className="px-4 py-2 border">Grupo</th>
+              <th className="px-4 py-2 border">Costo</th>
+              <th className="px-4 py-2 border">Margen</th>
+              <th className="px-4 py-2 border">Total</th>
               <th className="px-4 py-2 border">Acciones</th>
             </tr>
           </thead>
@@ -436,6 +460,9 @@ export default function CotizacionPage() {
             {itemsCotizados.map((item, index) => (
               <tr key={index}>
                 <td className="px-4 py-2 border">{item.grupo}</td>
+                <td className="px-4 py-2 border">{formatNumber(item.costo)}</td>
+                <td className="px-4 py-2 border">{formatNumber(item.margen)}</td>
+                <td className="px-4 py-2 border">{formatNumber(item.total)}</td>
                 <td className="px-4 py-2 border text-center">
                   <Button className="bg-yellow-500 text-white mr-2 px-2 py-1" onClick={() => handleEditarCotizacion(index)}>
                     Editar
@@ -554,51 +581,79 @@ export default function CotizacionPage() {
             <div className="w-2/3 space-y-4">
               <div className="flex justify-between items-center">
                 <label className="font-medium">Subtotal de Licencias de Usuario:</label>
-                <span className="text-gray-700">${formatNumber(subtotalUsuario)}</span>
+                <span className="text-gray-700">$ {formatNumber(subtotalUsuario)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <label className="font-medium">Subtotal de Licencias de BD:</label>
-                <span className="text-gray-700">${formatNumber(subtotalBD)}</span>
+                <span className="text-gray-700">$ {formatNumber(subtotalBD)}</span>
               </div>
+
+              {/* Descuento por Volumen */}
               <div className='flex justify-between items-center'>
                 <label className="font-medium">Descuento por Volumen:</label>
-                <span className="text-gray-700">{dsctoVolumenPorcentaje}%</span>
+                <div className="flex items-end">
+                  <Input
+                    value={dsctoVolumenPorcentaje}
+                    readOnly
+                    className="w-16 text-center text-blue-900 font-bold"
+                  />
+                  </div>
+                  <span className="ml-4 text-red-600 font-bold">-$ {formatNumber(descuentoPorVolumen)}</span>
               </div>
+
+              {/* Descuento Especial */}
               <div className="flex justify-between items-center">
                 <label className="font-medium">Descuento especial:</label>
-                <Input
-                  value={descuentoEspecial}
-                  onChange={(e) => {
-                    const newDescuentoEspecial = parseFloat(e.target.value) || 0;
-                    setDescuentoEspecial(newDescuentoEspecial);
-                    calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial
-                  }}
-                  className="w-16 text-center"
-                />
+                <div className="flex items-center">
+                  <Input
+                    value={descuentoEspecial}
+                    onChange={(e) => {
+                      const newDescuentoEspecial = parseFloat(e.target.value) || 0;
+                      setDescuentoEspecial(newDescuentoEspecial);
+                      calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial
+                    }}
+                    className="w-16 text-center"
+                  />
+                </div>
+                <span className="ml-4 text-red-600 font-bold">-${formatNumber(subtotalUsuario * descuentoEspecial / 100)}</span>
               </div>
+
+              {/* Descuento Especial del Partner */}
               <div className="flex justify-between items-center">
                 <label className="font-medium">Descuento especial del Partner (%):</label>
-                <Input
-                  value={descuentoEspecialPartner}
-                  onChange={(e) => {
-                    const newDescuentoEspecialPartner = parseFloat(e.target.value) || 0;
-                    setDescuentoEspecialPartner(newDescuentoEspecialPartner);
-                    calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial del partner
-                  }}
-                  className="w-16 text-center"
-                />
+                <div>
+                  <Input
+                    value={descuentoEspecialPartner}
+                    onChange={(e) => {
+                      const newDescuentoEspecialPartner = parseFloat(e.target.value) || 0;
+                      setDescuentoEspecialPartner(newDescuentoEspecialPartner);
+                      calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial del partner
+                    }}
+                    className="w-16 text-center"
+                  />
+                </div>
+                <span className="ml-4 text-green-600 font-bold">
+                  $ {formatNumber((descuentoEspecialPartner / 100) * 
+                  (subtotalUsuario - descuentoPorVolumen))}</span>
               </div>
+
+              {/* Total de Venta */}
               <div className="flex justify-between items-center">
                 <label className="font-medium">Total Venta:</label>
-                <span className="text-gray-700">${formatNumber(totalVenta)}</span>
+                <span className="text-gray-700">$ {formatNumber(totalVenta)}</span>
               </div>
+
+              {/* Costo de Venta */}
               <div className="flex justify-between items-center">
                 <label className="font-medium">Costo Venta:</label>
-                <span className="text-gray-700">${formatNumber(costoVenta)}</span>
+                <span className="text-gray-700">$ {formatNumber(costoVenta)}
+                </span>
               </div>
+
+              {/* Margen de Venta */}
               <div className="flex justify-between items-center">
                 <label className="font-medium">Margen Venta:</label>
-                <span className="text-gray-700">${formatNumber(margenVenta)}</span>
+                <span className="text-yellow-500">$ {formatNumber(margenVenta)}</span>
               </div>
             </div>
           </div>
