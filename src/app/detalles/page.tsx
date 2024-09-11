@@ -255,7 +255,7 @@ export default function CotizacionPage() {
     calcularSubtotales();
   };
 
-  const handleAgregarCotizacion = (grupo: string) => {
+  const handleAgregarCotizacion = () => {
     const nuevoItem = {
       grupo : subtipoCotizacion,
       costo : costoVenta,
@@ -689,7 +689,7 @@ export default function CotizacionPage() {
             <Button onClick={handleClosePopup} className="bg-gray-500 text-white px-4 py-2 mr-2">
               Cancelar
             </Button>
-            <Button className="bg-blue-500 text-white px-4 py-2" onClick={() => handleAgregarCotizacion(subtipoCotizacion)}>
+            <Button className="bg-blue-500 text-white px-4 py-2" onClick={() => handleAgregarCotizacion()}>
               {indiceEdicion !== null ? 'Confirmar cambios' : 'Agregar Cotización'}
             </Button>
           </div>
