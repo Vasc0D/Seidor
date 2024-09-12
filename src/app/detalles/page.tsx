@@ -331,9 +331,13 @@ export default function CotizacionPage() {
     },
   ];
 
-  const [cantidades, setCantidades] = useState<number[][]>(() =>
+  const [cantidadesSAP, setCantidadesSAP] = useState<number[][]>(() =>
     licenciasSAP.map(grupo => Array(grupo.licencias.length).fill(0))
   );
+  
+  const [cantidadesSeidor, setCantidadesSeidor] = useState<number[][]>(() =>
+    licenciasSeidor.map(grupo => Array(grupo.licencias.length).fill(0))
+  );  
 
   const [errores, setErrores] = useState({
     nombre: '',
@@ -414,21 +418,37 @@ export default function CotizacionPage() {
 
   const calcularTotalLicencias = () => {
     let totalLicencias = 0;
-    cantidades.forEach((grupo) => {
-      grupo.forEach((cantidad) => {
-        totalLicencias += cantidad;
+  
+    if (subtipoCotizacion === 'Licencias SAP') {
+      cantidadesSAP.forEach((grupo) => {
+        grupo.forEach((cantidad) => {
+          totalLicencias += cantidad;
+        });
       });
-    });
+    } else if (subtipoCotizacion === 'Licencias Seidor') {
+      cantidadesSeidor.forEach((grupo) => {
+        grupo.forEach((cantidad) => {
+          totalLicencias += cantidad;
+        });
+      });
+    }
+  
     return totalLicencias;
   };  
 
   const handleCantidadChange = (grupoIndex: number, licenciaIndex: number, value: number) => {
-    const nuevasCantidades = [...cantidades];
-    nuevasCantidades[grupoIndex][licenciaIndex] = value || 0;
-    setCantidades(nuevasCantidades);
-
-    calcularSubtotales();
-  };
+    if (subtipoCotizacion === 'Licencias SAP') {
+      const nuevasCantidades = [...cantidadesSAP];
+      nuevasCantidades[grupoIndex][licenciaIndex] = value || 0;
+      setCantidadesSAP(nuevasCantidades);
+    } else if (subtipoCotizacion === 'Licencias Seidor') {
+      const nuevasCantidades = [...cantidadesSeidor];
+      nuevasCantidades[grupoIndex][licenciaIndex] = value || 0;
+      setCantidadesSeidor(nuevasCantidades);
+    }
+  
+    calcularSubtotales(); // Llama a la función que recalcula los totales
+  };  
 
   const handleAgregarCotizacion = () => {
     const nuevoItem = {
@@ -512,7 +532,7 @@ export default function CotizacionPage() {
     calcularTotales(subtotalUsuario);
   }, [subtotalUsuario, descuentoPorVolumen, descuentoEspecial, descuentoEspecialPartner]);
 
-  const calcularSubtotales = () => {
+  const calcularSubtotalesSAP = () => {
     let totalUsuario = 0;
     let totalBD = 0;
   
@@ -521,11 +541,11 @@ export default function CotizacionPage() {
     // Calcular subtotales de las licencias de SAP
     licenciasFiltradas.forEach((grupo, grupoIndex) => {
       grupo.licencias.forEach((licencia, licenciaIndex) => {
-        const cantidad = cantidades[grupoIndex][licenciaIndex];
+        const cantidad = cantidadesSAP[grupoIndex][licenciaIndex];
         const costo = cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC;
         const total = cantidad * costo;
   
-        if (cantidad > 0) {  // Solo sumar si la cantidad es mayor que 0
+        if (cantidad > 0) {
           if (grupo.categoria.includes("Usuarios")) {
             totalUsuario += total;
           } else if (grupo.categoria.includes("Databases")) {
@@ -534,32 +554,64 @@ export default function CotizacionPage() {
         }
       });
     });
-
+  
+    setSubtotalUsuario(totalUsuario);
+    setSubtotalBD(totalBD);
+  
+    // Aplicar descuento por volumen solo en SAP
+    calcularDescuento(totalUsuario, totalBD);
+  };
+  
+  const calcularSubtotalesSeidor = () => {
+    let totalUsuario = 0;
+  
     // Calcular subtotales de las licencias de Seidor
     licenciasSeidor.forEach((grupo, grupoIndex) => {
       grupo.licencias.forEach((licencia, licenciaIndex) => {
-        const cantidad = cantidades[grupoIndex][licenciaIndex];
+        const cantidad = cantidadesSeidor[grupoIndex][licenciaIndex];
         const costo = cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC;
         const total = cantidad * costo;
   
-        if (cantidad > 0) {  // Solo sumar si la cantidad es mayor que 0
-          totalUsuario += total;  // Se suma al subtotal de usuario
+        if (cantidad > 0) {
+          totalUsuario += total;
         }
       });
     });
   
     setSubtotalUsuario(totalUsuario);
-    setSubtotalBD(totalBD);
+    setSubtotalBD(0);  // No hay BD en Seidor
   
-    // Llamar a la función de descuento
-    calcularDescuento(totalUsuario, totalBD);
+    // No aplicar descuento por volumen en Seidor, solo descuento especial
+    calcularTotales(totalUsuario);
+  };
 
+  const calcularSubtotales = () => {
+    if (subtipoCotizacion === 'Licencias SAP') {
+      calcularSubtotalesSAP();
+    } else if (subtipoCotizacion === 'Licencias Seidor') {
+      calcularSubtotalesSeidor();
+    }
+  };
+
+  const resetValores = () => {
+    setCantidadesSAP(licenciasSAP.map(grupo => Array(grupo.licencias.length).fill(0)));
+    setCantidadesSeidor(licenciasSeidor.map(grupo => Array(grupo.licencias.length).fill(0)));
+    setSubtotalUsuario(0);
+    setSubtotalBD(0);
+    setDsctoVolumenPorcentaje(0);
+    setDescuentoPorVolumen(0);
+    setDescuentoEspecial(0);
+    setDescuentoEspecialPartner(0);
+    setTotalVenta(0);
+    setCostoVenta(0);
+    setMargenVenta(0);
   };
 
   const handleClosePopup = () => {
-    setIndiceEdicion(null);  // Reiniciar el índice de edición
-    setMostrarModalLicencias(false);  // Cerrar el pop-up
-  };  
+    setIndiceEdicion(null); // Reiniciar el índice de edición
+    resetValores(); // Reiniciar los valores
+    setMostrarModalLicencias(false); // Cerrar el pop-up
+  };   
 
   const formatNumber = (number: number) => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -741,7 +793,7 @@ export default function CotizacionPage() {
       </Dialog>
       
       {/* Segundo Pop-up para seleccionar licencias */}
-      <Dialog open={mostrarModalLicencias} onOpenChange={setMostrarModalLicencias}>
+      <Dialog open={mostrarModalLicencias} onOpenChange={() => setMostrarModalLicencias(mostrarModalLicencias)}>
         <DialogContent className='max-w-screen-xl'>
           <DialogHeader>
             <DialogTitle>Agregar Licencias</DialogTitle>
@@ -778,14 +830,14 @@ export default function CotizacionPage() {
                             <td className="py-2 px-4 border-b text-center">{formatNumber(cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)}</td>
                             <td className="py-2 px-4 border-b w-32">
                             <HookUsage
-                              value={cantidades[grupoIndex][licenciaIndex] || 0}
+                              value={cantidadesSAP[grupoIndex][licenciaIndex] || 0}
                               onChange={(value) => handleCantidadChange(grupoIndex, licenciaIndex, value)}
                               totalUsuarios={parseInt(cliente.usuarios, 10) || 0}  // Máximo permitido según el número de usuarios
                               totalLicencias={calcularTotalLicencias()}  // Cantidad total de licencias seleccionadas
                             />
                             </td>
                             <td className="py-2 px-4 border-b text-center">
-                              {formatNumber(parseFloat(calcularSumaTotal(cantidades[grupoIndex][licenciaIndex], cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)))}
+                              {formatNumber(parseFloat(calcularSumaTotal(cantidadesSAP[grupoIndex][licenciaIndex], cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)))}
                             </td>
                             <td className="py-2 px-4 border-b text-center">{licencia.parametro}</td>
                           </tr>
@@ -897,9 +949,9 @@ export default function CotizacionPage() {
                       <tr>
                         <th className="py-2 px-4 border-b">Tipo de Licencia</th>
                         <th className="py-2 px-4 border-b">Costo</th>
-                        <th className="py-2 px-4 border-b">Parámetro</th>
                         <th className="py-2 px-4 border-b">Cantidad</th>
                         <th className="py-2 px-4 border-b">Total</th>
+                        <th className="py-2 px-4 border-b">Parámetro</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -907,18 +959,18 @@ export default function CotizacionPage() {
                         <tr key={licenciaIndex}>
                           <td className="py-2 px-4 border-b">{licencia.tipo}</td>
                           <td className="py-2 px-4 border-b text-center">{formatNumber(cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)}</td>
-                          <td className="py-2 px-4 border-b text-center">{licencia.parametro}</td>
                           <td className="py-2 px-4 border-b w-32">
                             <HookUsage
-                              value={cantidades[0][licenciaIndex] || 0} // Cantidad por licencia
-                              onChange={(value) => handleCantidadChange(0, licenciaIndex, value)} // Actualiza la cantidad
+                              value={cantidadesSeidor[grupoIndex][licenciaIndex] || 0} // Cantidad por licencia
+                              onChange={(value) => handleCantidadChange(grupoIndex, licenciaIndex, value)} // Actualiza la cantidad
                               totalUsuarios={parseInt(cliente.usuarios, 10) || 0} // Máximo permitido según el número de usuarios
                               totalLicencias={calcularTotalLicencias()} // Cantidad total de licencias seleccionadas
                             />
                           </td>
                           <td className="py-2 px-4 border-b text-center">
-                            {formatNumber(parseFloat(calcularSumaTotal(cantidades[0][licenciaIndex], cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)))}
+                            {formatNumber(parseFloat(calcularSumaTotal(cantidadesSeidor[grupoIndex][licenciaIndex], cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)))}
                           </td>
+                          <td className="py-2 px-4 border-b text-center">{licencia.parametro}</td>
                         </tr>
                       ))}
                     </tbody>
