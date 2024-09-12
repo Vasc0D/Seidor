@@ -456,6 +456,8 @@ export default function CotizacionPage() {
       costo : costoVenta,
       margen : margenVenta,
       total : totalVenta,
+      cantidadesSAP: subtipoCotizacion === 'Licencias SAP' ? cantidadesSAP : [],  // Guardar las cantidades de SAP
+      cantidadesSeidor: subtipoCotizacion === 'Licencias Seidor' ? cantidadesSeidor : []  // Guardar las cantidades de Seidor
     };
     
     if (indiceEdicion !== null) {
@@ -487,9 +489,28 @@ export default function CotizacionPage() {
     setCostoVenta(item.costo);
     setMargenVenta(item.margen);
     setTotalVenta(item.total);
-
     setIndiceEdicion(index);
     setMostrarModalLicencias(true);
+
+    if (item.grupo === 'Licencias SAP') {
+      // Si es una licencia SAP, cargar las cantidades correspondientes
+      const nuevasCantidadesSAP = cantidadesSAP.map((grupo, grupoIndex) => 
+        grupo.map((_, licenciaIndex) => 
+          item.cantidadesSAP[grupoIndex] ? item.cantidadesSAP[grupoIndex][licenciaIndex] : 0
+        )
+      );
+      setCantidadesSAP(nuevasCantidadesSAP);
+    } else if (item.grupo === 'Licencias Seidor') {
+      // Si es una licencia Seidor, cargar las cantidades correspondientes
+      const nuevasCantidadesSeidor = cantidadesSeidor.map((grupo, grupoIndex) => 
+        grupo.map((_, licenciaIndex) => 
+          item.cantidadesSeidor[grupoIndex] ? item.cantidadesSeidor[grupoIndex][licenciaIndex] : 0
+        )
+      );
+      setCantidadesSeidor(nuevasCantidadesSeidor);
+    }
+  
+    setMostrarModalLicencias(true);  // Abrir el modal con los valores cargados
   };
 
   const calcularDescuento = (subtotalUsuario: number, subtotalBD: number): void => {
