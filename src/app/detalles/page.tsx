@@ -156,6 +156,181 @@ export default function CotizacionPage() {
     },
   ];  
 
+  const licenciasSeidor = [
+    {
+      categoria: "Horizontales SAP Business One",
+      licencias: [
+        { 
+          tipo: "Office on the web Frame", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn Cuentas Destino", 
+          costoOP: 1500, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn Numeración Fiscal", 
+          costoOP: 2500, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn Pagos Masivos", 
+          costoOP: 2500, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "Validador SUNAT (Ruc y Tipo de Cambio)", 
+          costoOP: 2500, 
+          costoOC: 0,
+          parametro: "x cada 2000 Consultas"
+        },
+        { 
+          tipo: "AddOn de Letras", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn de Facturas Negociables", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "Middleware Facturación Electrónica", 
+          costoOP: 2000, 
+          costoOC: 100,
+          parametro: "x cada 5 Razones Sociales"
+        },
+        { 
+          tipo: "Middleware Retenciones Electrónicas", 
+          costoOP: 1500, 
+          costoOC: 100,
+          parametro: "x cada 5 Razones Sociales"
+        },
+        { 
+          tipo: "Middleware Percepciones Electrónicas", 
+          costoOP: 1500, 
+          costoOC: 0,
+          parametro: "x cada 5 Razones Sociales"
+        },
+        { 
+          tipo: "Middleware Guías de Remisión Electrónicas", 
+          costoOP: 1500, 
+          costoOC: 0,
+          parametro: "x cada 5 Razones Sociales"
+        },
+        { 
+          tipo: "AddOn de Provisión de Gastos", 
+          costoOP: 2500, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn Extractor de Pedidos B2B", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "Intercompany Seidor", 
+          costoOP: 2500, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "Aplicación Mobile Seidor", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Usuarios Ilimitados"
+        },
+        { 
+          tipo: "Portal Web Caja Chica / Entregas a Rendir (SICER)", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Usuarios Ilimitados"
+        },
+        { 
+          tipo: "Portal Web de Requerimientos", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Usuarios Ilimitados"
+        },
+        { 
+          tipo: "Web Reporting", 
+          costoOP: 3000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+    ],
+    },
+    {
+      categoria: "Verticales SAP Business One",
+      licencias: [
+        { 
+          tipo: "AddOn de Lotes y Ubicaciones", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn de Transporte y Distribución", 
+          costoOP: 1500, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn de Manifiesto de Transporte", 
+          costoOP: 3500, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn Bitácora de Importaciones", 
+          costoOP: 5000, 
+          costoOC: 250,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "AddOn de Mantenimiento de Equipos", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "Addon de Inmobiliaria Seidor", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "Addon de Educación Seidor", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Licencia de Única Vez"
+        },
+        { 
+          tipo: "Portal Web Proveedores", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Usuarios Ilimitados"
+        },
+        { 
+          tipo: "Reporteros Electrónicos", 
+          costoOP: 5000, 
+          costoOC: 0,
+          parametro: "Usuarios Ilimitados"
+        }
+    ],
+    },
+  ];
+
   const [cantidades, setCantidades] = useState<number[][]>(() =>
     licenciasSAP.map(grupo => Array(grupo.licencias.length).fill(0))
   );
@@ -343,6 +518,7 @@ export default function CotizacionPage() {
   
     const licenciasFiltradas = filtrarLicenciasPorBaseDeDatos(licenciasSAP, cliente.bd);
   
+    // Calcular subtotales de las licencias de SAP
     licenciasFiltradas.forEach((grupo, grupoIndex) => {
       grupo.licencias.forEach((licencia, licenciaIndex) => {
         const cantidad = cantidades[grupoIndex][licenciaIndex];
@@ -355,6 +531,19 @@ export default function CotizacionPage() {
           } else if (grupo.categoria.includes("Databases")) {
             totalBD += total;
           }
+        }
+      });
+    });
+
+    // Calcular subtotales de las licencias de Seidor
+    licenciasSeidor.forEach((grupo, grupoIndex) => {
+      grupo.licencias.forEach((licencia, licenciaIndex) => {
+        const cantidad = cantidades[grupoIndex][licenciaIndex];
+        const costo = cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC;
+        const total = cantidad * costo;
+  
+        if (cantidad > 0) {  // Solo sumar si la cantidad es mayor que 0
+          totalUsuario += total;  // Se suma al subtotal de usuario
         }
       });
     });
@@ -550,7 +739,7 @@ export default function CotizacionPage() {
           </div>
         </DialogContent>
       </Dialog>
-
+      
       {/* Segundo Pop-up para seleccionar licencias */}
       <Dialog open={mostrarModalLicencias} onOpenChange={setMostrarModalLicencias}>
         <DialogContent className='max-w-screen-xl'>
@@ -558,133 +747,236 @@ export default function CotizacionPage() {
             <DialogTitle>Agregar Licencias</DialogTitle>
           </DialogHeader>
 
-          {cliente.bd && (
+          {/* Subtipo de cotizacion SAP */}
+          {subtipoCotizacion === 'Licencias SAP' && (
+          <>
+            {cliente.bd && (
+              <div className="mt-4 overflow-auto max-h-72">
+                <h3 className="text-lg font-semibold">Licencias Filtradas</h3>
+
+                {filtrarLicenciasPorBaseDeDatos(licenciasSAP, cliente.bd).map((grupo, grupoIndex) => (
+                  <div key={grupoIndex} className="mb-4">
+                    <h4 className="text-md font-semibold">{grupo.categoria}</h4>
+                    <table className="min-w-full bg-white border border-gray-200 text-sm">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-4 border-b">Tipo de Licencia</th>
+                          <th className="py-2 px-4 border-b">En bloques de</th>
+                          <th className="py-2 px-4 border-b">Métricas</th>
+                          <th className="py-2 px-4 border-b">Costo</th>
+                          <th className="py-2 px-4 border-b">Cantidad</th>
+                          <th className="py-2 px-4 border-b">Total</th>
+                          <th className="py-2 px-4 border-b">Parámetro</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {grupo.licencias.map((licencia, licenciaIndex) => (
+                          <tr key={licenciaIndex}>
+                            <td className="py-2 px-4 border-b">{licencia.tipo}</td>
+                            <td className="py-2 px-4 border-b text-center">{licencia.salesUnit}</td>
+                            <td className="py-2 px-4 border-b text-center">{licencia.metricas}</td>
+                            <td className="py-2 px-4 border-b text-center">{formatNumber(cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)}</td>
+                            <td className="py-2 px-4 border-b w-32">
+                            <HookUsage
+                              value={cantidades[grupoIndex][licenciaIndex] || 0}
+                              onChange={(value) => handleCantidadChange(grupoIndex, licenciaIndex, value)}
+                              totalUsuarios={parseInt(cliente.usuarios, 10) || 0}  // Máximo permitido según el número de usuarios
+                              totalLicencias={calcularTotalLicencias()}  // Cantidad total de licencias seleccionadas
+                            />
+                            </td>
+                            <td className="py-2 px-4 border-b text-center">
+                              {formatNumber(parseFloat(calcularSumaTotal(cantidades[grupoIndex][licenciaIndex], cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)))}
+                            </td>
+                            <td className="py-2 px-4 border-b text-center">{licencia.parametro}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Subtotales y Descuento */}
+            <div className="flex justify-between mt-6">
+              {/* Parte izquierda con subtotales y descuento */}
+              <div className="w-2/3 space-y-4">
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Subtotal de Licencias de Usuario:</label>
+                  <span className="text-gray-700">$ {formatNumber(subtotalUsuario)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Subtotal de Licencias de BD:</label>
+                  <span className="text-gray-700">$ {formatNumber(subtotalBD)}</span>
+                </div>
+
+                {/* Descuento por Volumen */}
+                <div className='flex justify-between items-center'>
+                  <label className="font-medium">Descuento por Volumen:</label>
+                  <div className="flex items-end">
+                    <Input
+                      value={dsctoVolumenPorcentaje}
+                      readOnly
+                      className="w-16 text-center text-blue-900 font-bold"
+                    />
+                    </div>
+                    <span className="ml-4 text-red-600 font-bold">-$ {formatNumber(descuentoPorVolumen)}</span>
+                </div>
+
+                {/* Descuento Especial */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Descuento especial:</label>
+                  <div className="flex items-center">
+                    <Input
+                      value={descuentoEspecial}
+                      onChange={(e) => {
+                        const newDescuentoEspecial = parseFloat(e.target.value) || 0;
+                        setDescuentoEspecial(newDescuentoEspecial);
+                        calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial
+                      }}
+                      className="w-16 text-center"
+                    />
+                  </div>
+                  <span className="ml-4 text-red-600 font-bold">-${formatNumber(subtotalUsuario * descuentoEspecial / 100)}</span>
+                </div>
+
+                {/* Descuento Especial del Partner */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Descuento especial del Partner (%):</label>
+                  <div>
+                    <Input
+                      value={descuentoEspecialPartner}
+                      onChange={(e) => {
+                        const newDescuentoEspecialPartner = parseFloat(e.target.value) || 0;
+                        setDescuentoEspecialPartner(newDescuentoEspecialPartner);
+                        calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial del partner
+                      }}
+                      className="w-16 text-center"
+                    />
+                  </div>
+                  <span className="ml-4 text-green-600 font-bold">
+                    $ {formatNumber((descuentoEspecialPartner / 100) * 
+                    (subtotalUsuario - descuentoPorVolumen))}</span>
+                </div>
+
+                {/* Total de Venta */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Total Venta:</label>
+                  <span className="text-gray-700">$ {formatNumber(totalVenta)}</span>
+                </div>
+
+                {/* Costo de Venta */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Costo Venta:</label>
+                  <span className="text-gray-700">$ {formatNumber(costoVenta)}
+                  </span>
+                </div>
+
+                {/* Margen de Venta */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Margen Venta:</label>
+                  <span className="text-yellow-500">$ {formatNumber(margenVenta)}</span>
+                </div>
+              </div>
+            </div>
+          </>
+          )}
+
+          {/* Subtipo de cotizacion Seidor */}
+          {subtipoCotizacion === 'Licencias Seidor' && (
+          <>
+            {cliente.bd && (
             <div className="mt-4 overflow-auto max-h-72">
-              <h3 className="text-lg font-semibold">Licencias Filtradas</h3>
-              {filtrarLicenciasPorBaseDeDatos(licenciasSAP, cliente.bd).map((grupo, grupoIndex) => (
+              <h4 className="text-md font-semibold">Licencias Seidor</h4>
+
+              {licenciasSeidor.map((grupo, grupoIndex) => (
                 <div key={grupoIndex} className="mb-4">
                   <h4 className="text-md font-semibold">{grupo.categoria}</h4>
                   <table className="min-w-full bg-white border border-gray-200 text-sm">
                     <thead>
                       <tr>
                         <th className="py-2 px-4 border-b">Tipo de Licencia</th>
-                        <th className="py-2 px-4 border-b">En bloques de</th>
-                        <th className="py-2 px-4 border-b">Métricas</th>
                         <th className="py-2 px-4 border-b">Costo</th>
+                        <th className="py-2 px-4 border-b">Parámetro</th>
                         <th className="py-2 px-4 border-b">Cantidad</th>
                         <th className="py-2 px-4 border-b">Total</th>
-                        <th className="py-2 px-4 border-b">Parámetro</th>
                       </tr>
                     </thead>
                     <tbody>
                       {grupo.licencias.map((licencia, licenciaIndex) => (
                         <tr key={licenciaIndex}>
                           <td className="py-2 px-4 border-b">{licencia.tipo}</td>
-                          <td className="py-2 px-4 border-b text-center">{licencia.salesUnit}</td>
-                          <td className="py-2 px-4 border-b text-center">{licencia.metricas}</td>
                           <td className="py-2 px-4 border-b text-center">{formatNumber(cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)}</td>
+                          <td className="py-2 px-4 border-b text-center">{licencia.parametro}</td>
                           <td className="py-2 px-4 border-b w-32">
-                          <HookUsage
-                            value={cantidades[grupoIndex][licenciaIndex] || 0}
-                            onChange={(value) => handleCantidadChange(grupoIndex, licenciaIndex, value)}
-                            totalUsuarios={parseInt(cliente.usuarios, 10) || 0}  // Máximo permitido según el número de usuarios
-                            totalLicencias={calcularTotalLicencias()}  // Cantidad total de licencias seleccionadas
-                          />
+                            <HookUsage
+                              value={cantidades[0][licenciaIndex] || 0} // Cantidad por licencia
+                              onChange={(value) => handleCantidadChange(0, licenciaIndex, value)} // Actualiza la cantidad
+                              totalUsuarios={parseInt(cliente.usuarios, 10) || 0} // Máximo permitido según el número de usuarios
+                              totalLicencias={calcularTotalLicencias()} // Cantidad total de licencias seleccionadas
+                            />
                           </td>
                           <td className="py-2 px-4 border-b text-center">
-                            {formatNumber(parseFloat(calcularSumaTotal(cantidades[grupoIndex][licenciaIndex], cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)))}
+                            {formatNumber(parseFloat(calcularSumaTotal(cantidades[0][licenciaIndex], cliente.solution === 'OP' ? licencia.costoOP : licencia.costoOC)))}
                           </td>
-                          <td className="py-2 px-4 border-b text-center">{licencia.parametro}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </div>
-              ))}
-            </div>
-          )}
-          {/* Subtotales y Descuento */}
-          <div className="flex justify-between mt-6">
-            {/* Parte izquierda con subtotales y descuento */}
-            <div className="w-2/3 space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="font-medium">Subtotal de Licencias de Usuario:</label>
-                <span className="text-gray-700">$ {formatNumber(subtotalUsuario)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <label className="font-medium">Subtotal de Licencias de BD:</label>
-                <span className="text-gray-700">$ {formatNumber(subtotalBD)}</span>
-              </div>
-
-              {/* Descuento por Volumen */}
-              <div className='flex justify-between items-center'>
-                <label className="font-medium">Descuento por Volumen:</label>
-                <div className="flex items-end">
-                  <Input
-                    value={dsctoVolumenPorcentaje}
-                    readOnly
-                    className="w-16 text-center text-blue-900 font-bold"
-                  />
                   </div>
-                  <span className="ml-4 text-red-600 font-bold">-$ {formatNumber(descuentoPorVolumen)}</span>
+                ))}
               </div>
-
-              {/* Descuento Especial */}
-              <div className="flex justify-between items-center">
-                <label className="font-medium">Descuento especial:</label>
-                <div className="flex items-center">
-                  <Input
-                    value={descuentoEspecial}
-                    onChange={(e) => {
-                      const newDescuentoEspecial = parseFloat(e.target.value) || 0;
-                      setDescuentoEspecial(newDescuentoEspecial);
-                      calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial
-                    }}
-                    className="w-16 text-center"
-                  />
+            )}
+            
+            {/* Subtotales y Descuento */}
+            <div className="flex justify-between mt-6">
+              {/* Parte izquierda con subtotales y descuento */}
+              <div className="w-2/3 space-y-4">
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Subtotal de Licencias de Usuario:</label>
+                  <span className="text-gray-700">$ {formatNumber(subtotalUsuario)}</span>
                 </div>
-                <span className="ml-4 text-red-600 font-bold">-${formatNumber(subtotalUsuario * descuentoEspecial / 100)}</span>
-              </div>
 
-              {/* Descuento Especial del Partner */}
-              <div className="flex justify-between items-center">
-                <label className="font-medium">Descuento especial del Partner (%):</label>
-                <div>
-                  <Input
-                    value={descuentoEspecialPartner}
-                    onChange={(e) => {
-                      const newDescuentoEspecialPartner = parseFloat(e.target.value) || 0;
-                      setDescuentoEspecialPartner(newDescuentoEspecialPartner);
-                      calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial del partner
-                    }}
-                    className="w-16 text-center"
-                  />
+                {/* Descuento Especial */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Descuento especial:</label>
+                  <div className="flex items-center">
+                    <Input
+                      value={descuentoEspecial}
+                      onChange={(e) => {
+                        const newDescuentoEspecial = parseFloat(e.target.value) || 0;
+                        setDescuentoEspecial(newDescuentoEspecial);
+                        calcularSubtotales(); // Recalcula los subtotales al cambiar el descuento especial
+                      }}
+                      className="w-16 text-center"
+                    />
+                  </div>
+                  <span className="ml-4 text-red-600 font-bold">-${formatNumber(subtotalUsuario * descuentoEspecial / 100)}</span>
                 </div>
-                <span className="ml-4 text-green-600 font-bold">
-                  $ {formatNumber((descuentoEspecialPartner / 100) * 
-                  (subtotalUsuario - descuentoPorVolumen))}</span>
-              </div>
 
-              {/* Total de Venta */}
-              <div className="flex justify-between items-center">
-                <label className="font-medium">Total Venta:</label>
-                <span className="text-gray-700">$ {formatNumber(totalVenta)}</span>
-              </div>
+                {/* Total de Venta */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Total Venta:</label>
+                  <span className="text-gray-700">$ {formatNumber(totalVenta)}</span>
+                </div>
 
-              {/* Costo de Venta */}
-              <div className="flex justify-between items-center">
-                <label className="font-medium">Costo Venta:</label>
-                <span className="text-gray-700">$ {formatNumber(costoVenta)}
-                </span>
-              </div>
+                {/* Costo de Venta */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Costo Venta:</label>
+                  <span className="text-gray-700">$ {0}
+                  </span>
+                </div>
 
-              {/* Margen de Venta */}
-              <div className="flex justify-between items-center">
-                <label className="font-medium">Margen Venta:</label>
-                <span className="text-yellow-500">$ {formatNumber(margenVenta)}</span>
+                {/* Margen de Venta */}
+                <div className="flex justify-between items-center">
+                  <label className="font-medium">Margen Venta:</label>
+                  <span className="text-yellow-500">$ {formatNumber(totalVenta)}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </>
+          )}
+
           <div className="flex justify-end">
             <Button onClick={handleClosePopup} className="bg-gray-500 text-white px-4 py-2 mr-2">
               Cancelar
@@ -697,5 +989,4 @@ export default function CotizacionPage() {
       </Dialog>
     </div>
   );
-}
-
+};
