@@ -484,14 +484,22 @@ export default function CotizacionPage() {
 
   const handleEditarCotizacion = (index: number) => {
     const item = itemsCotizados[index];
-
+  
+    // Cargar los valores específicos de la cotización
     setSubtipoCotizacion(item.grupo);
     setCostoVenta(item.costo);
     setMargenVenta(item.margen);
     setTotalVenta(item.total);
     setIndiceEdicion(index);
-    setMostrarModalLicencias(true);
-
+  
+    // Cargar valores de los descuentos y subtotales guardados
+    setSubtotalUsuario(item.subtotalUsuario || 0);
+    setSubtotalBD(item.subtotalBD || 0);
+    setDescuentoEspecial(item.descuentoEspecial || 0);
+    setDescuentoEspecialPartner(item.descuentoEspecialPartner || 0);
+    setDsctoVolumenPorcentaje(item.dsctoVolumenPorcentaje || 0);
+    setDescuentoPorVolumen(item.descuentoPorVolumen || 0);
+  
     if (item.grupo === 'Licencias SAP') {
       // Si es una licencia SAP, cargar las cantidades correspondientes
       const nuevasCantidadesSAP = cantidadesSAP.map((grupo, grupoIndex) => 
@@ -510,7 +518,36 @@ export default function CotizacionPage() {
       setCantidadesSeidor(nuevasCantidadesSeidor);
     }
   
-    setMostrarModalLicencias(true);  // Abrir el modal con los valores cargados
+    // Abrir el modal con los valores cargados
+    setMostrarModalLicencias(true);  
+  };
+  
+  // Guardar cambios de la cotización (Agregar o Editar)
+  const handleGuardarCotizacion = () => {
+    const nuevoItem = {
+      subtotalUsuario,
+      subtotalBD,
+      dsctoVolumenPorcentaje,
+      descuentoPorVolumen,
+      descuentoEspecial,
+      descuentoEspecialPartner,
+      totalVenta,
+      costoVenta,
+      margenVenta
+    };
+
+    if (indiceEdicion !== null) {
+      // Editar el item existente
+      const nuevasCotizaciones = [...itemsCotizados];
+      nuevasCotizaciones[indiceEdicion] = nuevoItem;
+      setItemsCotizados(nuevasCotizaciones);
+    } else {
+      // Agregar nueva cotización
+      setItemsCotizados([...itemsCotizados, nuevoItem]);
+    }
+
+    // Reiniciar los valores después de guardar
+    resetValores();
   };
 
   const calcularDescuento = (subtotalUsuario: number, subtotalBD: number): void => {
@@ -540,15 +577,11 @@ export default function CotizacionPage() {
     (descuentoEspecialPartner / 100 * (subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)));
     setCostoVenta(costoVenta);
 
-    const MargenVenta = ((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100) - 
-    (subtotalUsuario * (descuentoEspecial / 100))) - 
-    (((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2) - 
-    (descuentoEspecialPartner / 100 * (subtotalUsuario - 
-    (subtotalUsuario * dsctoVolumenPorcentaje / 100)))));
+    const MargenVenta = totalVenta - costoVenta;
     setMargenVenta(MargenVenta);
   }
 
-   // Actualizar los valores cuando se cambien los descuentos, etc.
+  // Actualizar los valores cuando se cambien los descuentos, etc.
   useEffect(() => {
     calcularTotales(subtotalUsuario);
   }, [subtotalUsuario, descuentoPorVolumen, descuentoEspecial, descuentoEspecialPartner]);
@@ -614,20 +647,26 @@ export default function CotizacionPage() {
     }
   };
 
+  useEffect(() => {
+    calcularSubtotales();
+  }, [cantidadesSAP, cantidadesSeidor, cliente.solution]);
+
   const resetValores = () => {
-    setCantidadesSAP(licenciasSAP.map(grupo => Array(grupo.licencias.length).fill(0)));
-    setCantidadesSeidor(licenciasSeidor.map(grupo => Array(grupo.licencias.length).fill(0)));
     setSubtotalUsuario(0);
     setSubtotalBD(0);
-    setDsctoVolumenPorcentaje(0);
-    setDescuentoPorVolumen(0);
     setDescuentoEspecial(0);
     setDescuentoEspecialPartner(0);
+    setDsctoVolumenPorcentaje(0);
+    setDescuentoPorVolumen(0);
     setTotalVenta(0);
     setCostoVenta(0);
     setMargenVenta(0);
+    setCantidadesSAP(licenciasSAP.map(grupo => Array(grupo.licencias.length).fill(0)));
+    setCantidadesSeidor(licenciasSeidor.map(grupo => Array(grupo.licencias.length).fill(0)));
+    setSubtipoCotizacion(''); // Reiniciar el subtipo de cotización
+    setIndiceEdicion(null); // Limpiar el índice de edición
   };
-
+  
   const handleClosePopup = () => {
     setIndiceEdicion(null); // Reiniciar el índice de edición
     resetValores(); // Reiniciar los valores
@@ -1046,11 +1085,11 @@ export default function CotizacionPage() {
           )}
 
           <div className="flex justify-end">
+            <Button className="bg-blue-500 text-white px-4 py-2" onClick={() => handleGuardarCotizacion()}>
+              {indiceEdicion !== null ? 'Confirmar cambios' : 'Agregar Cotización'}
+            </Button>
             <Button onClick={handleClosePopup} className="bg-gray-500 text-white px-4 py-2 mr-2">
               Cancelar
-            </Button>
-            <Button className="bg-blue-500 text-white px-4 py-2" onClick={() => handleAgregarCotizacion()}>
-              {indiceEdicion !== null ? 'Confirmar cambios' : 'Agregar Cotización'}
             </Button>
           </div>
         </DialogContent>
