@@ -457,7 +457,15 @@ export default function CotizacionPage() {
       margen : margenVenta,
       total : totalVenta,
       cantidadesSAP: subtipoCotizacion === 'Licencias SAP' ? cantidadesSAP : [],  // Guardar las cantidades de SAP
-      cantidadesSeidor: subtipoCotizacion === 'Licencias Seidor' ? cantidadesSeidor : []  // Guardar las cantidades de Seidor
+      cantidadesSeidor: subtipoCotizacion === 'Licencias Seidor' ? cantidadesSeidor : [],  // Guardar las cantidades de Seidor
+
+      subtotalUsuario: subtotalUsuario,
+      subtotalBD: subtotalBD,
+
+      descuentoPorVolumen: descuentoPorVolumen,
+      dsctoVolumenPorcentaje: dsctoVolumenPorcentaje,
+      descuentoEspecial: descuentoEspecial,
+      descuentoEspecialPartner: descuentoEspecialPartner,
     };
     
     if (indiceEdicion !== null) {
@@ -484,34 +492,46 @@ export default function CotizacionPage() {
 
   const handleEditarCotizacion = (index: number) => {
     const item = itemsCotizados[index];
-
+  
     setSubtipoCotizacion(item.grupo);
     setCostoVenta(item.costo);
     setMargenVenta(item.margen);
     setTotalVenta(item.total);
-    setIndiceEdicion(index);
-    setMostrarModalLicencias(true);
-
+    
     if (item.grupo === 'Licencias SAP') {
-      // Si es una licencia SAP, cargar las cantidades correspondientes
-      const nuevasCantidadesSAP = cantidadesSAP.map((grupo, grupoIndex) => 
-        grupo.map((_, licenciaIndex) => 
+      // Cargar las cantidades correspondientes para SAP
+      const nuevasCantidadesSAP = cantidadesSAP.map((grupo, grupoIndex) =>
+        grupo.map((_, licenciaIndex) =>
           item.cantidadesSAP[grupoIndex] ? item.cantidadesSAP[grupoIndex][licenciaIndex] : 0
         )
       );
       setCantidadesSAP(nuevasCantidadesSAP);
+  
+      // Cargar subtotales para SAP
+      setSubtotalUsuario(item.subtotalUsuario || 0);  // Restablece el subtotal de usuario
+      setSubtotalBD(item.subtotalBD || 0);  // Restablece el subtotal de BD
+  
+      // Cargar los descuentos para SAP
+      setDescuentoPorVolumen(item.descuentoPorVolumen || 0);
+      setDsctoVolumenPorcentaje(item.dsctoVolumenPorcentaje || 0);
+      setDescuentoEspecial(item.descuentoEspecial || 0);
+      setDescuentoEspecialPartner(item.descuentoEspecialPartner || 0);
     } else if (item.grupo === 'Licencias Seidor') {
-      // Si es una licencia Seidor, cargar las cantidades correspondientes
-      const nuevasCantidadesSeidor = cantidadesSeidor.map((grupo, grupoIndex) => 
-        grupo.map((_, licenciaIndex) => 
+      // Cargar las cantidades correspondientes para Seidor
+      const nuevasCantidadesSeidor = cantidadesSeidor.map((grupo, grupoIndex) =>
+        grupo.map((_, licenciaIndex) =>
           item.cantidadesSeidor[grupoIndex] ? item.cantidadesSeidor[grupoIndex][licenciaIndex] : 0
         )
       );
       setCantidadesSeidor(nuevasCantidadesSeidor);
+      setDescuentoEspecial(item.descuentoEspecial || 0);
+      // En Seidor, los subtotales de usuario y BD no aplican
+      setSubtotalUsuario(item.subtotalUsuario || 0);  // Solo subtotal de usuario
     }
   
-    setMostrarModalLicencias(true);  // Abrir el modal con los valores cargados
-  };
+    setIndiceEdicion(index);
+    setMostrarModalLicencias(true);
+  };  
 
   const calcularDescuento = (subtotalUsuario: number, subtotalBD: number): void => {
     const totalConBD = subtotalUsuario + subtotalBD;
@@ -540,11 +560,8 @@ export default function CotizacionPage() {
     (descuentoEspecialPartner / 100 * (subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)));
     setCostoVenta(costoVenta);
 
-    const MargenVenta = ((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100) - 
-    (subtotalUsuario * (descuentoEspecial / 100))) - 
-    (((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2) - 
-    (descuentoEspecialPartner / 100 * (subtotalUsuario - 
-    (subtotalUsuario * dsctoVolumenPorcentaje / 100)))));
+    const MargenVenta = totalVenta - costoVenta;
+
     setMargenVenta(MargenVenta);
   }
 
