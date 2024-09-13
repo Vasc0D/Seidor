@@ -815,7 +815,7 @@ export default function CotizacionPage() {
       
       {/* Segundo Pop-up para seleccionar licencias */}
       <Dialog open={mostrarModalLicencias} onOpenChange={() => setMostrarModalLicencias(mostrarModalLicencias)}>
-        <DialogContent className='max-w-screen-xl'>
+        <DialogContent className='max-w-screen-xl h-fit'>
           <DialogHeader>
             <DialogTitle>Agregar Licencias</DialogTitle>
           </DialogHeader>
@@ -825,7 +825,7 @@ export default function CotizacionPage() {
           <>
             {cliente.bd && (
               <div className="mt-4 overflow-auto max-h-72">
-                <h3 className="text-lg font-semibold">Licencias Filtradas</h3>
+                <h3 className="text-lg font-semibold">Licencias SAP</h3>
 
                 {filtrarLicenciasPorBaseDeDatos(licenciasSAP, cliente.bd).map((grupo, grupoIndex) => (
                   <div key={grupoIndex} className="mb-4">
