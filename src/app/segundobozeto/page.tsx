@@ -10,25 +10,30 @@ function HookUsage({
   value,
   onChange,
   totalUsuarios,  // Número total de usuarios permitidos
-  totalLicencias  // Cantidad total de licencias seleccionadas
+  totalLicencias, // Cantidad total de licencias seleccionadas en el ítem actual
+  licenciasSeleccionadas,  // Número total de licencias ya seleccionadas en todos los ítems
 }: {
   value: number;
   onChange: (value: number) => void;
   totalUsuarios: number;
   totalLicencias: number;
+  licenciasSeleccionadas: number;  // Licencias ya seleccionadas en todos los ítems
 }) {
+  // Calculamos cuántas licencias disponibles quedan para asignar
+  const licenciasDisponibles = totalUsuarios - licenciasSeleccionadas;
+
   const handleIncrement = () => {
-    if (totalLicencias < totalUsuarios) {
+    // Solo incrementar si no supera el total de licencias disponibles
+    if (totalLicencias < licenciasDisponibles) {
       onChange(value + 1);
     }
   };
-  
+
   const handleDecrement = () => onChange(value > 0 ? value - 1 : 0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
 
-    // Permitir que el input quede temporalmente vacío
     if (newValue === "") {
       onChange(0);  // Si el campo está vacío, se reemplaza por 0
       return;
@@ -36,20 +41,25 @@ function HookUsage({
 
     const parsedValue = parseInt(newValue, 10);
 
-    // Validar que el valor sea un número válido y mayor o igual a 0
     if (!isNaN(parsedValue) && parsedValue >= 0) {
-      const nuevoTotalLicencias = totalLicencias - value + parsedValue;  // Calculamos el nuevo total de licencias
+      // Calculamos el nuevo total de licencias sumando las nuevas licencias seleccionadas
+      const nuevoTotalLicencias = totalLicencias - value + parsedValue;
 
-      // Verificar si el nuevo total de licencias no supera el total de usuarios
-      if (nuevoTotalLicencias <= totalUsuarios) {
-        onChange(parsedValue); // Si está dentro del rango permitido, actualizar el valor
+      // Solo permitir si el nuevo total de licencias no supera las licencias disponibles
+      if (nuevoTotalLicencias <= licenciasDisponibles) {
+        onChange(parsedValue);
       }
     }
   };
 
   return (
     <div className="flex items-center space-x-2">
-      <Button onClick={handleDecrement} className="bg-gray-200 hover:bg-gray-300 text-black rounded-full px-4 py-2">-</Button>
+      <Button 
+        onClick={handleDecrement} 
+        className="bg-gray-200 hover:bg-gray-300 text-black rounded-full px-4 py-2"
+      >
+        -
+      </Button>
       
       <Input
         type="text"
@@ -61,7 +71,7 @@ function HookUsage({
       <Button
         onClick={handleIncrement}
         className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4 py-2"
-        disabled={totalLicencias >= totalUsuarios}  // Deshabilitar si la cantidad total de licencias alcanza el número de usuarios
+        disabled={totalLicencias >= licenciasDisponibles}  // Deshabilitar si ya alcanzó el número de licencias disponibles
       >
         +
       </Button>
@@ -102,6 +112,8 @@ export default function CotizacionPage() {
   const [margenVenta, setMargenVenta] = useState(0);
 
   const [indiceEdicion, setIndiceEdicion] = useState<number | null>(null);  // Índice del ítem que se está editando
+
+  const [totalLicenciasSeleccionadas, setTotalLicenciasSeleccionadas] = useState(0);
 
   const cotizacionMap: Record<CotizacionTipo, string[]> = {
     'Licencia + Mantenimiento': ['Licencias SAP', 'Licencias Seidor', 'Licencias Boyum'],
@@ -484,6 +496,8 @@ export default function CotizacionPage() {
       subtotalUsuario: subtotalUsuario,
       subtotalBD: subtotalBD,
 
+      totalLicenciasItem: calcularTotalLicencias(),
+
       descuentoPorVolumen: descuentoPorVolumen,
       dsctoVolumenPorcentaje: dsctoVolumenPorcentaje,
       descuentoEspecial: descuentoEspecial,
@@ -499,10 +513,12 @@ export default function CotizacionPage() {
     }
 
     setIndiceEdicion(null);
-
     setMostrarModalLicencias(false);
-
     handleClosePopup();
+
+    // Actualizar el total de licencias seleccionadas entre todos los ítems
+    const totalLicenciasSeleccionadas = itemsCotizados.reduce((acc, item) => acc + item.totalLicenciasItem, 0) + nuevoItem.totalLicenciasItem;
+    setTotalLicenciasSeleccionadas(totalLicenciasSeleccionadas);  // Actualiza el estado con el nuevo total
 
   };
 
@@ -915,6 +931,7 @@ export default function CotizacionPage() {
                               onChange={(value) => handleCantidadChange(grupoIndex, licenciaIndex, value)}
                               totalUsuarios={parseInt(cliente.usuarios, 10) || 0}  // Máximo permitido según el número de usuarios
                               totalLicencias={calcularTotalLicencias()}  // Cantidad total de licencias seleccionadas
+                              licenciasSeleccionadas={totalLicenciasSeleccionadas}
                             />
                             </td>
                             <td className="py-2 px-4 border-b text-center">
@@ -1043,6 +1060,7 @@ export default function CotizacionPage() {
                               onChange={(value) => handleCantidadChange(grupoIndex, licenciaIndex, value)} // Actualiza la cantidad
                               totalUsuarios={parseInt(cliente.usuarios, 10) || 0} // Máximo permitido según el número de usuarios
                               totalLicencias={calcularTotalLicencias()} // Cantidad total de licencias seleccionadas
+                              licenciasSeleccionadas={totalLicenciasSeleccionadas}
                             />
                           </td>
                           <td className="py-2 px-4 border-b text-center">
