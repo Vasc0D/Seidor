@@ -25,6 +25,28 @@ function HookUsage({
   
   const handleDecrement = () => onChange(value > 0 ? value - 1 : 0);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+
+    // Permitir que el input quede temporalmente vacío
+    if (newValue === "") {
+      onChange(0);  // Si el campo está vacío, se reemplaza por 0
+      return;
+    }
+
+    const parsedValue = parseInt(newValue, 10);
+
+    // Validar que el valor sea un número válido y mayor o igual a 0
+    if (!isNaN(parsedValue) && parsedValue >= 0) {
+      const nuevoTotalLicencias = totalLicencias - value + parsedValue;  // Calculamos el nuevo total de licencias
+
+      // Verificar si el nuevo total de licencias no supera el total de usuarios
+      if (nuevoTotalLicencias <= totalUsuarios) {
+        onChange(parsedValue); // Si está dentro del rango permitido, actualizar el valor
+      }
+    }
+  };
+
   return (
     <div className="flex items-center space-x-2">
       <Button onClick={handleDecrement} className="bg-gray-200 hover:bg-gray-300 text-black rounded-full px-4 py-2">-</Button>
@@ -32,7 +54,7 @@ function HookUsage({
       <Input
         type="text"
         value={value}
-        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+        onChange={handleInputChange}
         className="w-16 text-center border border-gray-300 rounded-md"
       />
 
@@ -552,24 +574,45 @@ export default function CotizacionPage() {
 
   };  
 
-  const calcularTotales = (subtotalUsuario : number) => {
-    const totalVenta = subtotalUsuario - (subtotalUsuario * (dsctoVolumenPorcentaje / 100)) - (subtotalUsuario * (descuentoEspecial / 100))
-    setTotalVenta(totalVenta);
+  const calcularTotales = (subtotalUsuario: number, subtotalBD: number) => {
+    if (subtipoCotizacion === 'Licencias SAP') {
+      // Calcular el total de la venta sumando subtotalUsuario y subtotalBD
+      const totalVenta = (subtotalUsuario + subtotalBD)
+        - (subtotalUsuario * (dsctoVolumenPorcentaje / 100))
+        - (subtotalUsuario * (descuentoEspecial / 100));
+  
+      setTotalVenta(totalVenta);
+  
+      // El costo de venta incluye subtotalUsuario y subtotalBD, aplicando descuentos
+      const costoVenta = ((subtotalUsuario + subtotalBD - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2)
+        - (descuentoEspecialPartner / 100 * (subtotalUsuario + subtotalBD - (subtotalUsuario * dsctoVolumenPorcentaje / 100)));
+  
+      setCostoVenta(costoVenta);
+  
+      // El margen de venta es totalVenta - costoVenta, pero sin incluir subtotalBD en el cálculo de margen
+      const margenVenta = (subtotalUsuario
+      - (subtotalUsuario * (dsctoVolumenPorcentaje / 100))
+      - (subtotalUsuario * (descuentoEspecial / 100)) - ((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2)
+      - (descuentoEspecialPartner / 100 * (subtotalUsuario + subtotalBD - (subtotalUsuario * dsctoVolumenPorcentaje / 100))));
 
-    const costoVenta = ((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2) -
-    (descuentoEspecialPartner / 100 * (subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)));
-    setCostoVenta(costoVenta);
+      setMargenVenta(margenVenta);
+    } else if (subtipoCotizacion === 'Licencias Seidor') {
+      // Para Seidor, no hay subtotal de BD, así que seguimos calculando como antes
+      const totalVenta = subtotalUsuario - (subtotalUsuario * (descuentoEspecial / 100));
+      setTotalVenta(totalVenta);
+      setCostoVenta(0);  // No calculas el costo de venta en Seidor
+      setMargenVenta(totalVenta);  // El margen es igual al total en Seidor
+    }
+  };  
 
-    const MargenVenta = totalVenta - costoVenta;
-
-    setMargenVenta(MargenVenta);
-  }
-
-   // Actualizar los valores cuando se cambien los descuentos, etc.
   useEffect(() => {
-    calcularTotales(subtotalUsuario);
-  }, [subtotalUsuario, descuentoPorVolumen, descuentoEspecial, descuentoEspecialPartner]);
-
+    if (subtipoCotizacion === 'Licencias SAP') {
+      calcularTotales(subtotalUsuario, subtotalBD);
+    } else if (subtipoCotizacion === 'Licencias Seidor') {
+      calcularTotales(subtotalUsuario, 0); // No hay subtotal BD en Seidor
+    }
+  }, [subtotalUsuario, subtotalBD, descuentoPorVolumen, descuentoEspecial, descuentoEspecialPartner]);
+  
   const calcularSubtotalesSAP = () => {
     let totalUsuario = 0;
     let totalBD = 0;
@@ -620,7 +663,7 @@ export default function CotizacionPage() {
     setSubtotalBD(0);  // No hay BD en Seidor
   
     // No aplicar descuento por volumen en Seidor, solo descuento especial
-    calcularTotales(totalUsuario);
+    calcularTotales(totalUsuario, 0);
   };
 
   const calcularSubtotales = () => {
