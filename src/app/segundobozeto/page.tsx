@@ -115,6 +115,8 @@ export default function CotizacionPage() {
 
   const [totalLicenciasSeleccionadas, setTotalLicenciasSeleccionadas] = useState(0);
 
+  const subtiposAgregados = itemsCotizados.map((item) => item.grupo);
+
   const cotizacionMap: Record<CotizacionTipo, string[]> = {
     'Licencia + Mantenimiento': ['Licencias SAP', 'Licencias Seidor', 'Licencias Boyum'],
     'Servicio': ['Consultoría', 'Soporte', 'Capacitación'],
@@ -519,6 +521,8 @@ export default function CotizacionPage() {
     // Actualizar el total de licencias seleccionadas entre todos los ítems
     const totalLicenciasSeleccionadas = itemsCotizados.reduce((acc, item) => acc + item.totalLicenciasItem, 0) + nuevoItem.totalLicenciasItem;
     setTotalLicenciasSeleccionadas(totalLicenciasSeleccionadas);  // Actualiza el estado con el nuevo total
+    
+    setSubtipoCotizacion('');
 
   };
 
@@ -708,6 +712,7 @@ export default function CotizacionPage() {
     setIndiceEdicion(null); // Reiniciar el índice de edición
     resetValores(); // Reiniciar los valores
     setMostrarModalLicencias(false); // Cerrar el pop-up
+    setSubtipoCotizacion('');
   };   
 
   const formatNumber = (number: number) => {
@@ -872,7 +877,7 @@ export default function CotizacionPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {cotizacionMap[cotizacionTipo]?.map((option) => (
-                    <SelectItem key={option} value={option}>
+                    <SelectItem key={option} value={option} disabled={subtiposAgregados.includes(option)}>
                       {option}
                     </SelectItem>
                   ))}
