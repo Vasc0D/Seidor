@@ -123,6 +123,19 @@ export default function CotizacionPage() {
     'Infraestructura': ['Servidores', 'Almacenamiento', 'Redes'],
   };
 
+  const [desplegados, setDesplegados] = useState<number[]>([]);  // Ítems desplegados (expandidos)
+
+  const [deshabilitarInputs, setDeshabilitarInputs] = useState(false);  // Estado para deshabilitar los inputs
+
+  // Función para manejar el despliegue/colapso
+  const toggleDespliegue = (index: number) => {
+    setDesplegados(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)  // Si ya está desplegado, lo colapsamos
+        : [...prev, index]  // Si no está desplegado, lo expandimos
+    );
+  };
+
   const licenciasSAP = [
     {
       categoria: "SAP Business One Usuarios Nombrados",
@@ -512,6 +525,10 @@ export default function CotizacionPage() {
       setItemsCotizados(nuevasCotizaciones);
     } else {
       setItemsCotizados([...itemsCotizados, nuevoItem]);
+
+      if(itemsCotizados.length === 0){
+        setDeshabilitarInputs(true);
+      }
     }
 
     setIndiceEdicion(null);
@@ -530,6 +547,9 @@ export default function CotizacionPage() {
     const nuevasCotizaciones = [...itemsCotizados];
     nuevasCotizaciones.splice(index, 1);
     setItemsCotizados(nuevasCotizaciones);
+    if(nuevasCotizaciones.length === 0){
+      setDeshabilitarInputs(false);
+    }
   };
 
   const handleEditarCotizacion = (index: number) => {
@@ -728,17 +748,18 @@ export default function CotizacionPage() {
         <div>
           <label className="block text-sm font-medium mb-1">Nombre</label>
           <Input 
-            placeholder="Escribe..."
+            placeholder="Nombre..."
             value={cliente.nombre}
             onChange={(e) => handleInputChange(e, 'nombre')}
             className={errores.nombre ? 'border-red-500' : ''}
+            disabled={deshabilitarInputs}
           />
           {errores.nombre && <p className="text-red-500 text-xs">{errores.nombre}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">RUC</label>
           <Input 
-            placeholder="Escribe..."
+            placeholder="RUC..."
             value={cliente.ruc}
             onInput={(e) => {
               const target = e.target as HTMLInputElement;
@@ -746,42 +767,46 @@ export default function CotizacionPage() {
               setCliente({ ...cliente, ruc: target.value });
             }}
             className={errores.ruc ? 'border-red-500' : ''}
+            disabled={deshabilitarInputs}
           />
           {errores.ruc && <p className="text-red-500 text-xs">{errores.ruc}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">N° de Compañías</label>
           <Input 
-            placeholder="Escribe..."
+            placeholder="N° de Compañías..."
             value={cliente.companias}
             onChange={(e) => handleNumberInputChange(e, 'companias')}
             className={errores.companias ? 'border-red-500' : ''}
+            disabled={deshabilitarInputs}
           />
           {errores.companias && <p className="text-red-500 text-xs">{errores.companias}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Empleados</label>
           <Input 
-            placeholder="Escribe..."
+            placeholder="N° de empleados..."
             value={cliente.empleados}
             onChange={(e) => handleNumberInputChange(e, 'empleados')}
             className={errores.empleados ? 'border-red-500' : ''}
+            disabled={deshabilitarInputs}
           />
           {errores.empleados && <p className="text-red-500 text-xs">{errores.empleados}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Usuarios</label>
           <Input 
-            placeholder="Escribe..."
+            placeholder="N° de empleados..."
             value={cliente.usuarios}
             onChange={(e) => handleNumberInputChange(e, 'usuarios')}
             className={errores.usuarios ? 'border-red-500' : ''}
+            disabled={deshabilitarInputs}
           />
           {errores.usuarios && <p className="text-red-500 text-xs">{errores.usuarios}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Base de Datos</label>
-          <Select value={cliente.bd} onValueChange={(value) => handleSelectChange(value, 'bd')}>
+          <Select value={cliente.bd} onValueChange={(value) => handleSelectChange(value, 'bd')} disabled={deshabilitarInputs}>
             <SelectTrigger className={`w-full ${errores.bd ? 'border-red-500' : ''}`}>
               <SelectValue placeholder="Selecciona base de datos" />
             </SelectTrigger>
@@ -794,7 +819,7 @@ export default function CotizacionPage() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Solution</label>
-          <Select value={cliente.solution} onValueChange={(value) => handleSelectChange(value, 'solution')}>
+          <Select value={cliente.solution} onValueChange={(value) => handleSelectChange(value, 'solution')} disabled={deshabilitarInputs}>
             <SelectTrigger className={`w-full ${errores.solution ? 'border-red-500' : ''}`}>
               <SelectValue placeholder="Selecciona solution" />
             </SelectTrigger>
@@ -820,6 +845,7 @@ export default function CotizacionPage() {
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr>
+              <th className="px-4 py-2 border"></th>
               <th className="px-4 py-2 border">Grupo</th>
               <th className="px-4 py-2 border">Costo</th>
               <th className="px-4 py-2 border">Margen</th>
@@ -829,11 +855,17 @@ export default function CotizacionPage() {
           </thead>
           <tbody>
             {itemsCotizados.map((item, index) => (
+              <>
               <tr key={index}>
+                <td className="px-4 py-2 border text-center">
+                  <button onClick={() =>  toggleDespliegue(index)}>
+                    {desplegados.includes(index) ? '▼' : '▶'}
+                  </button>
+                </td>
                 <td className="px-4 py-2 border">{item.grupo}</td>
-                <td className="px-4 py-2 border">{formatNumber(item.costo)}</td>
-                <td className="px-4 py-2 border">{formatNumber(item.margen)}</td>
-                <td className="px-4 py-2 border">{formatNumber(item.total)}</td>
+                <td className="px-4 py-2 border">$ {formatNumber(item.costo)}</td>
+                <td className="px-4 py-2 border">$ {formatNumber(item.margen)}</td>
+                <td className="px-4 py-2 border">$ {formatNumber(item.total)}</td>
                 <td className="px-4 py-2 border text-center">
                   <Button className="bg-yellow-500 text-white mr-2 px-2 py-1" onClick={() => handleEditarCotizacion(index)}>
                     Editar
@@ -843,7 +875,65 @@ export default function CotizacionPage() {
                   </Button>
                 </td>
               </tr>
-            ))}
+              {/* Renderizar las licencias si esta desplegado */}
+              {desplegados.includes(index) && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-2 border bg-gray-100">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-2">Licencia</th>
+                          <th className="px-4 py-2">Cantidad</th>
+                          <th className="px-4 py-2">Costo</th>
+                          <th className="px-4 py-2">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {item.cantidadesSAP.map((grupo : number[], grupoIndex: number) => (
+                          grupo.map((cantidad, licenciaIndex) => (
+                            cantidad > 0 && (
+                              <tr key={'${grupoIndex}-${licenciaIndex}'}>
+                                <td className="px-4 py-2">{licenciasSAP[grupoIndex].licencias[licenciaIndex].tipo}</td>
+                                <td className="px-4 py-2">{cantidad}</td>
+                                <td className="px-4 py-2">{cliente.solution === 'OP' ? licenciasSAP[grupoIndex].licencias[licenciaIndex].costoOP : licenciasSAP[grupoIndex].licencias[licenciaIndex].costoOC}</td>
+                                <td className="px-4 py-2">{cantidad *
+                                    (cliente.solution === 'OP'
+                                      ? licenciasSAP[grupoIndex].licencias[licenciaIndex].costoOP
+                                      : licenciasSAP[grupoIndex].licencias[licenciaIndex].costoOC)}
+                                </td>
+                              </tr>
+                            )
+                          ))
+                          ))}
+                          {/* Similar para las licencias Seidor si las hay */}
+                          {item.cantidadesSeidor.map((grupo: number[], grupoIndex: number) => (
+                            grupo.map((cantidad, licenciaIndex) => (
+                              cantidad > 0 && (
+                                <tr key={`${grupoIndex}-${licenciaIndex}`}>
+                                  <td className="px-4 py-2 border">{licenciasSeidor[grupoIndex].licencias[licenciaIndex].tipo}</td>
+                                  <td className="px-4 py-2 border text-center">{cantidad}</td>
+                                  <td className="px-4 py-2 border text-center">
+                                    {cliente.solution === 'OP'
+                                      ? licenciasSeidor[grupoIndex].licencias[licenciaIndex].costoOP
+                                      : licenciasSeidor[grupoIndex].licencias[licenciaIndex].costoOC}
+                                  </td>
+                                  <td className="px-4 py-2 border text-center">
+                                    {cantidad *
+                                      (cliente.solution === 'OP'
+                                        ? licenciasSeidor[grupoIndex].licencias[licenciaIndex].costoOP
+                                        : licenciasSeidor[grupoIndex].licencias[licenciaIndex].costoOC)}
+                                  </td>
+                                </tr>
+                              )
+                            ))
+                          ))}
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              )}
+            </>
+          ))}
           </tbody>
         </table>
       </div>
