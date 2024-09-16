@@ -876,9 +876,13 @@ export default function CotizacionPage() {
                 </td>
               </tr>
               {/* Renderizar las licencias si esta desplegado */}
-              {desplegados.includes(index) && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-2 border bg-gray-100">
+              <tr>
+                <td colSpan={6} className="px-4 py-2 border bg-gray-100">
+                  <div
+                    className={`transition-max-height duration-500 ease-in-out overflow-hidden ${
+                      desplegados.includes(index) ? 'max-h-96' : 'max-h-0'
+                    }`}
+                  >
                     <table>
                       <thead>
                         <tr>
@@ -929,11 +933,11 @@ export default function CotizacionPage() {
                           ))}
                       </tbody>
                     </table>
+                  </div>
                   </td>
                 </tr>
-              )}
-            </>
-          ))}
+              </>
+            ))}
           </tbody>
         </table>
       </div>

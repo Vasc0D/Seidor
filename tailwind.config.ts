@@ -64,6 +64,9 @@ const config: Config = {
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],  // Añadir Poppins como fuente
       },
+      transitionProperty: {
+        'max-height': 'max-height',  // Agregamos soporte para max-height
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
