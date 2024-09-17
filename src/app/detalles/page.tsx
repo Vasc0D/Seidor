@@ -990,7 +990,7 @@ export default function CotizacionPage() {
       
       {/* Segundo Pop-up para seleccionar licencias */}
       <Dialog open={mostrarModalLicencias} onOpenChange={() => setMostrarModalLicencias(mostrarModalLicencias)}>
-        <DialogContent className='max-w-screen-xl' style={{height: '700px'}}>
+        <DialogContent className="max-w-screen-lg max-h-screen">
           <DialogHeader>
             <DialogTitle>Agregar Licencias</DialogTitle>
           </DialogHeader>
