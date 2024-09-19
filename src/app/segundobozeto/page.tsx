@@ -609,8 +609,13 @@ export default function CotizacionPage() {
       descuento = subtotalUsuario * 0.10;
     }
 
-    setDescuentoPorVolumen(descuento);
-    setDsctoVolumenPorcentaje((descuento / subtotalUsuario) * 100);
+    if(subtotalUsuario === 0){
+      setDescuentoPorVolumen(0);
+      setDsctoVolumenPorcentaje(0);
+    } else {
+      setDescuentoPorVolumen(descuento);
+      setDsctoVolumenPorcentaje((descuento / subtotalUsuario) * 100);
+    }
 
   };  
 
@@ -632,7 +637,8 @@ export default function CotizacionPage() {
       // El margen de venta es totalVenta - costoVenta, pero sin incluir subtotalBD en el cálculo de margen
       const margenVenta = (subtotalUsuario
       - (subtotalUsuario * (dsctoVolumenPorcentaje / 100))
-      - (subtotalUsuario * (descuentoEspecial / 100)) - ((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2)
+      - (subtotalUsuario * (descuentoEspecial / 100)) 
+      - ((subtotalUsuario - (subtotalUsuario * dsctoVolumenPorcentaje / 100)) / 2)
       - (descuentoEspecialPartner / 100 * (subtotalUsuario + subtotalBD - (subtotalUsuario * dsctoVolumenPorcentaje / 100))));
 
       setMargenVenta(margenVenta);
@@ -740,6 +746,14 @@ export default function CotizacionPage() {
   };  
   
   return (
+  <div
+    className="bg-cover bg-center h-screen"
+    style={{ 
+      backgroundImage: 'url(/images/my-background.png)', 
+      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      backgroundBlendMode: 'overlay'
+    }}
+  >
     <div className="p-10 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-center">Universal Quoter</h1>
 
@@ -834,7 +848,7 @@ export default function CotizacionPage() {
 
       {/* Botón "Agregar Item" */}
       <div className="mb-6 flex justify-end">
-        <Button className="bg-black text-white px-4 py-2" onClick={handleAgregarItem}>
+        <Button className="bg-blue-500 text-white px-4 py-2" onClick={handleAgregarItem}>
           Agregar Item
         </Button>
       </div>
@@ -877,7 +891,7 @@ export default function CotizacionPage() {
               </tr>
               {/* Renderizar las licencias si esta desplegado */}
               <tr>
-                <td colSpan={6} className="px-4 py-2 border bg-gray-100">
+                <td colSpan={6} className="px-4 py-2 border bg-blue-50">
                   <div
                     className={`transition-max-height duration-500 ease-in-out overflow-hidden ${
                       desplegados.includes(index) ? 'max-h-96' : 'max-h-0'
@@ -990,7 +1004,7 @@ export default function CotizacionPage() {
       
       {/* Segundo Pop-up para seleccionar licencias */}
       <Dialog open={mostrarModalLicencias} onOpenChange={() => setMostrarModalLicencias(mostrarModalLicencias)}>
-        <DialogContent className="w-full sm:w-11/12 md:w-8/12 lg:w-7/12 xl:w-6/12 2xl:w-5/12 h-auto max-h-screen overflow-y-auto">
+        <DialogContent className="max-w-screen-lg max-h-screen">
           <DialogHeader>
             <DialogTitle>Agregar Licencias</DialogTitle>
           </DialogHeader>
@@ -1233,5 +1247,6 @@ export default function CotizacionPage() {
         </DialogContent>
       </Dialog>
     </div>
+  </div>
   );
 };
