@@ -1,17 +1,26 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 
 export default function DetallesOportunidad() {
   const router = useRouter();
-  const { id } = router.query;  // Obtener el ID de la oportunidad desde la URL
+  const [id, setId] = useState<string | null>(null);  // Obtener el ID de la oportunidad desde la URL
   const [oportunidad, setOportunidad] = useState<any>(null);
   const [cliente, setCliente] = useState<any>(null);
   const [itemsCotizacion, setItemsCotizacion] = useState<any[]>([]);
+
+  // Obtener el ID de la oportunidad desde la URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const opportunityId = urlParams.get('id');
+      setId(opportunityId);
+    }
+  }, []);
 
   // Obtener los datos de la oportunidad y del cliente relacionado
   useEffect(() => {
