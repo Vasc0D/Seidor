@@ -4,19 +4,41 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from 'react-toastify';  // Para mostrar notificaciones
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = () => {
-    console.log({
-      username,
-      password
-    });
+  const handleSubmit = async () => {
+    setLoading(true);
 
-    router.push('/homepage');
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Login succesfull');
+        router.push('/homepage');
+      } else {
+        toast.error(data.error || 'Invalid credentials');
+      } 
+    } catch (error) {
+        toast.error('Something went wrong');
+        console.error('Error during login:', error);
+      } finally {
+        setLoading(false);
+      }
   };
 
   return (
@@ -40,8 +62,8 @@ export default function Login() {
             className="w-full"
           />
         </div>
-        <Button className="w-full" onClick={handleSubmit}>
-          Login
+        <Button className="w-full" onClick={handleSubmit} disabled={loading}>
+          {loading ? 'Loading...' : 'Login'}
         </Button>
       </div>
     </div>

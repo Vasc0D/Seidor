@@ -72,6 +72,7 @@ export default function Home() {
   const [oportunidades, setOportunidades] = useState<any[]>([]);
   const [isCreatingClient, setIsCreatingClient] = useState(false); // Estado para manejar el pop-up de crear cliente
   const [clientes, setClientes] = useState<any[]>([]); // Estado para manejar los clientes
+  const [nombreOportunidad, setNombreOportunidad] = useState('');  // Nuevo estado para el nombre de la oportunidad  
   const [cliente, setCliente] = useState({
     nombre: '',
     ruc: '',
@@ -163,6 +164,8 @@ export default function Home() {
         toast.error('Error en la petición al crear cliente');  // Mostrar notificación de error
       }
     }
+
+    setCliente({ nombre: '', ruc: '', sociedades: '', empleados: '' });
   };
 
   const [clienteSeleccionado, setClienteSeleccionado] = useState<any>(null);  // Estado para manejar el cliente seleccionado
@@ -184,6 +187,37 @@ export default function Home() {
     setClienteSeleccionado(null);  // Limpiar el cliente seleccionado
   };  
 
+  const handleEstadoChange = async (index: number, nuevoEstado: string) => {
+    const oportunidad = oportunidades[index];
+    const { id } = oportunidad;
+  
+    try {
+      // Hacer la petición PATCH/PUT a la API
+      const response = await fetch(`/api/oportunidades/${id}`, {
+        method: 'PATCH',  // O 'PUT' dependiendo de cómo lo manejes en el backend
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: nuevoEstado }),
+      });
+  
+      if (response.ok) {
+        // Si la petición es exitosa, actualizamos el estado localmente
+        const nuevasOportunidades = [...oportunidades];
+        nuevasOportunidades[index].estado = nuevoEstado;
+        setOportunidades(nuevasOportunidades);
+      } else {
+        console.error('Error al actualizar el estado');
+        // Manejar error en el frontend si es necesario
+      }
+    } catch (error) {
+      console.error('Error en la petición:', error);
+    }
+  };  
+
+  const handleEditarOportunidad = (oportunidadId: number) => {
+    router.push(`/homepage/detalles/${oportunidadId}`);
+  };  
 
 ///////////////////////DETALLES//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -200,7 +234,6 @@ export default function Home() {
   const [mostrarModalTipo, setMostrarModalTipo] = useState(false);
   const [mostrarModalLicencias, setMostrarModalLicencias] = useState(false);
 
-  const [cantidadesLicencias, setCantidadesLicencias] = useState<{ [key: string]: number }>({});
   const [subtotalUsuario, setSubtotalUsuario] = useState<number>(0);
   const [subtotalBD, setSubtotalBD] = useState<number>(0);
   const [descuentoPorVolumen, setDescuentoPorVolumen] = useState<number>(0);
@@ -216,7 +249,15 @@ export default function Home() {
   // Estado para almacenar los ítems agregados a la cotización
   const [itemsCotizacion, setItemsCotizacion] = useState<any[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [cantidadesOriginales, setCantidadesOriginales] = useState<{ [key: string]: number }>({});
+
+  const [cantidadesLicenciasSAP, setCantidadesLicenciasSAP] = useState<{ [key: string]: number }>({});
+  const [cantidadesLicenciasSeidor, setCantidadesLicenciasSeidor] = useState<{ [key: string]: number }>({});
+
+  const [cantidadesOriginalesSAP, setCantidadesOriginalesSAP] = useState<{ [key: string]: number }>({});
+  const [cantidadesOriginalesSeidor, setCantidadesOriginalesSeidor] = useState<{ [key: string]: number }>({});  
+
+  const [nombreOp, setNombreOp] = useState('');  // Nuevo estado para el nombre de la oportunidad
+  const [estado, setEstado] = useState('Pendiente');  // Nuevo estado para el estado de la oportunidad
 
   // Función para manejar el despliegue/colapso
   const toggleDespliegue = (index: number) => {
@@ -512,17 +553,23 @@ export default function Home() {
   };
 
   const handleCantidadChange = (licencia: string, value: number) => {
-    setCantidadesLicencias((prev) => ({
-      ...prev,
-      [licencia]: value,
-    }));
-    calcularSubtotales(); // Recalcular subtotales cuando cambia la cantidad
+    if (subtipoCotizacion === 'Licencias SAP') {
+      setCantidadesLicenciasSAP((prev) => {
+        const newCantidades = { ...prev, [licencia]: isNaN(value) ? 0 : value };
+        console.log('Cantidades de licencias SAP actualizadas:', newCantidades);
+        return newCantidades;
+      });
+    } else if (subtipoCotizacion === 'Licencias Seidor') {
+      setCantidadesLicenciasSeidor((prev) => {
+        const newCantidades = { ...prev, [licencia]: isNaN(value) ? 0 : value };
+        console.log('Cantidades de licencias Seidor actualizadas:', newCantidades);
+        return newCantidades;
+      });
+    }
+    
+    calcularSubtotales();
   };
   
-  useEffect(() => {
-    calcularSubtotales(); // Asegura que los subtotales se recalculan cuando cambia la BD o el Solution
-  }, [baseDeDatos, solution, cantidadesLicencias, descuentoEspecial, descuentoEspecialPartner]);  
-
   // Función para formatear números en el formato de moneda
   const formatNumber = (number: number) => {
     return number.toLocaleString("en-US", {
@@ -531,6 +578,10 @@ export default function Home() {
     });
   };
 
+  useEffect(() => {
+    calcularSubtotales();
+  }, [subtotalUsuario, subtotalBD, descuentoPorVolumen, cantidadesLicenciasSAP, cantidadesLicenciasSeidor, descuentoEspecial, descuentoEspecialPartner, solution]);  // Array de dependencias
+  
   // Función para calcular los subtotales y aplicar descuentos
   const calcularSubtotales = () => {
     let subtotalUsuarioTemp = 0;
@@ -538,9 +589,10 @@ export default function Home() {
   
     // Calcular subtotales dependiendo del subtipo de cotización
     if (subtipoCotizacion === 'Licencias SAP') {
+      // Calcular subtotales para Licencias SAP
       licenciasSAP.forEach((grupo) => {
         grupo.licencias.forEach((licencia) => {
-          const cantidad = cantidadesLicencias[licencia.tipo] || 0;
+          const cantidad = cantidadesLicenciasSAP[licencia.tipo] || 0;  // Usamos las cantidades de SAP
           const costo = solution === 'OP' ? licencia.costoOP : licencia.costoOC;
           const total = cantidad * costo;
   
@@ -552,7 +604,7 @@ export default function Home() {
         });
       });
   
-      // Aplicar el descuento por volumen solo si es SAP
+      // Aplicar descuento por volumen solo si es SAP
       const totalConBD = subtotalUsuarioTemp + subtotalBDTemp;
       let descuento = 0;
   
@@ -574,38 +626,34 @@ export default function Home() {
         setDescuentoPorVolumenPorcentaje((descuento / subtotalUsuarioTemp) * 100);
       }
   
-      // Calcular el total de la venta restando los descuentos
       const totalVentaTemp = (subtotalUsuarioTemp + subtotalBDTemp)
         - (subtotalUsuarioTemp * (descuentoPorVolumenPorcentaje / 100))
         - (subtotalUsuarioTemp * (descuentoEspecial / 100));
-      
-      setTotalVenta(totalVentaTemp);
   
-      // Calcular el costo de venta, aplicando descuentos
-      const costoVentaTemp = ((subtotalUsuarioTemp + subtotalBDTemp - (subtotalUsuarioTemp * descuentoPorVolumenPorcentaje / 100)) / 2)
-        - (descuentoEspecialPartner / 100 * (subtotalUsuarioTemp + subtotalBDTemp - (subtotalUsuarioTemp * descuentoPorVolumenPorcentaje / 100)));
-      
+      setTotalVenta(totalVentaTemp);
+
+      const A = subtotalUsuarioTemp + subtotalBD - (subtotalUsuarioTemp * descuentoPorVolumenPorcentaje / 100);
+      const B = subtotalUsuarioTemp - (subtotalUsuarioTemp * descuentoPorVolumenPorcentaje / 100);
+      const C = (B/2) + (B * (descuentoEspecialPartner/100));
+      const costoVentaTemp = A - C;
+
       setCostoVenta(costoVentaTemp);
-      console.log(descuentoEspecial, subtotalUsuarioTemp, subtotalBDTemp, totalVentaTemp, costoVentaTemp);
-      // Calcular el margen de venta (solo basado en subtotalUsuario)
-      const margenVentaTemp = (subtotalUsuario
-        - (subtotalUsuario * (descuentoPorVolumenPorcentaje / 100))
-        - (subtotalUsuario * (descuentoEspecial / 100)) 
-        - ((subtotalUsuario - (subtotalUsuario * descuentoPorVolumenPorcentaje / 100)) / 2)
-        - (descuentoEspecialPartner / 100 * (subtotalUsuario + subtotalBD - (subtotalUsuario * descuentoPorVolumenPorcentaje / 100))));
+  
+      const margenVentaTemp = totalVentaTemp - costoVentaTemp;
   
       setMargenVenta(margenVentaTemp);
-  
-    } else if (subtipoCotizacion === 'Licencias Seidor') {
+    } 
+    else if (subtipoCotizacion === 'Licencias Seidor') {
+      // Calcular subtotales para Licencias Seidor
       licenciasSeidor.forEach((grupo) => {
         grupo.licencias.forEach((licencia) => {
-          const cantidad = cantidadesLicencias[licencia.tipo] || 0;
+          const cantidad = cantidadesLicenciasSeidor[licencia.tipo] || 0;  // Usamos las cantidades de Seidor
           const costo = solution === 'OP' ? licencia.costoOP : licencia.costoOC;
           subtotalUsuarioTemp += cantidad * costo;
         });
       });
   
-      // No aplicamos el descuento por volumen en Seidor
+      // No aplicamos descuento por volumen en Seidor
       setDescuentoPorVolumen(0);
       setDescuentoPorVolumenPorcentaje(0);
   
@@ -621,7 +669,7 @@ export default function Home() {
     // Establecemos los subtotales de usuario y BD
     setSubtotalUsuario(subtotalUsuarioTemp);
     setSubtotalBD(subtotalBDTemp);
-  }; 
+  };  
   
   // Función para resetear los campos de licencias
   const resetearCampos = () => {
@@ -635,7 +683,15 @@ export default function Home() {
     setCostoVenta(0);
     setMargenVenta(0);
     setEditingIndex(null);  // Restablecer el índice de edición
+  
+    // Resetear las cantidades según el subtipo de cotización
+    if (subtipoCotizacion === 'Licencias SAP') {
+      setCantidadesLicenciasSAP({});
+    } else if (subtipoCotizacion === 'Licencias Seidor') {
+      setCantidadesLicenciasSeidor({});
+    }
   };
+  
 
   // Define el tipo de las licencias seleccionadas
   interface LicenciaSeleccionada {
@@ -647,26 +703,38 @@ export default function Home() {
   
   // Función para agregar un ítem a la cotización
   const agregarItemCotizacion = () => {
-    const licenciasSeleccionadas = Object.entries(cantidadesLicencias)
-    .filter(([, cantidad]) => cantidad > 0)
-    .map(([licencia, cantidad]) => {
-      // Buscar la licencia en licenciasSAP y licenciasSeidor
-      const licenciaObj = licenciasSAP.find(grupo =>
-        grupo.licencias.find(l => l.tipo === licencia)
-      )?.licencias.find(l => l.tipo === licencia) || licenciasSeidor.find(grupo =>
-        grupo.licencias.find(l => l.tipo === licencia)
-      )?.licencias.find(l => l.tipo === licencia);
-      
-      // Si licenciaObj no existe, usar costo por defecto (0 en este caso)
-      const costo = licenciaObj ? (solution === 'OP' ? licenciaObj.costoOP : licenciaObj.costoOC) : 0;
-
-      return {
-        tipo: licencia,
-        cantidad: cantidad as number,
-        costo,
-        total: cantidad * costo, // Calcular el total usando el costo
-      };
-    });
+    const licenciasSeleccionadas = subtipoCotizacion === 'Licencias SAP' 
+      ? Object.entries(cantidadesLicenciasSAP).filter(([, cantidad]) => cantidad > 0).map(([licencia, cantidad]) => {
+          // Buscar la licencia en licenciasSAP
+          const licenciaObj = licenciasSAP.find(grupo =>
+            grupo.licencias.find(l => l.tipo === licencia)
+          )?.licencias.find(l => l.tipo === licencia);
+  
+          const costo = licenciaObj ? (solution === 'OP' ? licenciaObj.costoOP : licenciaObj.costoOC) : 0;
+  
+          return {
+            tipo: licencia,
+            cantidad,
+            costo,
+            total: cantidad * costo,
+          };
+        })
+      : Object.entries(cantidadesLicenciasSeidor).filter(([, cantidad]) => cantidad > 0).map(([licencia, cantidad]) => {
+          // Buscar la licencia en licenciasSeidor
+          const licenciaObj = licenciasSeidor.find(grupo =>
+            grupo.licencias.find(l => l.tipo === licencia)
+          )?.licencias.find(l => l.tipo === licencia);
+  
+          const costo = licenciaObj ? (solution === 'OP' ? licenciaObj.costoOP : licenciaObj.costoOC) : 0;
+  
+          return {
+            tipo: licencia,
+            cantidad,
+            costo,
+            total: cantidad * costo,
+          };
+        });
+  
     const nuevoItem = {
       tipoCotizacion: subtipoCotizacion,
       baseDeDatos,
@@ -674,7 +742,6 @@ export default function Home() {
       subtotalUsuario,
       subtotalBD,
       descuentoPorVolumen,
-      descuentoEspecial,
       totalVenta,
       costoVenta,
       margenVenta,
@@ -683,22 +750,17 @@ export default function Home() {
   
     let nuevosItems;
     if (editingIndex !== null) {
-      // Actualizamos el ítem que estamos editando
       nuevosItems = [...itemsCotizacion];
       nuevosItems[editingIndex] = nuevoItem;
     } else {
-      // Agregamos un nuevo ítem
       nuevosItems = [...itemsCotizacion, nuevoItem];
     }
   
     setItemsCotizacion(nuevosItems);
   
-    // Cerrar el modal de licencias
+    // Cerrar el modal de licencias y resetear campos
     setMostrarModalLicencias(false);
-  
-    // Resetear los campos y el índice de edición
     resetearCampos();
-
     setSubtipoCotizacion('');
   };  
 
@@ -707,33 +769,98 @@ export default function Home() {
     const itemsActualizados = [...itemsCotizacion];
     itemsActualizados.splice(index, 1); // Eliminar el ítem en el índice dado
     setItemsCotizacion(itemsActualizados);
-    setCantidadesLicencias({});
+    setCantidadesLicenciasSAP({});
+    setCantidadesLicenciasSeidor({});
   };
 
-  // Función para editar un ítem de la cotización (puedes implementar esta función según el requerimiento)
+  // Funcion para editar un item de la cotizacion
   const editarItemCotizacion = (index: number) => {
     const itemAEditar = itemsCotizacion[index];
-
-    // Guardamos las cantidades originales antes de editar
-    setCantidadesOriginales(cantidadesLicencias);
-
-    // Cargar los valores del ítem en los estados correspondientes
+  
+    // Guardar las cantidades originales antes de editar
+    if (itemAEditar.tipoCotizacion === 'Licencias SAP') {
+      setCantidadesOriginalesSAP(cantidadesLicenciasSAP);  // Guardamos las cantidades originales de SAP
+      setCantidadesLicenciasSAP(
+        itemAEditar.licenciasSeleccionadas.reduce((prev: { [key: string]: number }, curr: { tipo: string; cantidad: number }) => {
+          prev[curr.tipo] = curr.cantidad;
+          return prev;
+        }, {})  // Valor inicial del reduce
+      );      
+    } else if (itemAEditar.tipoCotizacion === 'Licencias Seidor') {
+      setCantidadesOriginalesSeidor(cantidadesLicenciasSeidor);  // Guardamos las cantidades originales de Seidor
+      
+      setCantidadesLicenciasSeidor(
+        itemAEditar.licenciasSeleccionadas.reduce((prev: { [key: string]: number }, curr: { tipo: string; cantidad: number }) => {
+          prev[curr.tipo] = curr.cantidad;  // Agregamos la cantidad de la licencia actual al acumulador
+          return prev;
+        }, {} as { [key: string]: number })  // Valor inicial como un objeto vacío con el tipo correcto
+      );
+    }
+    
+  
+    // Cargar los demás datos del ítem en los estados correspondientes
     setSubtipoCotizacion(itemAEditar.tipoCotizacion);
     setBaseDeDatos(itemAEditar.baseDeDatos);
     setSolution(itemAEditar.solution);
     setSubtotalUsuario(itemAEditar.subtotalUsuario);
     setSubtotalBD(itemAEditar.subtotalBD);
     setDescuentoPorVolumen(itemAEditar.descuentoPorVolumen);
-    setDescuentoEspecial(itemAEditar.descuentoEspecial);
+    setDescuentoEspecial(itemAEditar.descuentoEspecial || 0);
     setTotalVenta(itemAEditar.totalVenta);
     setCostoVenta(itemAEditar.costoVenta);
     setMargenVenta(itemAEditar.margenVenta);
-
+  
     // Guardamos temporalmente el índice del ítem que estamos editando
     setEditingIndex(index);
-
+  
     // Mostrar el modal para editar
     setMostrarModalLicencias(true);
+  };  
+
+  // Función para enviar la cotización a la base de datos
+  const enviarCotizacion = async () => {
+    const totalVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.totalVenta, 0);
+    const costoVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.costoVenta, 0);
+    const margenVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.margenVenta, 0);
+  
+    try {
+      const nuevaOportunidad = {
+        cliente_id: clienteSeleccionado.id,
+        nombre_op: nombreOportunidad,
+        total_venta: totalVentaGeneral,
+        costo_venta: costoVentaGeneral,
+        margen_venta: margenVentaGeneral,
+        estado: 'Pendiente'  // Puedes definir un estado inicial
+      };
+  
+      const response = await fetch('/api/oportunidades', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(nuevaOportunidad),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        router.push('/homepage');  // Redireccionar a la página principal o donde prefieras
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Error al crear la oportunidad');
+      }
+    } catch (error) {
+      console.error('Error al crear la oportunidad:', error);
+      toast.error('Error al crear la oportunidad');
+    }
+  };  
+
+  // Función para calcular los totales de venta, costo y margen
+  const calcularTotalesGenerales = () => {
+    const totalVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.totalVenta, 0);
+    const costoVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.costoVenta, 0);
+    const margenVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.margenVenta, 0);
+    return { totalVentaGeneral, costoVentaGeneral, margenVentaGeneral };
   };
 
   ////////////////////////////////////////////////////RETURN//////////////////////////////////////////////////////////////////////////////////////
@@ -747,32 +874,55 @@ export default function Home() {
         {/* Mostrar la página de homepage con la tabla de Oportunidades */}
         {!mostrarDetalles && (
           <div>
-            <h1 className="text-2xl font-bold mb-4">Oportunidades:</h1>
+            <h1 className="text-2xl font-bold mb-4">Lista de Oportunidades:</h1>
   
             {/* Tabla de oportunidades */}
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
+                  <TableHead>Nombre de Oportunidad</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Total Venta</TableHead>
                   <TableHead>Costo Venta</TableHead>
                   <TableHead>Margen Venta</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {oportunidades.map((oportunidad, index) => (
                   <TableRow key={index}>
                     <TableCell>{oportunidad.id}</TableCell>
+                    <TableCell>{oportunidad.nombre_op}</TableCell>
                     <TableCell>{oportunidad.cliente}</TableCell>
                     <TableCell>{oportunidad.total_venta}</TableCell>
                     <TableCell>{oportunidad.costo_venta}</TableCell>
                     <TableCell>{oportunidad.margen_venta}</TableCell>
+                    <TableCell>
+                      <select
+                        value={oportunidad.estado}
+                        onChange={(e) => handleEstadoChange(index, e.target.value)}
+                        className={`p-1 rounded ${
+                          oportunidad.estado === 'Ganada' ? 'bg-green-500 text-white' : 
+                          oportunidad.estado === 'Perdida' ? 'bg-red-500 text-white' :
+                          'bg-yellow-500 text-white'
+                        }`}
+                      >
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Ganada">Ganada</option>
+                        <option value="Perdida">Perdida</option>
+                      </select>
+                    </TableCell>
+                    <TableCell>
+                      <Button className="bg-blue-500 text-white" onClick={() => handleEditarOportunidad(oportunidad.id)}>
+                        Editar
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-  
             {/* Botones para crear cliente y crear oportunidad */}
             <div className="mt-6 flex flex-col items-end space-y-4">
               {/* Crear Cliente */}
@@ -840,30 +990,39 @@ export default function Home() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Seleccionar Cliente</DialogTitle>
+                    <DialogTitle>Crear Oportunidad</DialogTitle>
                   </DialogHeader>
-                  {/* Selecciona un cliente */}
-                  <select 
-                    className="w-full border rounded-md p-2"
-                    value={clienteSeleccionado?.id || ''}
-                    onChange={(e) => {
-                      const selectedCliente = clientes.find(c => c.id === Number(e.target.value));  // Busca el objeto cliente completo
-                      setClienteSeleccionado(selectedCliente || null);  // Asigna el objeto completo al estado
-                    }}
-                  >
-                    <option value="">Selecciona un cliente</option>
-                    {clientes.map((cliente, index) => (
-                      <option key={index} value={cliente.id}>
-                        {cliente.nombre}
-                      </option>
-                    ))}
-                  </select>
-                  {/* Botón para crear la oportunidad */}
-                  {clienteSeleccionado && (
-                    <div className="flex justify-end mt-4">
-                      <Button onClick={() => handleCrearOportunidad(Number(clienteSeleccionado.id))} className="bg-green-500 text-white">Crear</Button>
-                    </div>
-                  )}
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* Selecciona un cliente */}
+                    <select 
+                      className="w-full border rounded-md p-2"
+                      value={clienteSeleccionado?.id || ''}
+                      onChange={(e) => {
+                        const selectedCliente = clientes.find(c => c.id === Number(e.target.value));  
+                        setClienteSeleccionado(selectedCliente || null); 
+                      }}
+                    >
+                      <option value="">Selecciona un cliente</option>
+                      {clientes.map((cliente, index) => (
+                        <option key={index} value={cliente.id}>
+                          {cliente.nombre}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Nombre de la oportunidad */}
+                    <Input
+                      value={nombreOportunidad}  // Controlado con useState
+                      onChange={(e) => setNombreOportunidad(e.target.value)}
+                      placeholder="Nombre de la Oportunidad"
+                      className="w-full p-2 border rounded-md"
+                    />
+
+                    {/* Botón para crear la oportunidad */}
+                    <Button onClick={() => handleCrearOportunidad(clienteSeleccionado.id)} className="bg-green-500 text-white">
+                      Crear
+                    </Button>
+                  </div>
                 </DialogContent>
               </Dialog>
             </div>
@@ -1045,13 +1204,13 @@ export default function Home() {
 
             {/* Segundo Pop-up para agregar licencias */}
             <Dialog open={mostrarModalLicencias} onOpenChange={setMostrarModalLicencias}>
-            <DialogContent className="max-w-6xl h-fit">
+            <DialogContent className="max-w-screen-lg max-h-screen">
               <DialogHeader>
                 <DialogTitle>Agregar Licencias</DialogTitle>
               </DialogHeader>
 
               {/* Selectores de Base de Datos y Solution */}
-              <div className="flex space-x-4 mb-4">
+              <div className="flex">
                 {subtipoCotizacion === 'Licencias SAP' && (
                   <div className="w-1/2">
                     <label className="block text-sm font-medium mb-1">Base de Datos</label>
@@ -1084,97 +1243,97 @@ export default function Home() {
 
               {/* Tabla de Licencias SAP */}
               {subtipoCotizacion === 'Licencias SAP' && (
-                <div className="overflow-auto max-h-72">
-                  <h3 className="text-lg font-semibold">Licencias SAP</h3>
-                  <table className="min-w-full bg-white border border-gray-200 text-sm">
-                    <thead>
-                      <tr>
-                        <th className="py-2 px-4 border-b">Tipo de Licencia</th>
-                        <th className="py-2 px-4 border-b">En bloques de</th>
-                        <th className="py-2 px-4 border-b">Métricas</th>
-                        <th className="py-2 px-4 border-b">Costo</th>
-                        <th className="py-2 px-4 border-b">Cantidad</th>
-                        <th className="py-2 px-4 border-b">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtrarLicenciasPorBD(licenciasSAP, baseDeDatos).map((grupo, grupoIndex) => (
-                        <React.Fragment key={grupoIndex}>
-                          <tr>
-                            <td className="bg-gray-200 font-semibold px-4 py-2" colSpan={6}>
-                              {grupo.categoria}
+              <div className="overflow-auto max-h-72">
+                <h3 className="text-md font-semibold">Licencias SAP</h3>
+                <table className="min-w-full bg-white border border-gray-200 text-sm">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b">Tipo de Licencia</th>
+                      <th className="py-2 px-4 border-b">En bloques de</th>
+                      <th className="py-2 px-4 border-b">Métricas</th>
+                      <th className="py-2 px-4 border-b">Costo</th>
+                      <th className="py-2 px-4 border-b">Cantidad</th>
+                      <th className="py-2 px-4 border-b">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtrarLicenciasPorBD(licenciasSAP, baseDeDatos).map((grupo, grupoIndex) => (
+                      <React.Fragment key={grupoIndex}>
+                        <tr>
+                          <td className="bg-gray-200 font-semibold px-4 py-2" colSpan={6}>
+                            {grupo.categoria}
+                          </td>
+                        </tr>
+                        {grupo.licencias.map((licencia, licenciaIndex) => (
+                          <tr key={licenciaIndex}>
+                            <td className="px-4 py-2 border-b">{licencia.tipo}</td>
+                            <td className="px-4 py-2 border-b text-center">{licencia.salesUnit}</td>
+                            <td className="px-4 py-2 border-b text-center">{licencia.metricas}</td>
+                            <td className="px-4 py-2 border-b text-center">
+                              {solution === 'OP' ? licencia.costoOP : licencia.costoOC}
+                            </td>
+                            <td className="px-4 py-2 border-b text-center">
+                              <HookUsage
+                                value={cantidadesLicenciasSAP[licencia.tipo] || 0}
+                                onChange={(value) => handleCantidadChange(licencia.tipo, value)}
+                              />
+                            </td>
+                            <td className="px-4 py-2 border-b text-center">
+                              {(cantidadesLicenciasSAP[licencia.tipo] || 0) * (solution === 'OP' ? licencia.costoOP : licencia.costoOC)}
                             </td>
                           </tr>
-                          {grupo.licencias.map((licencia, licenciaIndex) => (
-                            <tr key={licenciaIndex}>
-                              <td className="px-4 py-2 border-b">{licencia.tipo}</td>
-                              <td className="px-4 py-2 border-b text-center">{licencia.salesUnit}</td>
-                              <td className="px-4 py-2 border-b text-center">{licencia.metricas}</td>
-                              <td className="px-4 py-2 border-b text-center">
-                                {solution === 'OP' ? licencia.costoOP : licencia.costoOC}
-                              </td>
-                              <td className="px-4 py-2 border-b text-center">
-                                <HookUsage
-                                  value={cantidadesLicencias[licencia.tipo] || 0}
-                                  onChange={(value) => handleCantidadChange(licencia.tipo, value)}
-                                />
-                              </td>
-                              <td className="px-4 py-2 border-b text-center">
-                                {(cantidadesLicencias[licencia.tipo] || 0) * (solution === 'OP' ? licencia.costoOP : licencia.costoOC)}
-                              </td>
-                            </tr>
-                          ))}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
               {/* Tabla de Licencias Seidor */}
               {subtipoCotizacion === 'Licencias Seidor' && (
-                <div className="overflow-auto max-h-72">
-                  <h3 className="text-lg font-semibold">Licencias Seidor</h3>
-                  <table className="min-w-full bg-white border border-gray-200 text-sm">
-                    <thead>
-                      <tr>
-                        <th className="py-2 px-4 border-b">Tipo de Licencia</th>
-                        <th className="py-2 px-4 border-b">Costo</th>
-                        <th className="py-2 px-4 border-b">Cantidad</th>
-                        <th className="py-2 px-4 border-b">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {licenciasSeidor.map((grupo, grupoIndex) => (
-                        <React.Fragment key={grupoIndex}>
-                          <tr>
-                            <td className="bg-gray-200 font-semibold px-4 py-2" colSpan={4}>
-                              {grupo.categoria}
+              <div className="overflow-auto max-h-72">
+                <h3 className="text-md font-semibold">Licencias Seidor</h3>
+                <table className="min-w-full bg-white border border-gray-200 text-sm">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b">Tipo de Licencia</th>
+                      <th className="py-2 px-4 border-b">Costo</th>
+                      <th className="py-2 px-4 border-b">Cantidad</th>
+                      <th className="py-2 px-4 border-b">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {licenciasSeidor.map((grupo, grupoIndex) => (
+                      <React.Fragment key={grupoIndex}>
+                        <tr>
+                          <td className="bg-gray-200 font-semibold px-4 py-2" colSpan={4}>
+                            {grupo.categoria}
+                          </td>
+                        </tr>
+                        {grupo.licencias.map((licencia, licenciaIndex) => (
+                          <tr key={licenciaIndex}>
+                            <td className="px-4 py-2 border-b">{licencia.tipo}</td>
+                            <td className="px-4 py-2 border-b text-center">
+                              {solution === 'OP' ? licencia.costoOP : licencia.costoOC}
+                            </td>
+                            <td className="px-4 py-2 border-b text-center">
+                              <HookUsage
+                                value={cantidadesLicenciasSeidor[licencia.tipo] || 0}
+                                onChange={(value) => handleCantidadChange(licencia.tipo, value)}
+                              />
+                            </td>
+                            <td className="px-4 py-2 border-b text-center">
+                              {(cantidadesLicenciasSeidor[licencia.tipo] || 0) * (solution === 'OP' ? licencia.costoOP : licencia.costoOC)}
                             </td>
                           </tr>
-                          {grupo.licencias.map((licencia, licenciaIndex) => (
-                            <tr key={licenciaIndex}>
-                              <td className="px-4 py-2 border-b">{licencia.tipo}</td>
-                              <td className="px-4 py-2 border-b text-center">
-                                {solution === 'OP' ? licencia.costoOP : licencia.costoOC}
-                              </td>
-                              <td className="px-4 py-2 border-b text-center">
-                                <HookUsage
-                                  value={cantidadesLicencias[licencia.tipo] || 0}
-                                  onChange={(value) => handleCantidadChange(licencia.tipo, value)}
-                                />
-                              </td>
-                              <td className="px-4 py-2 border-b text-center">
-                                {(cantidadesLicencias[licencia.tipo] || 0) * (solution === 'OP' ? licencia.costoOP : licencia.costoOC)}
-                              </td>
-                            </tr>
-                          ))}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
               {/* Subtotales y Totales */}
               <div className="flex justify-between mt-4">
@@ -1209,15 +1368,16 @@ export default function Home() {
                   <div className="flex justify-between items-center">
                     <label className="font-medium text-sm">Descuento Especial:</label>
                     <div className="flex items-center">
-                      <Input
-                        value={descuentoEspecial}
-                        onChange={(e) => {
-                          const newDescuentoEspecial = parseFloat(e.target.value) || 0;
-                          setDescuentoEspecial(newDescuentoEspecial);
-                          calcularSubtotales();
-                        }}
-                        className="w-12 text-center text-sm"
-                      />
+                    <Input
+                      value={descuentoEspecial}
+                      onChange={(e) => {
+                        const newDescuentoEspecial = parseFloat(e.target.value) || 0;
+
+                        setDescuentoEspecial(newDescuentoEspecial);
+                        calcularSubtotales();
+                      }}
+                      className="w-12 text-center text-sm"
+                    />
                     </div>
                     <span className="ml-4 text-red-600 font-bold text-sm">- {formatNumber(subtotalUsuario * descuentoEspecial / 100)}</span>
                   </div>
@@ -1263,7 +1423,7 @@ export default function Home() {
 
               {/* Botones de Confirmar y Cancelar */}
               <div className="flex justify-end mt-4">
-                <Button onClick={() => {setMostrarModalLicencias(false); resetearCampos(); setCantidadesLicencias(cantidadesOriginales)}} className="bg-gray-500 text-white px-4 py-2 mr-2">
+                <Button onClick={() => {setMostrarModalLicencias(false); resetearCampos(); setCantidadesOriginalesSeidor(cantidadesOriginalesSeidor) ; setCantidadesOriginalesSAP(cantidadesOriginalesSAP)}} className="bg-gray-500 text-white px-4 py-2 mr-2">
                   Cancelar
                 </Button>
                 <Button className="bg-blue-500 text-white px-4 py-2" onClick={(agregarItemCotizacion)}>
@@ -1272,6 +1432,41 @@ export default function Home() {
               </div>
             </DialogContent>
           </Dialog>
+          {itemsCotizacion.length > 0 && (
+          <div className="mt-6 flex justify-end">
+            {(() => {
+              const { totalVentaGeneral, costoVentaGeneral, margenVentaGeneral } = calcularTotalesGenerales();
+              return (
+                <div className="space-y-2 text-right mr-10">
+                  <div className="flex justify-between">
+                    <label className="font-medium text-sm">Total Venta:</label>
+                    <span className="font-bold text-gray-700 text-sm">
+                      {formatNumber(totalVentaGeneral)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <label className="font-medium text-sm">Costo Venta:</label>
+                    <span className="font-bold text-gray-700 text-sm">
+                      {formatNumber(costoVentaGeneral)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <label className="font-medium text-sm">Margen Venta:</label>
+                    <span className="font-bold text-yellow-500 text-sm">
+                      {formatNumber(margenVentaGeneral)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+            {/* Botón de Crear Cotización */}
+            <div className="flex justify-end mt-6">
+              <Button onClick={enviarCotizacion} className="bg-green-500 text-white px-4 py-2">
+                Crear Cotización
+              </Button>
+            </div>
           </div>
         )}
       </div>

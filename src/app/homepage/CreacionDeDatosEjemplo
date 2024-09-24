@@ -3,8 +3,8 @@
 
 -- SELECT SCOPE_IDENTITY() AS cliente_id;
 
--- INSERT INTO Oportunidades (cliente_id, total_venta, costo_venta, margen_venta)
--- VALUES (1, 5000.00, 3000.00, 2000.00);
+-- INSERT INTO Oportunidades (cliente_id, nombre_op, total_venta, costo_venta, margen_venta)
+-- VALUES (1, 'Jorge', 5000.00, 3000.00, 2000.00);
 
 -- INSERT INTO Conceptos (oportunidad_id, nombre_concepto, base_datos, total_venta, costo_venta)
 -- VALUES (1, 'Licencias SAP', 'SQL', 3000.00, 1500.00);
@@ -12,3 +12,21 @@
 -- INSERT INTO Detalle_Conceptos (concepto_id, nombre_item, cantidad, costo)
 -- VALUES (1, 'SAP Business One Professional User', 3, 1000.00);
 
+-- SELECT * FROM Clientes
+
+-- UPDATE Oportunidades SET estado = 'Pendiente' WHERE id = 2
+
+-- SELECT * FROM Oportunidades
+
+-- DELETE FROM Clientes WHERE id = 1
+
+-- DROP TABLE Detalle_Conceptos;
+-- DROP TABLE Conceptos;
+-- DROP TABLE Oportunidades;
+-- DROP TABLE Clientes;
+
+-- INSERT INTO Users (username, password, role)
+-- VALUES ('Jorge', '$2b$10$.WVDPLqJozavaIsEZSNjy.QWiQAvxhbu/EFJuwflQTvTy6XgEzfl.', 'admin');
+
+-- UPDATE USERS SET password = '$2b$10$.WVDPLqJozavaIsEZSNjy.QWiQAvxhbu/EFJuwflQTvTy6XgEzfl.' WHERE id = 1;
+-- SELECT * FROM USERS

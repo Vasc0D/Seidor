@@ -24,11 +24,11 @@ export async function GET() {
         // Conectarse a la base de datos
         await sql.connect(sqlConfig);
 
-        // Ejecutar una consulta para obtener las oportunidades y sus totales
+        // Ejecutar una consulta para obtener las oportunidades
         const result = await sql.query(`
-            SELECT o.id, c.nombre AS cliente, o.total_venta, o.costo_venta, o.margen_venta 
-            FROM Oportunidades o
-            JOIN Clientes c ON o.cliente_id = c.id
+            SELECT O.id, O.cliente_id, O.nombre_op, O.total_venta, O.costo_venta, O.margen_venta, O.estado, C.nombre AS cliente
+            FROM Oportunidades O
+            JOIN Clientes C ON O.cliente_id = C.id
         `);
 
         // Devolver los resultados
@@ -36,5 +36,39 @@ export async function GET() {
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Error al obtener oportunidades' }, { status: 500 });
+    }
+}
+
+// API Route para agregar una nueva oportunidad
+export async function POST(req: Request) {
+    try {
+        const { cliente_id, nombre_op, total_venta, costo_venta, margen_venta } = await req.json();
+
+        const estado = 'pendiente';
+
+        // Validar que todos los campos están presentes
+        if (!cliente_id || !nombre_op || !estado) {
+            return NextResponse.json({ error: 'Faltan datos de la oportunidad' }, { status: 400 });
+        }
+
+        // Conectarse a la base de datos
+        await sql.connect(sqlConfig);
+
+        // Insertar la oportunidad en la base de datos
+        const result = await sql.query(`
+            INSERT INTO Oportunidades (cliente_id, nombre_op, total_venta, costo_venta, margen_venta, estado) 
+            VALUES (${cliente_id}, '${nombre_op}', ${total_venta || 0}, ${costo_venta || 0}, ${margen_venta || 0}, '${estado}')
+        `);
+
+        // Verificar que la inserción fue exitosa
+        if (result.rowsAffected[0] === 0) {
+            return NextResponse.json({ error: 'No se pudo crear la oportunidad' }, { status: 500 });
+        }
+
+        // Devolver una respuesta exitosa
+        return NextResponse.json({ message: 'Oportunidad creada correctamente' }, { status: 201 });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ error: 'Error al crear la oportunidad' }, { status: 500 });
     }
 }

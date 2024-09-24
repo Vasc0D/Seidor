@@ -7,10 +7,12 @@ CREATE TABLE Clientes (
   empleados INT NOT NULL
 );
 
--- Tabla Oportunidades
+-- Tabla Oportunidades con nombre_op y estado
 CREATE TABLE Oportunidades (
   id INT PRIMARY KEY IDENTITY(1,1),
   cliente_id INT NOT NULL,
+  nombre_op VARCHAR(255) NOT NULL,  -- Nombre de la oportunidad
+  estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',  -- Estado: Ganada o Perdida
   total_venta DECIMAL(10, 2) DEFAULT 0,
   costo_venta DECIMAL(10, 2) DEFAULT 0,
   margen_venta DECIMAL(10, 2) DEFAULT 0,
@@ -22,13 +24,12 @@ CREATE TABLE Conceptos (
   id INT PRIMARY KEY IDENTITY(1,1),
   oportunidad_id INT NOT NULL,
   nombre_concepto VARCHAR(255) NOT NULL,
-  base_datos VARCHAR(50) NULL, -- Relevante para SAP
+  base_datos VARCHAR(50) NULL,  -- Relevante para SAP
   total_venta DECIMAL(10, 2) DEFAULT 0,
   costo_venta DECIMAL(10, 2) DEFAULT 0,
   margen_venta AS (total_venta - costo_venta),
   FOREIGN KEY (oportunidad_id) REFERENCES Oportunidades(id) ON DELETE CASCADE
 );
-
 
 -- Tabla Detalle Conceptos
 CREATE TABLE Detalle_Conceptos (
