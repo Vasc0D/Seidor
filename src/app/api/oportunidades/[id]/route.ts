@@ -18,7 +18,7 @@ const sqlConfig = {
 };
 
 // GET - Obtener detalles de una oportunidad por su ID
-export async function GET(request, { params }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
 }
 
 // PATCH - Actualizar detalles de una oportunidad
-export async function PATCH(request, { params }) {
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   const { total_venta, costo_venta, margen_venta, itemsCotizacion } = await request.json();
 
