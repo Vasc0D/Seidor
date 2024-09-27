@@ -16,6 +16,7 @@ CREATE TABLE Oportunidades (
   total_venta DECIMAL(10, 2) DEFAULT 0,
   costo_venta DECIMAL(10, 2) DEFAULT 0,
   margen_venta DECIMAL(10, 2) DEFAULT 0,
+  cotizador INT NOT NULL,
   FOREIGN KEY (cliente_id) REFERENCES Clientes(id) ON DELETE CASCADE
 );
 
@@ -41,3 +42,10 @@ CREATE TABLE Detalle_Conceptos (
   total AS (cantidad * costo),
   FOREIGN KEY (concepto_id) REFERENCES Conceptos(id) ON DELETE CASCADE
 );
+
+-- CREATE TABLE Users (
+--   id INT PRIMARY KEY IDENTITY(1,1),
+--   username VARCHAR(50) NOT NULL,
+--   password VARCHAR(255) NOT NULL,
+--   role VARCHAR(50) NOT NULL
+-- );

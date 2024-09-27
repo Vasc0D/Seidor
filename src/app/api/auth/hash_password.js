@@ -2,7 +2,7 @@
 const bcrypt = require('bcrypt');
 
 async function generateHashedPassword() {
-  const password = 'JorgeS3idorAdmin'; // Cambia por la contraseña que deseas
+  const password = 'Seidor'; // Cambia por la contraseña que deseas
   const saltRounds = 10;
 
   try {

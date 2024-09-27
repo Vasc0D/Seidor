@@ -23,14 +23,32 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
   try {
     await sql.connect(sqlConfig);
-    const resultOportunidad = await sql.query(`SELECT * FROM Oportunidades WHERE id = ${id}`);
-    const resultCliente = await sql.query(`SELECT * FROM Clientes WHERE id = ${resultOportunidad.recordset[0].cliente_id}`);
-    const resultItems = await sql.query(`SELECT * FROM Conceptos WHERE oportunidad_id = ${id}`);
 
+    // Consultar la oportunidad por ID
+    const resultOportunidad = await sql.query(`SELECT * FROM Oportunidades WHERE id = ${id}`);
+    
+    // Consultar el cliente relacionado
+    const resultCliente = await sql.query(`SELECT * FROM Clientes WHERE id = ${resultOportunidad.recordset[0].cliente_id}`);
+    
+    // Consultar los conceptos asociados con la oportunidad
+    const resultConceptos = await sql.query(`SELECT * FROM Conceptos WHERE oportunidad_id = ${id}`);
+
+    // Consultar los ítems (detalles) para cada concepto
+    const conceptosConDetalles = await Promise.all(
+      resultConceptos.recordset.map(async (concepto) => {
+        const resultDetalles = await sql.query(`SELECT * FROM Detalle_Conceptos WHERE concepto_id = ${concepto.id}`);
+        return {
+          ...concepto,
+          detalles: resultDetalles.recordset,  // Anidar los detalles al concepto
+        };
+      })
+    );
+
+    // Devolver la oportunidad, cliente y los conceptos con ítems
     return NextResponse.json({
       oportunidad: resultOportunidad.recordset[0],
       cliente: resultCliente.recordset[0],
-      itemsCotizacion: resultItems.recordset,
+      itemsCotizacion: conceptosConDetalles,  // Aquí los conceptos tienen sus ítems anidados
     });
   } catch (error) {
     console.error('Error al obtener la oportunidad:', error);

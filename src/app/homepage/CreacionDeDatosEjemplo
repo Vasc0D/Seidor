@@ -24,9 +24,18 @@
 -- DROP TABLE Conceptos;
 -- DROP TABLE Oportunidades;
 -- DROP TABLE Clientes;
+-- DROP TABLE Users;
 
 -- INSERT INTO Users (username, password, role)
 -- VALUES ('Jorge', '$2b$10$.WVDPLqJozavaIsEZSNjy.QWiQAvxhbu/EFJuwflQTvTy6XgEzfl.', 'admin');
 
+-- INSERT INTO Users (username, password, role)
+-- VALUES ('Walter', '$2b$10$/GGRxuN4U4E4U2mndRsz1un1auA7UEKcPXyNmS69cVNAdlL14BzUu', 'Gerente Ejecutivo');
+
 -- UPDATE USERS SET password = '$2b$10$.WVDPLqJozavaIsEZSNjy.QWiQAvxhbu/EFJuwflQTvTy6XgEzfl.' WHERE id = 1;
 -- SELECT * FROM USERS
+
+-- SELECT * FROM Detalle_Conceptos WHERE concepto_id = 1
+-- SELECT * FROM Conceptos WHERE oportunidad_id = 7
+
+-- DELETE FROM Oportunidades WHERE id = 5

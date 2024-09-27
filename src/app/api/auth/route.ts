@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import sql from 'mssql';
 import bcrypt from 'bcrypt';
-import { cookies } from 'next/headers';  // Para manejar cookies
 
 // Configuración de la conexión a SQL Server
 const sqlConfig = {
@@ -53,17 +52,20 @@ export async function POST(req: Request) {
 
         // Generar un token JWT con el rol del usuario
         const token = jwt.sign(
-            { username: user.username, role: user.role }, // Datos en el token
+            { id: user.id, username: user.username, role: user.role }, // Datos en el token
             JWT_SECRET, // Clave secreta
             { expiresIn: '1h' } // Tiempo de expiración
         );
 
         // Guardar el token en una cookie
         const response = NextResponse.json({ message: 'Login exitoso' });
-        response.cookies.set('token', token, {
+
+        response.cookies.set('authToken', token, {
             httpOnly: true,
-            secure: true, // Asegúrate de que esté configurado para producción
+            secure: process.env.NODE_ENV === 'production', // Asegúrate de que esté configurado para producción
+            sameSite: 'strict',
             maxAge: 60 * 60, // 1 hora
+            path: '/',
         });
 
         return response;

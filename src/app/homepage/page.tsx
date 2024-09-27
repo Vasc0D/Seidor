@@ -10,6 +10,7 @@ import { toast, ToastContainer } from 'react-toastify';  // Importar Toastify
 import 'react-toastify/dist/ReactToastify.css';  // Importar los estilos de Toastify
 
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { it } from 'node:test';
 
 function HookUsage({
   value,
@@ -92,16 +93,33 @@ export default function Home() {
   useEffect(() => {
     const fetchOportunidades = async () => {
       try {
-        const response = await fetch('/api/oportunidades');
+        const response = await fetch('/api/oportunidades', {
+        credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error('HTTP error! status: ${response.status}');
+        }
+
         const data = await response.json();
-        setOportunidades(data);
+
+        // Verifica si el resultado es un array
+        if (Array.isArray(data)) {
+          setOportunidades(data);
+        } else {
+          console.error('La respuesta no es un array:', data);
+          setOportunidades([]);  // Inicializa a un array vacío en caso de error
+        }
+  
+        console.log('Datos obtenidos:', data);  // Para ver la estructura de datos
       } catch (error) {
         console.error('Error al obtener oportunidades:', error);
+        setOportunidades([]);  // En caso de error, inicializa con un array vacío
       }
     };
-
+  
     fetchOportunidades();
-  }, []);
+  }, []);  
 
   // Obtener la lista de clientes desde la base de datos
   useEffect(() => {
@@ -215,8 +233,24 @@ export default function Home() {
     }
   };  
 
-  const handleEditarOportunidad = (oportunidadId: number) => {
-    router.push(`/homepage/detalles/${oportunidadId}`);
+  const handleEditarOportunidad = async (id: number) => {
+    try {
+      const response = await fetch(`/api/oportunidades/${id}`);
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al obtener la oportunidad');
+      }
+  
+      setOportunidadEnEdicion(data.oportunidad);
+      setClienteSeleccionado(data.cliente);
+      setItemsCotizacion(data.itemsCotizacion);  // Aquí colocas los datos de la cotización
+  
+      console.log('Items Cotización:', data.itemsCotizacion);  // Agrega esto para ver los datos
+      setMostrarDetalles(true);
+    } catch (error) {
+      console.error('Error al editar la oportunidad:', error);
+    }
   };  
 
 ///////////////////////DETALLES//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -256,8 +290,9 @@ export default function Home() {
   const [cantidadesOriginalesSAP, setCantidadesOriginalesSAP] = useState<{ [key: string]: number }>({});
   const [cantidadesOriginalesSeidor, setCantidadesOriginalesSeidor] = useState<{ [key: string]: number }>({});  
 
-  const [nombreOp, setNombreOp] = useState('');  // Nuevo estado para el nombre de la oportunidad
   const [estado, setEstado] = useState('Pendiente');  // Nuevo estado para el estado de la oportunidad
+
+  const [oportunidadEnEdicion, setOportunidadEnEdicion] = useState<any>(null); // Estado para la oportunidad que se está editando
 
   // Función para manejar el despliegue/colapso
   const toggleDespliegue = (index: number) => {
@@ -572,6 +607,7 @@ export default function Home() {
   
   // Función para formatear números en el formato de moneda
   const formatNumber = (number: number) => {
+    if(isNaN(number)) return 0;
     return number.toLocaleString("en-US", {
       style: "currency",
       currency: "USD",
@@ -830,11 +866,13 @@ export default function Home() {
         total_venta: totalVentaGeneral,
         costo_venta: costoVentaGeneral,
         margen_venta: margenVentaGeneral,
-        estado: 'Pendiente'  // Puedes definir un estado inicial
+        estado: 'Pendiente',  // Puedes definir un estado inicial
+        itemsCotizacion: itemsCotizacion,
       };
   
       const response = await fetch('/api/oportunidades', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -844,7 +882,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         toast.success(data.message);
-        router.push('/homepage');  // Redireccionar a la página principal o donde prefieras
+        setMostrarDetalles(false);
       } else {
         const error = await response.json();
         toast.error(error.error || 'Error al crear la oportunidad');
@@ -862,6 +900,23 @@ export default function Home() {
     const margenVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.margenVenta, 0);
     return { totalVentaGeneral, costoVentaGeneral, margenVentaGeneral };
   };
+
+  const handleBaseDeDatosChange = (value: string) => {
+    setBaseDeDatos(value);
+
+    const nuevasCantidades = {...cantidadesLicenciasSAP};
+
+    const basededatoslicencias = licenciasSAP.find(grupo => grupo.categoria === 'SAP Business Databases');
+
+    if (basededatoslicencias) {
+      basededatoslicencias.licencias.forEach(licencia => {
+        nuevasCantidades[licencia.tipo] = 0;
+      });
+    }
+
+    setCantidadesLicenciasSAP(nuevasCantidades);
+    
+  }
 
   ////////////////////////////////////////////////////RETURN//////////////////////////////////////////////////////////////////////////////////////
 
@@ -1096,9 +1151,9 @@ export default function Home() {
                           <td className="px-4 py-2 border-b">{item.tipoCotizacion}</td>
                           <td className="px-4 py-2 border-b text-center">{item.baseDeDatos}</td>
                           <td className="px-4 py-2 border-b text-center">{item.solution}</td>
-                          <td className="px-4 py-2 border-b text-center">{item.totalVenta.toFixed(2)}</td>
-                          <td className="px-4 py-2 border-b text-center">{item.costoVenta.toFixed(2)}</td>
-                          <td className="px-4 py-2 border-b text-center">{item.margenVenta.toFixed(2)}</td>
+                          <td className="px-4 py-2 border-b text-center">{formatNumber(item.totalVenta) || 0}</td>
+                          <td className="px-4 py-2 border-b text-center">{formatNumber(item.costoVenta) || 0}</td>
+                          <td className="px-4 py-2 border-b text-center">{formatNumber(item.margenVenta) || 0}</td>
                           <td className="px-4 py-2 border-b text-center">
                             <Button
                               className="bg-yellow-500 text-white px-2 py-1 mr-2"
@@ -1214,7 +1269,7 @@ export default function Home() {
                 {subtipoCotizacion === 'Licencias SAP' && (
                   <div className="w-1/2">
                     <label className="block text-sm font-medium mb-1">Base de Datos</label>
-                    <Select value={baseDeDatos} onValueChange={setBaseDeDatos}>
+                    <Select value={baseDeDatos} onValueChange={handleBaseDeDatosChange}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecciona BD" />
                       </SelectTrigger>
