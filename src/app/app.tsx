@@ -1,5 +1,5 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import Home from './homepage/page'; // Asegúrate de ajustar la ruta de importación
+import Home from './pruebas/page'; // Asegúrate de ajustar la ruta de importación
 
 function App() {
   return (
