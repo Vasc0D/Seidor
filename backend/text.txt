@@ -1,0 +1,146 @@
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+import uuid
+
+# Crear la aplicación Flask
+app = Flask(__name__)
+
+# Configuración de la base de datos directamente en app.config
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    "mssql+pyodbc://vdiaz:+15nOrO23!JX@172.16.0.95/prueba-001?driver=ODBC+Driver+17+for+SQL+Server"
+)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Deshabilitar el seguimiento de modificaciones
+app.config['DEBUG'] = True  # Modo debug activado para desarrollo
+
+# Inicializar CORS para permitir solicitudes desde el frontend
+CORS(app)
+
+# Inicializar SQLAlchemy
+db = SQLAlchemy(app)
+
+# Definir los modelos directamente en este archivo
+
+# Modelo de Clientes
+class Cliente(db.Model):
+    __tablename__ = 'Clientes'
+    id = db.Column(db.String, primary_key=True, default=uuid.uuid4, unique=True)
+    nombre = db.Column(db.String(255), nullable=False)
+    ruc = db.Column(db.String(20), nullable=False)
+    sociedades = db.Column(db.Integer, nullable=False)
+    empleados = db.Column(db.Integer, nullable=False)
+
+# Modelo de Usuarios (Users)
+class User(db.Model):
+    __tablename__ = 'Users'
+    id = db.Column(db.String, primary_key=True, default=uuid.uuid4, unique=True)
+    username = db.Column(db.String(50), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+
+    oportunidades = db.relationship('Oportunidad', backref='cotizador_relacion', lazy=True)
+
+# Modelo de Oportunidades
+class Oportunidad(db.Model):
+    __tablename__ = 'Oportunidades'
+    id = db.Column(db.String, primary_key=True, default=uuid.uuid4, unique=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('Clientes.id'), nullable=False)
+    nombre_op = db.Column(db.String(255), nullable=False)
+    estado = db.Column(db.String(20), default='pendiente', nullable=False)
+    total_venta = db.Column(db.Numeric(10, 2), default=0)
+    costo_venta = db.Column(db.Numeric(10, 2), default=0)
+    margen_venta = db.Column(db.Numeric(10, 2), default=0)
+    cotizador = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
+
+    cliente = db.relationship('Cliente', backref='oportunidades')
+
+# Modelo de Conceptos
+class Concepto(db.Model):
+    __tablename__ = 'Conceptos'
+    id = db.Column(db.String, primary_key=True, default=uuid.uuid4, unique=True)
+    oportunidad_id = db.Column(db.Integer, db.ForeignKey('Oportunidades.id'), nullable=False)
+    nombre_concepto = db.Column(db.String(255), nullable=False)
+    base_datos = db.Column(db.String(50), nullable=True)
+    total_venta = db.Column(db.Numeric(10, 2), default=0)
+    costo_venta = db.Column(db.Numeric(10, 2), default=0)
+    margen_venta = db.Column(db.Numeric(10, 2), default=0)
+
+    oportunidad = db.relationship('Oportunidad', backref='conceptos')
+
+# Modelo de Detalle de Conceptos
+class DetalleConcepto(db.Model):
+    __tablename__ = 'Detalle_Conceptos'
+    id = db.Column(db.String, primary_key=True, default=uuid.uuid4, unique=True)
+    concepto_id = db.Column(db.Integer, db.ForeignKey('Conceptos.id'), nullable=False)
+    nombre_item = db.Column(db.String(255), nullable=False)
+    cantidad = db.Column(db.Integer, nullable=False)
+    costo = db.Column(db.Numeric(10, 2), nullable=False)
+    total = db.Column(db.Numeric(10, 2), nullable=False)
+
+    concepto = db.relationship('Concepto', backref='detalles')
+
+# Ruta de prueba
+@app.route('/api/test', methods=['GET'])
+def test():
+    return jsonify({"message": "Backend está funcionando"}), 200
+
+# Ruta para obtener todas las oportunidades
+@app.route('/api/oportunidades', methods=['GET'])
+def get_oportunidades():
+    try:
+        oportunidades = Oportunidad.query.all()  # Obtener todas las oportunidades
+        oportunidades_json = [
+            {
+                "id": o.id,
+                "cliente_id": o.cliente_id,
+                "nombre_op": o.nombre_op,
+                "total_venta": float(o.total_venta),
+                "costo_venta": float(o.costo_venta),
+                "margen_venta": float(o.margen_venta),
+                "estado": o.estado,
+                "cliente": o.cliente.nombre,
+                "cotizador": o.cotizador_relacion.username  # Obtener el nombre del cotizador
+            }
+            for o in oportunidades
+        ]
+        return jsonify(oportunidades_json), 200
+    except Exception as e:
+        print("Error al obtener oportunidades:", str(e))
+        return jsonify({"error": "Error al obtener oportunidades"}), 500
+
+# Ruta para crear una nueva oportunidad
+@app.route('/api/oportunidades', methods=['POST'])
+def create_oportunidad():
+    data = request.json
+
+    cliente_id = data.get('cliente_id')
+    nombre_op = data.get('nombre_op')
+    total_venta = data.get('total_venta', 0)
+    costo_venta = data.get('costo_venta', 0)
+    margen_venta = data.get('margen_venta', 0)
+    estado = 'pendiente'
+    cotizador_id = data.get('cotizador_id')  # Agregar el cotizador_id
+
+    try:
+        nzueva_oportunidad = Oportunidad(
+            cliente_id=cliente_id,
+            nombre_op=nombre_op,
+            total_venta=total_venta,
+            costo_venta=costo_venta,
+            margen_venta=margen_venta,
+            estado=estado,
+            cotizador=cotizador_id  # Asignar el cotizador
+        )
+
+        db.session.add(nueva_oportunidad)
+        db.session.commit()
+
+        return jsonify({"message": "Oportunidad creada correctamente"}), 201
+
+    except Exception as e:
+        print("Error al crear oportunidad:", str(e))
+        return jsonify({"error": "Error al crear la oportunidad"}), 500
+
+# Iniciar la aplicación Flask
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5015)

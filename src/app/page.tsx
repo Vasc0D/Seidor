@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from 'react-toastify';  // Para mostrar notificaciones
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function Login() {
@@ -13,33 +12,34 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async () => {
+  const handleLogin = async () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth', {
+      const response = await fetch('http://localhost:5015/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',  // Enviar cookies
         body: JSON.stringify({ username, password }),
+        credentials: 'include',
       });
-      
+
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Login succesfull');
-        router.push('/homepage');
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('role', data.role);
+
+        router.push('/pruebas');
       } else {
-        toast.error(data.error || 'Invalid credentials');
-      } 
-    } catch (error) {
-        toast.error('Something went wrong');
-        console.error('Error during login:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error al iniciar sesión:', data.message);
       }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,7 +63,7 @@ export default function Login() {
             className="w-full"
           />
         </div>
-        <Button className="w-full" onClick={handleSubmit} disabled={loading}>
+        <Button className="w-full" onClick={handleLogin} disabled={loading}>
           {loading ? 'Loading...' : 'Login'}
         </Button>
       </div>

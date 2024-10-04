@@ -27,15 +27,93 @@
 -- DROP TABLE Users;
 
 -- INSERT INTO Users (username, password, role)
--- VALUES ('Jorge', '$2b$10$.WVDPLqJozavaIsEZSNjy.QWiQAvxhbu/EFJuwflQTvTy6XgEzfl.', 'admin');
+-- VALUES ('Jorge', '$2b$10$.WVDPLqJozavaIsEZSNjy.QWiQAvxhbu/EFJuwflQTvTy6XgEzfl.', 'Administrador');
 
 -- INSERT INTO Users (username, password, role)
--- VALUES ('Walter', '$2b$10$/GGRxuN4U4E4U2mndRsz1un1auA7UEKcPXyNmS69cVNAdlL14BzUu', 'Gerente Ejecutivo');
 
--- UPDATE USERS SET password = '$2b$10$.WVDPLqJozavaIsEZSNjy.QWiQAvxhbu/EFJuwflQTvTy6XgEzfl.' WHERE id = 1;
 -- SELECT * FROM USERS
 
--- SELECT * FROM Detalle_Conceptos WHERE concepto_id = 1
--- SELECT * FROM Conceptos WHERE oportunidad_id = 7
+-- delete el usuario con username Jorge
+-- DELETE FROM Users WHERE username = 'Jorge'
 
--- DELETE FROM Oportunidades WHERE id = 5
+-- SELECT * FROM Detalle_Conceptos WHERE concepto_id = 1
+-- SELECT * FROM Conceptos
+
+-- SELECT * FROM Oportunidades
+-- SELECT * FROM Conceptos
+-- SELECT * FROM Detalle_Conceptos
+
+
+-- DELETE FROM Detalle_Conceptos
+-- DELETE FROM Conceptos
+-- DELETE FROM Oportunidades
+
+-- DELETE FROM Oportunidades where nombre_op = 'OpPrueba'
+
+-- DROP TABLE Sesiones
+
+-- SELECT * FROM Sesiones
+
+-- SELECT * FROM Clientes
+-- DELETE FROM LicenciasSAP
+
+-- SELECT * FROM LicenciasSAP
+
+-- DROP TABLE LicenciasSAP
+-- DROP TABLE LicenciasSAPPriceRange
+-- SELECT * FROM LicenciasSAPPriceRange
+
+-- ('7003221', 'SAP Business One Support (indirect)', 'On-Premise', 'Support', '1', 'MSRP', 1000000.00, 'Year', NULL, 1, NULL),
+-- ('7011042', 'SAP Business One Support (direct)', 'On-Premise', 'Support', '1', 'Contract Price', 1800000.00, 'Year', NULL, 1, NULL);
+
+-- INSERT INTO LicenciasSAP (id, name, type, user_type, sales_unit, metric, fee_type, db_engine)
+-- VALUES
+-- ('7002299', 'SAP Business One Professional User', 'On-Premise', 'Named User', '1', 'Users', 'One-time', NULL),
+-- ('7018121', 'SAP Business One Limited User', 'On-Premise', 'Named User', '1', 'Users', 'One-time', NULL),
+-- ('7011026', 'SAP Business One Starter Package User', 'On-Premise', 'Named User', '1', 'Users', 'One-time', NULL),
+-- ('7015819', 'SAP Business One Indirect Access, user-based', 'On-Premise', 'Named User', '1', 'Users', 'One-time', NULL),
+-- ('7018662', 'SAP Business One Mobile Application User', 'On-Premise', 'Named User', '1', 'Users', 'One-time', NULL),
+-- ('7020176', 'SAP Business One Indirect access by non-employees', 'On-Premise', 'Named User', '1', 'Instances', 'One-time', NULL),
+-- ('7018122', 'SAP B1 Limited to SAP B1 Professional User', 'On-Premise', 'Named User', '1', 'Users', 'One-time', NULL),
+-- ('7011027', 'SAP B1 Starter Package User to SAP B1 Professional User', 'On-Premise', 'Named User', '1', 'Users', 'One-time', NULL),
+-- ('7018123', 'SAP B1 Starter Package User to SAP B1 Limited User', 'On-Premise', 'Named User', '1', 'Users', 'One-time', NULL),
+-- ('7012048', 'SAP Crystal Reports for SAP B1', 'On-Premise', 'Product Option', '1', 'Users', 'One-time', NULL),
+-- ('7016656', 'SAP Customer Checkout', 'On-Premise', 'Product Option', '1', 'Devices', 'One-time', NULL),
+-- ('7018149', 'SAP Business One Engine for SAP HANA', 'On-Premise', 'Database', '64', 'GB of Memory', 'One-time', 'HANA'),
+-- ('7016059', 'Microsoft SQL Standard edition (User based)', 'On-Premise', 'Database', '1', 'Users', 'One-time', 'SQL'),
+-- ('7016060', 'Microsoft SQL Standard edition (Core based)', 'On-Premise', 'Database', '2', 'Cores', 'One-time', 'SQL'),
+-- ('8005859', 'SAP Business One Cloud Starter Package, partner-hosted', 'On-Cloud', 'Partner Hosted Option', '1', 'Users', 'Month', NULL),
+-- ('8005860', 'SAP Business One Cloud Professional, partner-hosted', 'On-Cloud', 'Partner Hosted Option', '1', 'Users', 'Month', NULL),
+-- ('8005861', 'SAP Business One Cloud Limited, partner-hosted', 'On-Cloud', 'Partner Hosted Option', '1', 'Users', 'Month', NULL),
+-- ('8005862', 'SAP Business One Cloud Mobile App, partner-hosted', 'On-Cloud', 'Partner Hosted Option', '1', 'Users', 'Month', NULL),
+-- ('8005863', 'SAP Business One Cloud Indirect Access, user-based, partner-hosted option', 'On-Cloud', 'Partner Hosted Option', '1', 'Users', 'Month', NULL),
+-- ('8008002', 'SAP Business One Cloud Indirect access by non-employees, partner-hosted option', 'On-Cloud', 'Partner Hosted Option', '1', 'Users', 'Month', NULL),
+-- ('8007970', 'SAP Business One Cloud Customer Checkout, partner-hosted option', 'On-Cloud', 'Partner Hosted Option', '1', 'Devices', 'Month', NULL);
+
+-- INSERT INTO LicenciasSAPPriceRange (id, licencia_id, from_range, to_range, price)
+-- VALUES
+-- (NEWID(), '7002299', 1, NULL, 2700.00),  -- SAP Business One Professional User (1+ users)
+-- (NEWID(), '7018121', 1, NULL, 1400.00),  -- SAP Business One Limited User (1+ users)
+-- (NEWID(), '7011026', 1, NULL, 1140.00),  -- SAP Business One Starter Package User (1+ users)
+-- (NEWID(), '7015819', 1, NULL, 250.00),   -- SAP Business One Indirect Access, user-based (1+ users)
+-- (NEWID(), '7018662', 1, NULL, 450.00),   -- SAP Business One Mobile Application User (1+ users)
+-- (NEWID(), '7020176', 1, NULL, 1500.00),  -- SAP Business One Indirect access by non-employees (1+ users)
+-- (NEWID(), '7018122', 1, NULL, 1350.00),  -- SAP B1 Limited to SAP B1 Professional User (1+ users)
+-- (NEWID(), '7011027', 1, NULL, 1610.00),  -- SAP B1 Starter Package User to SAP B1 Professional User (1+ users)
+-- (NEWID(), '7018123', 1, NULL, 360.00),   -- SAP B1 Starter Package User to SAP B1 Limited User (1+ users)
+-- (NEWID(), '7012048', 1, NULL, 479.00),   -- SAP Crystal Reports for SAP B1 (1+ users)
+-- (NEWID(), '7016656', 1, NULL, 990.00),   -- SAP Customer Checkout (1+ users)
+-- (NEWID(), '7018149', 1, NULL, 2000.00),  -- SAP Business One Engine for SAP HANA (64 GB of Memory)
+-- (NEWID(), '7016059', 1, NULL, 175.00),   -- Microsoft SQL Standard edition (User based)
+-- (NEWID(), '7016060', 1, NULL, 2700.00),  -- Microsoft SQL Standard edition (Core based)
+-- (NEWID(), '8005859', 1, NULL, 38.00),  -- SAP Business One Cloud Starter Package, partner-hosted (1-20 users)
+
+-- (NEWID(), '8005860', 1, 20, 91.00),  -- SAP Business One Cloud Professional, partner-hosted (1-20 users)
+-- (NEWID(), '8005860', 21, 50, 73.00), -- SAP Business One Cloud Professional, partner-hosted (21-50 users)
+-- (NEWID(), '8005860', 51, NULL, 64.00), -- SAP Business One Cloud Professional, partner-hosted (51+ users)
+
+-- (NEWID(), '8005861', 1, NULL, 47.00),  -- SAP Business One Cloud Limited, partner-hosted (1-20 users)
+-- (NEWID(), '8005862', 1, NULL, 15.00),  -- SAP Business One Cloud Mobile App, partner-hosted (1-20 users)
+-- (NEWID(), '8005863', 1, NULL, 8.00),  -- SAP Business One Cloud Indirect Access, user-based, partner-hosted option (1-20 users)
+-- (NEWID(), '8008002', 1, NULL, 50.00),  -- SAP Business One Cloud Indirect access by non-employees, partner-hosted option (1-20 users)
+-- (NEWID(), '8007970', 1, NULL, 33.00);  -- SAP Business One Cloud Customer Checkout, partner-hosted option (1-20 users)

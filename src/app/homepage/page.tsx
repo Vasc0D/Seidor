@@ -5,12 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
-import { useRouter } from 'next/navigation';
 import { toast, ToastContainer } from 'react-toastify';  // Importar Toastify
 import 'react-toastify/dist/ReactToastify.css';  // Importar los estilos de Toastify
 
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { it } from 'node:test';
 
 function HookUsage({
   value,
@@ -74,42 +72,28 @@ export default function Home() {
   const [isCreatingClient, setIsCreatingClient] = useState(false); // Estado para manejar el pop-up de crear cliente
   const [clientes, setClientes] = useState<any[]>([]); // Estado para manejar los clientes
   const [nombreOportunidad, setNombreOportunidad] = useState('');  // Nuevo estado para el nombre de la oportunidad  
-  const [cliente, setCliente] = useState({
-    nombre: '',
-    ruc: '',
-    sociedades: '',
-    empleados: ''
-  });
-  const [errores, setErrores] = useState({
-    nombre: '',
-    ruc: '',
-    sociedades: '',
-    empleados: ''
-  });
 
-  const router = useRouter();
-
-  // Obtener las oportunidades desde la base de datos
+  const token = sessionStorage.getItem('token'); // Obtener el token almacenado
+  
+  // Obtener las oportunidades
   useEffect(() => {
     const fetchOportunidades = async () => {
       try {
-        const response = await fetch('/api/oportunidades', {
-        credentials: 'include',
+        if (!token) {
+          console.error('No hay token de sesión');
+          return;
+        }
+
+        const response = await fetch('http://localhost:5015/api/oportunidades', {
+          method: 'GET',
+          credentials: 'include',
         });
-        
+    
         if (!response.ok) {
-          throw new Error('HTTP error! status: ${response.status}');
+          throw new Error('Failed to fetch opportunities');
         }
-
+    
         const data = await response.json();
-
-        // Verifica si el resultado es un array
-        if (Array.isArray(data)) {
-          setOportunidades(data);
-        } else {
-          console.error('La respuesta no es un array:', data);
-          setOportunidades([]);  // Inicializa a un array vacío en caso de error
-        }
   
         console.log('Datos obtenidos:', data);  // Para ver la estructura de datos
       } catch (error) {
@@ -119,86 +103,50 @@ export default function Home() {
     };
   
     fetchOportunidades();
-  }, []);  
+  }, []); 
 
   // Obtener la lista de clientes desde la base de datos
   useEffect(() => {
     const fetchClientes = async () => {
       try {
-        const response = await fetch('/api/clientes');
+        if (!token) {
+          throw new Error('No se encontró el token');
+        }
+  
+        const response = await fetch('http://localhost:5015/api/clientes', {
+          method: 'GET',
+          credentials: 'include', 
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to fetch clients');
+        }
+  
         const data = await response.json();
         setClientes(data);
       } catch (error) {
         console.error('Error al obtener clientes:', error);
       }
     };
-
+  
     fetchClientes();
-  }, []);
-
-  // Manejo de cambios en los campos del formulario de cliente
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
-    setCliente({ ...cliente, [field]: e.target.value });
-  };
-
-  const validarCampos = () => {
-    const nuevosErrores = {
-      nombre: cliente.nombre ? '' : 'Este campo es obligatorio',
-      ruc: cliente.ruc ? '' : 'Este campo es obligatorio',
-      sociedades: cliente.sociedades ? '' : 'Este campo es obligatorio',
-      empleados: cliente.empleados ? '' : 'Este campo es obligatorio',
-    };
-    setErrores(nuevosErrores);
-
-    // Si no hay errores, retorna verdadero
-    return !Object.values(nuevosErrores).some((error) => error !== '');
-  };
-
-  const agregarCliente = async () => {
-    if (validarCampos()) {
-      try {
-        // Lógica para enviar el nuevo cliente a la base de datos
-        const response = await fetch('/api/clientes', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(cliente)
-        });
-
-        if (response.ok) {
-          const nuevoCliente = await response.json();
-          setClientes([...clientes, nuevoCliente]);  // Agregar cliente a la tabla
-          setIsCreatingClient(false); // Cerrar el pop-up
-          setCliente({ nombre: '', ruc: '', sociedades: '', empleados: '' }); // Limpiar el formulario
-          
-          // Mostrar notificación de éxito
-          toast.success('Cliente creado correctamente');  
-        } else {
-          toast.error('Error al crear el cliente');  // Mostrar notificación de error
-        }
-      } catch (error) {
-        console.error('Error en la petición al crear cliente:', error);
-        toast.error('Error en la petición al crear cliente');  // Mostrar notificación de error
-      }
-    }
-
-    setCliente({ nombre: '', ruc: '', sociedades: '', empleados: '' });
-  };
+  }, []);  
 
   const [clienteSeleccionado, setClienteSeleccionado] = useState<any>(null);  // Estado para manejar el cliente seleccionado
   
   const [mostrarDetalles, setMostrarDetalles] = useState(false); // Para alternar entre la tabla y los detalles
 
-  const handleCrearOportunidad = (clienteId: number) => {
-    const cliente = clientes.find((c) => c.id === clienteId);  // Encuentra el cliente por ID
-    if (cliente) {
-      setClienteSeleccionado(cliente);  // Guardar el objeto completo del cliente
-      setMostrarDetalles(true);  // Cambiar el estado para mostrar detalles
-    } else {
-      console.error('Cliente no encontrado');
+  const handleCrearOportunidad = () => {
+    if (!clienteSeleccionado) {
+      console.error('No se ha seleccionado un cliente');
+      return;
     }
-  };  
+  
+    // Aquí haces lo necesario para crear la oportunidad
+    console.log('Creando oportunidad para el cliente:', clienteSeleccionado.nombre);
+  
+    setMostrarDetalles(true);  // Cambiar el estado para mostrar detalles
+  };   
 
   const volverAHome = () => {
     setMostrarDetalles(false);  // Ocultar los detalles y mostrar la tabla
@@ -210,11 +158,13 @@ export default function Home() {
     const { id } = oportunidad;
   
     try {
-      // Hacer la petición PATCH/PUT a la API
-      const response = await fetch(`/api/oportunidades/${id}`, {
-        method: 'PATCH',  // O 'PUT' dependiendo de cómo lo manejes en el backend
+      // Hacer la petición PATCH a la API
+      const response = await fetch(`http://localhost:5015/api/oportunidades/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,  // Añadir el token en los headers
         },
         body: JSON.stringify({ estado: nuevoEstado }),
       });
@@ -232,10 +182,19 @@ export default function Home() {
       console.error('Error en la petición:', error);
     }
   };  
-
+  `` 
   const handleEditarOportunidad = async (id: number) => {
     try {
-      const response = await fetch(`/api/oportunidades/${id}`);
+      const response = await fetch(`http://localhost:5015/api/oportunidades/${id}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,  // Añadir el token en los headers
+          'Content-Type': 'application/json',
+          'Origin': 'http://localhost:3000',
+        },
+      });
+  
       const data = await response.json();
   
       if (!response.ok) {
@@ -554,17 +513,6 @@ export default function Home() {
     },
   ];
 
-  // Función que trae los datos del cliente precargados
-  useEffect(() => {
-    const datosCliente = JSON.parse(localStorage.getItem('cliente') || '{}');
-    setCliente({
-      nombre: datosCliente.nombre || 'Nombre de Cliente',
-      ruc: datosCliente.ruc || '1234567890',
-      sociedades: datosCliente.sociedades || '2',
-      empleados: datosCliente.empleados || '10',
-    });
-  }, []);
-
   // Filtrar licencias según la base de datos seleccionada (SQL o Hana)
   const filtrarLicenciasPorBD = (licencias: typeof licenciasSAP, bd: string) => {
     return licencias.map((grupo) => {
@@ -858,7 +806,7 @@ export default function Home() {
     const totalVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.totalVenta, 0);
     const costoVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.costoVenta, 0);
     const margenVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.margenVenta, 0);
-  
+
     try {
       const nuevaOportunidad = {
         cliente_id: clienteSeleccionado.id,
@@ -866,23 +814,26 @@ export default function Home() {
         total_venta: totalVentaGeneral,
         costo_venta: costoVentaGeneral,
         margen_venta: margenVentaGeneral,
-        estado: 'Pendiente',  // Puedes definir un estado inicial
+        estado: 'Pendiente',  // Estado inicial
         itemsCotizacion: itemsCotizacion,
       };
-  
-      const response = await fetch('/api/oportunidades', {
+
+      // Realizar la petición al backend Flask
+      const response = await fetch('http://localhost:5015/api/oportunidades', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(nuevaOportunidad),
       });
-  
+
+      // Manejar la respuesta del servidor
       if (response.ok) {
         const data = await response.json();
-        toast.success(data.message);
-        setMostrarDetalles(false);
+        toast.success(data.message);  // Mostrar notificación de éxito
+        setMostrarDetalles(false);    // Cerrar los detalles
       } else {
         const error = await response.json();
         toast.error(error.error || 'Error al crear la oportunidad');
@@ -891,7 +842,7 @@ export default function Home() {
       console.error('Error al crear la oportunidad:', error);
       toast.error('Error al crear la oportunidad');
     }
-  };  
+  };
 
   // Función para calcular los totales de venta, costo y margen
   const calcularTotalesGenerales = () => {
@@ -980,64 +931,6 @@ export default function Home() {
             </Table>
             {/* Botones para crear cliente y crear oportunidad */}
             <div className="mt-6 flex flex-col items-end space-y-4">
-              {/* Crear Cliente */}
-              <Dialog open={isCreatingClient} onOpenChange={setIsCreatingClient}>
-                <DialogTrigger asChild>
-                  <Button className="bg-blue-500 text-white">Crear Cliente</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Agregar Cliente</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Nombre</label>
-                      <Input
-                        value={cliente.nombre}
-                        onChange={(e) => handleInputChange(e, 'nombre')}
-                        placeholder="Nombre..."
-                        className={errores.nombre ? 'border-red-500' : ''}
-                      />
-                      {errores.nombre && <p className="text-red-500 text-xs">{errores.nombre}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">RUC</label>
-                      <Input
-                        value={cliente.ruc}
-                        onChange={(e) => handleInputChange(e, 'ruc')}
-                        placeholder="RUC..."
-                        className={errores.ruc ? 'border-red-500' : ''}
-                      />
-                      {errores.ruc && <p className="text-red-500 text-xs">{errores.ruc}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">N° de Sociedades</label>
-                      <Input
-                        value={cliente.sociedades}
-                        onChange={(e) => handleInputChange(e, 'sociedades')}
-                        placeholder="N° de Sociedades..."
-                        className={errores.sociedades ? 'border-red-500' : ''}
-                      />
-                      {errores.sociedades && <p className="text-red-500 text-xs">{errores.sociedades}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Empleados</label>
-                      <Input
-                        value={cliente.empleados}
-                        onChange={(e) => handleInputChange(e, 'empleados')}
-                        placeholder="N° de empleados..."
-                        className={errores.empleados ? 'border-red-500' : ''}
-                      />
-                      {errores.empleados && <p className="text-red-500 text-xs">{errores.empleados}</p>}
-                    </div>
-                  </div>
-
-                  {/* Botón para crear el cliente */}
-                  <div className="flex justify-end mt-4">
-                    <Button onClick={agregarCliente} className="bg-blue-500 text-white">Crear</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
               {/* Crear Oportunidad */}
               <Dialog>
                 <DialogTrigger asChild>
@@ -1053,7 +946,7 @@ export default function Home() {
                       className="w-full border rounded-md p-2"
                       value={clienteSeleccionado?.id || ''}
                       onChange={(e) => {
-                        const selectedCliente = clientes.find(c => c.id === Number(e.target.value));  
+                        const selectedCliente = clientes.find(c => c.id === e.target.value);  
                         setClienteSeleccionado(selectedCliente || null); 
                       }}
                     >
@@ -1074,7 +967,7 @@ export default function Home() {
                     />
 
                     {/* Botón para crear la oportunidad */}
-                    <Button onClick={() => handleCrearOportunidad(clienteSeleccionado.id)} className="bg-green-500 text-white">
+                    <Button onClick={handleCrearOportunidad} className="bg-green-500 text-white">
                       Crear
                     </Button>
                   </div>
