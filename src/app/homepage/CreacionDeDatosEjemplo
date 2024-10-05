@@ -117,3 +117,108 @@
 -- (NEWID(), '8005863', 1, NULL, 8.00),  -- SAP Business One Cloud Indirect Access, user-based, partner-hosted option (1-20 users)
 -- (NEWID(), '8008002', 1, NULL, 50.00),  -- SAP Business One Cloud Indirect access by non-employees, partner-hosted option (1-20 users)
 -- (NEWID(), '8007970', 1, NULL, 33.00);  -- SAP Business One Cloud Customer Checkout, partner-hosted option (1-20 users)
+
+-- INSERT INTO LicenciasSeidor (id, name, user_type, fee_type)
+-- VALUES
+-- ('001', 'Localización Fiscal Peruana', 'Horizontal', 'One-time'),
+-- ('002', 'AddOn Cuentas Destino', 'Horizontal', 'One-time'),
+-- ('003', 'AddOn Numeración Fiscal', 'Horizontal', 'One-time'),
+-- ('004', 'AddOn Pagos Masivos', 'Horizontal', 'One-time'),
+-- ('005', 'Validador SUNAT (Ruc y Tipo de Cambio)', 'Horizontal', 'x cada 2,000 Consultas'),
+-- ('006', 'AddOn de Letras', 'Horizontal', 'One-time'),
+-- ('007', 'AddOn de Facturas Negociables', 'Horizontal', 'One-time'),
+-- ('008', 'Middleware Facturación Electrónica', 'Horizontal', 'x cada 5 Razones Sociales'),
+-- ('009', 'Middleware Retenciones Electrónica', 'Horizontal', 'x cada 5 Razones Sociales'),
+-- ('010', 'Middleware Percepciones Electrónica', 'Horizontal', 'x cada 5 Razones Sociales'),
+-- ('011', 'Middleware Guías de Remisión Electrónicas', 'Horizontal', 'x cada 5 Razones Sociales'),
+-- ('012', 'AddOn de Provisión de Gastos', 'Horizontal', 'One-time'),
+-- ('013', 'AddOn Extractor de Pedidos B2B', 'Horizontal', 'One-time'),
+-- ('014', 'Intercompany Seidor', 'Horizontal', 'One-time'),
+-- ('015', 'Aplicación Mobile Seidor', 'Horizontal', 'Usuarios Ilimitados'),
+-- ('016', 'Portal Web Caja Chica / Entregas a Rendir (SICER)', 'Horizontal', 'Usuarios Ilimitados'),
+-- ('017', 'Portal Web de Requerimientos', 'Horizontal', 'Usuarios Ilimitados'),
+-- ('018', 'Web Reporting', 'Horizontal', 'One-time'),
+-- -- Verticales SAP Business One
+-- ('019', 'AddOn de Lotes y Ubicaciones', 'Vertical', 'One-time'),
+-- ('020', 'AddOn de Transporte y Distribución', 'Vertical', 'One-time'),
+-- ('021', 'AddOn de Manifiesto de Transporte', 'Vertical', 'One-time'),
+-- ('022', 'AddOn de Bitácora de Importaciones', 'Vertical', 'One-time'),
+-- ('023', 'AddOn de Mantenimiento de Equipos', 'Vertical', 'One-time'),
+-- ('024', 'Addon de Inmobiliaria Seidor', 'Vertical', 'One-time'),
+-- ('025', 'Addon de Educación Seidor', 'Vertical', 'One-time'),
+-- ('026', 'Portal Web Proveedores', 'Vertical', 'Usuarios Ilimitados'),
+-- ('027', 'Receptores Electrónicos', 'Vertical', 'One-time'),
+-- ('028', 'Solución E-Commerce', 'Vertical', 'One-time');
+
+
+
+
+-- DROP TABLE LicenciasSeidorTipo;
+
+
+
+
+
+-- INSERT INTO LicenciasSeidorTipo (id, licencia_id, type, price)
+-- VALUES
+-- -- Precios para On-Premise
+-- (NEWID(), '001', 'On-Premise', 5000.00),
+-- (NEWID(), '002', 'On-Premise', 1500.00),
+-- (NEWID(), '003', 'On-Premise', 5000.00),
+-- (NEWID(), '004', 'On-Premise', 2500.00),
+-- (NEWID(), '005', 'On-Premise', 2500.00),
+-- (NEWID(), '006', 'On-Premise', 5000.00),
+-- (NEWID(), '007', 'On-Premise', 5000.00),
+-- (NEWID(), '008', 'On-Premise', 2000.00),
+-- (NEWID(), '009', 'On-Premise', 1500.00),
+-- (NEWID(), '010', 'On-Premise', 1500.00),
+-- (NEWID(), '011', 'On-Premise', 1500.00),
+-- (NEWID(), '012', 'On-Premise', 2500.00),
+-- (NEWID(), '013', 'On-Premise', 5000.00),
+-- (NEWID(), '014', 'On-Premise', 5000.00),
+-- (NEWID(), '015', 'On-Premise', 5000.00),
+-- (NEWID(), '016', 'On-Premise', 5000.00),
+-- (NEWID(), '017', 'On-Premise', 5000.00),
+-- (NEWID(), '018', 'On-Premise', 3000.00),
+-- -- Precios para Verticales SAP Business One
+-- (NEWID(), '019', 'On-Premise', 5000.00),
+-- (NEWID(), '020', 'On-Premise', 1500.00),
+-- (NEWID(), '021', 'On-Premise', 1500.00),
+-- (NEWID(), '022', 'On-Premise', 3500.00),
+-- (NEWID(), '023', 'On-Premise', 5000.00),
+-- (NEWID(), '024', 'On-Premise', 5000.00),
+-- (NEWID(), '025', 'On-Premise', 5000.00),
+-- (NEWID(), '026', 'On-Premise', 5000.00),
+-- (NEWID(), '027', 'On-Premise', 5000.00),
+-- (NEWID(), '028', 'On-Premise', 5000.00),
+
+-- -- Precios para On-Cloud (mismos IDs de licencia pero con diferentes precios)
+-- (NEWID(), '001', 'On-Cloud', 5100.00),  -- Localización Fiscal Peruana On-Cloud
+-- (NEWID(), '002', 'On-Cloud', 1550.00),  -- AddOn Cuentas Destino On-Cloud
+-- (NEWID(), '003', 'On-Cloud', 5200.00),  -- AddOn Numeración Fiscal On-Cloud
+-- (NEWID(), '004', 'On-Cloud', 2600.00),  -- AddOn Pagos Masivos On-Cloud
+-- (NEWID(), '005', 'On-Cloud', 2600.00),  -- Validador SUNAT (Ruc y Tipo de Cambio) On-Cloud
+-- (NEWID(), '006', 'On-Cloud', 5100.00),  -- AddOn de Letras On-Cloud
+-- (NEWID(), '007', 'On-Cloud', 5100.00),  -- AddOn de Facturas Negociables On-Cloud
+-- (NEWID(), '008', 'On-Cloud', 2100.00),  -- Middleware Facturación Electrónica On-Cloud
+-- (NEWID(), '009', 'On-Cloud', 1600.00),  -- Middleware Retenciones Electrónica On-Cloud
+-- (NEWID(), '010', 'On-Cloud', 1600.00),  -- Middleware Percepciones Electrónica On-Cloud
+-- (NEWID(), '011', 'On-Cloud', 1600.00),  -- Middleware Guías de Remisión Electrónicas On-Cloud
+-- (NEWID(), '012', 'On-Cloud', 2600.00),  -- AddOn de Provisión de Gastos On-Cloud
+-- (NEWID(), '013', 'On-Cloud', 5100.00),  -- AddOn Extractor de Pedidos B2B On-Cloud
+-- (NEWID(), '014', 'On-Cloud', 5100.00),  -- Intercompany Seidor On-Cloud
+-- (NEWID(), '015', 'On-Cloud', 5100.00),  -- Aplicación Mobile Seidor On-Cloud
+-- (NEWID(), '016', 'On-Cloud', 5100.00),  -- Portal Web Caja Chica / Entregas a Rendir (SICER) On-Cloud
+-- (NEWID(), '017', 'On-Cloud', 5100.00),  -- Portal Web de Requerimientos On-Cloud
+-- (NEWID(), '018', 'On-Cloud', 3100.00),  -- Web Reporting On-Cloud
+-- -- Precios para Verticales SAP Business One On-Cloud
+-- (NEWID(), '019', 'On-Cloud', 5100.00),  -- AddOn de Lotes y Ubicaciones On-Cloud
+-- (NEWID(), '020', 'On-Cloud', 1550.00),  -- AddOn de Transporte y Distribución On-Cloud
+-- (NEWID(), '021', 'On-Cloud', 1550.00),  -- AddOn de Manifiesto de Transporte On-Cloud
+-- (NEWID(), '022', 'On-Cloud', 3600.00),  -- AddOn de Bitácora de Importaciones On-Cloud
+-- (NEWID(), '023', 'On-Cloud', 5100.00),  -- AddOn de Mantenimiento de Equipos On-Cloud
+-- (NEWID(), '024', 'On-Cloud', 5100.00),  -- Addon de Inmobiliaria Seidor On-Cloud
+-- (NEWID(), '025', 'On-Cloud', 5100.00),  -- Addon de Educación Seidor On-Cloud
+-- (NEWID(), '026', 'On-Cloud', 5100.00),  -- Portal Web Proveedores On-Cloud
+-- (NEWID(), '027', 'On-Cloud', 5100.00),  -- Receptores Electrónicos On-Cloud
+-- (NEWID(), '028', 'On-Cloud', 5100.00);  -- Solución E-Commerce On-Cloud

@@ -1,11 +1,19 @@
 import { useState } from 'react';
 import LicenciasSAPTable from './LicenciasSAP';
+import LicenciasSeidorTable from './LicenciasSeidor';
+import CrearConceptoModal from './CrearConceptoModal';
 
 const Conceptos = () => {
   const [tipoConcepto, setTipoConcepto] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false); // Para controlar el modal
 
   const handleTipoConceptoChange = (tipo: string) => {
     setTipoConcepto(tipo);
+  };
+
+  const handleCreateConcept = (conceptType: string) => {
+    console.log('Concepto creado:', conceptType);
+    // Aquí puedes implementar la lógica para crear el concepto (por ejemplo, abrir otro modal o enviar la solicitud al backend)
   };
 
   return (
@@ -32,10 +40,30 @@ const Conceptos = () => {
       {tipoConcepto === 'LicenciasSAP' && (
         <LicenciasSAPTable />
       )}
-{/* 
+
       {tipoConcepto === 'LicenciasSeidor' && (
-        // <LicenciasSeidorTable />
-      )} */}
+        <LicenciasSeidorTable />
+      )}
+
+      {/* espacio para el botón flotante */}
+      <div className='h-24'></div>
+
+      {/* Botón para crear un concepto, alineado a la derecha y al final */}
+      <div className="absolute bottom-0 right-0 p-4">
+        <button 
+          onClick={() => setShowModal(true)}
+          className="bg-blue-500 text-white px-4 py-2 mb-4 rounded shadow-lg">
+          Crear Concepto
+        </button>
+      </div>
+
+      {/* Modal para crear concepto */}
+      <CrearConceptoModal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+        onCreateConcept={handleCreateConcept} 
+      />
+
     </div>
   );
 };

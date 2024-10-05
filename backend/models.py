@@ -94,7 +94,27 @@ class LicenciasSAPPriceRange(db.Model):
     licencia_id = db.Column(db.String(255), db.ForeignKey('LicenciasSAP.id'), nullable=False)  # Código de la licencia
     from_range = db.Column(db.Numeric(10, 2), nullable=False)  # Rango de precios desde
     to_range = db.Column(db.Numeric(10, 2), nullable=True)  # Rango de precios hasta
-    price = db.Column(db.Numeric(10, 2), nullable=False)  # Precio
+    price = db.Column(db.Numeric(10, 2), nullable=False, default='USD')  # Precio
 
     def __repr__(self):
         return f'<LicenciasSAPPriceRange {self.licencia_id}>'
+    
+class LicenciasSeidor(db.Model):
+    __tablename__ = 'LicenciasSeidor'
+    id = db.Column(db.String(255), primary_key=True, nullable=False)  # Código de la licencia
+    name = db.Column(db.String(255), nullable=False)  # Nombre de la licencia
+    user_type = db.Column(db.String(100), nullable=False)  # Tipo de licencia (Horizontal, Vertical)
+    fee_type = db.Column(db.String(50), nullable=False)  # Tipo de tarifa (One-time, x cada N usuarios)
+    
+    def __repr__(self):
+        return f'<LicenciaSeidor {self.name}>'
+
+class LicenciasSeidorTipo(db.Model):
+    __tablename__ = 'LicenciasSeidorTipo'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)
+    licencia_id = db.Column(db.String(255), db.ForeignKey('LicenciasSeidor.id'), nullable=False)  # Relación con la tabla LicenciasSeidor
+    type = db.Column(db.String(50), nullable=False)  # On-Premise o On-Cloud
+    price = db.Column(db.Numeric(10, 2), nullable=False)  # Precio de la licencia
+    
+    def __repr__(self):
+        return f'<LicenciaSeidorTipo {self.licencia_id} - {self.type}>'
