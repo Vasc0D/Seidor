@@ -43,7 +43,6 @@
 -- SELECT * FROM Conceptos
 -- SELECT * FROM Detalle_Conceptos
 
-
 -- DELETE FROM Detalle_Conceptos
 -- DELETE FROM Conceptos
 -- DELETE FROM Oportunidades
@@ -149,14 +148,6 @@
 -- ('026', 'Portal Web Proveedores', 'Vertical', 'Usuarios Ilimitados'),
 -- ('027', 'Receptores Electrónicos', 'Vertical', 'One-time'),
 -- ('028', 'Solución E-Commerce', 'Vertical', 'One-time');
-
-
-
-
--- DROP TABLE LicenciasSeidorTipo;
-
-
-
 
 
 -- INSERT INTO LicenciasSeidorTipo (id, licencia_id, type, price)

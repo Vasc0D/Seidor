@@ -55,6 +55,7 @@ class Concepto(db.Model):
     oportunidad_id = db.Column(db.String(36), db.ForeignKey('Oportunidades.id'), nullable=False)  # UUID FK
     nombre_concepto = db.Column(db.String(255), nullable=False)
     base_datos = db.Column(db.String(50), nullable=True)
+    solution = db.Column(db.String(50), nullable=True)
     total_venta = db.Column(db.Numeric(10, 2), default=0)
     costo_venta = db.Column(db.Numeric(10, 2), default=0)
     margen_venta = db.Column(db.Numeric(10, 2), default=0)

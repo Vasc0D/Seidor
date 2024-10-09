@@ -75,29 +75,29 @@ export default function Home() {
 
   const token = sessionStorage.getItem('token'); // Obtener el token almacenado
   
-  // Obtener las oportunidades
-  useEffect(() => {
-    const fetchOportunidades = async () => {
-      try {
-        const response = await fetch('http://localhost:5015/api/oportunidades', {
-            method: 'GET',
-            credentials: 'include',
-          });
+  // Función para obtener las oportunidades
+  const fetchOportunidades = async () => {
+    try {
+      const response = await fetch('http://localhost:5015/api/oportunidades', {
+        method: 'GET',
+        credentials: 'include',
+      });
 
-        const data = await response.json(); 
-        
-        if (response.ok) {
-            setOportunidades(data);
-        } else {
-            console.error('Error al cargar oportunidades:', data.message);
-        }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-  
+      const data = await response.json();
+      if (response.ok) {
+        setOportunidades(data); // Actualiza el estado con las nuevas oportunidades
+      } else {
+        console.error('Error al cargar oportunidades:', data.message);
+      }
+    } catch (error) {
+      console.error('Error al obtener oportunidades:', error);
+    }
+  };
+
+  // useEffect que usa fetchOportunidades para obtener las oportunidades al montar el componente
+  useEffect(() => {
     fetchOportunidades();
-  }, []); 
+  }, []);
 
   // Obtener la lista de clientes desde la base de datos
   useEffect(() => {
@@ -188,13 +188,15 @@ export default function Home() {
       if (!response.ok) {
         throw new Error(data.error || 'Error al obtener la oportunidad');
       }
-  
-      setOportunidadEnEdicion(data.oportunidad);
+      console.log('Data', data);
+      setOportunidadEnEdicion(data.id);
+      console.log('Data', data.id);
       setClienteSeleccionado(data.cliente);
       console.log('Cliente seleccionado:', data.cliente);
       setItemsCotizacion(data.itemsCotizacion);  // Aquí colocas los datos de la cotización
-  
       console.log('Items Cotización:', data.itemsCotizacion);  // Agrega esto para ver los datos
+      setNombreOportunidad(data.nombre_op);
+      console.log('Nombre Oportunidad:', data.nombre_op);
       setMostrarDetalles(true);
     } catch (error) {
       console.error('Error al editar la oportunidad:', error);
@@ -242,6 +244,9 @@ export default function Home() {
 
   const [oportunidadEnEdicion, setOportunidadEnEdicion] = useState<any>(null); // Estado para la oportunidad que se está editando
 
+  const [licenciasSAP, setLicenciasSAP] = useState<any[]>([]);  // Estado para las licencias SAP
+  const [licenciasSeidor, setLicenciasSeidor] = useState<any[]>([]);  // Estado para las licencias Seidor
+
   // Función para manejar el despliegue/colapso
   const toggleDespliegue = (index: number) => {
     setDesplegados(prev => 
@@ -258,263 +263,72 @@ export default function Home() {
     'Infraestructura': ['Servidores', 'Almacenamiento', 'Redes'],
   };
 
-  const licenciasSAP = [
-    {
-      categoria: "SAP Business One Usuarios Nombrados",
-      licencias: [
-        { 
-          tipo: "SAP Business One Professional User",  
-          salesUnit: 1,
-          metricas: "Users",
-          costoOP: 2700, 
-          costoOC: 101,
-          parametro: "Licencia de Unica Vez"
-        },
-        { 
-          tipo: "SAP Business One Limited User", 
-          salesUnit: 1,
-          metricas: "Users",
-          costoOP: 1400, 
-          costoOC: 57,
-          parametro: "Licencia de Unica Vez"
-        },
-        { 
-          tipo: "SAP Business One Indirect Access User",  
-          salesUnit: 1,
-          metricas: "Users",
-          costoOP: 250, 
-          costoOC: 8,
-          parametro: "Licencia de Unica Vez"
-        },
-        { 
-          tipo: "SAP Business One Mobile Application User", 
-          salesUnit: 1,
-          metricas: "Users",
-          costoOP: 450, 
-          costoOC: 15,
-          parametro: "Licencia de Unica Vez"
-        },
-        { 
-          tipo: "SAP B1 Limited to SAP B1 Professional User", 
-          salesUnit: 1,
-          metricas: "Users",
-          costoOP: 1350, 
-          costoOC: 0,
-          parametro: "Licencia de Unica Vez"
-        },
-      ],
-    },
-    {
-      categoria: "SAP Business Databases",
-      licencias: [
-        { 
-          tipo: "SAP Business One Engine for SAP HANA", 
-          salesUnit: 64,
-          metricas: "GB of memory",
-          costoOP: 2000, 
-          costoOC: 0,
-          parametro: "Licencia de Unica Vez"
-        },
-        { 
-          tipo: "Microsoft SQL Standard edition (User based)", 
-          salesUnit: 1,
-          metricas: "Users",
-          costoOP: 175, 
-          costoOC: 0,
-          parametro: "Licencia de Unica Vez"
-        },
-      ],
-    },
-  ];  
+  useEffect(() => {
+    // Función para obtener las licencias SAP
+    const fetchLicenciasSAP = async () => {
+      try {
+        const response = await fetch('http://localhost:5015/api/licencias_sap', { 
+            method: 'GET',
+            credentials: 'include',
+        });
 
-  const licenciasSeidor = [
-    {
-      categoria: "Horizontales SAP Business One",
-      licencias: [
-        { 
-          tipo: "Office on the web Frame", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn Cuentas Destino", 
-          costoOP: 1500, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn Numeración Fiscal", 
-          costoOP: 2500, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn Pagos Masivos", 
-          costoOP: 2500, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "Validador SUNAT (Ruc y Tipo de Cambio)", 
-          costoOP: 2500, 
-          costoOC: 0,
-          parametro: "x cada 2000 Consultas"
-        },
-        { 
-          tipo: "AddOn de Letras", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn de Facturas Negociables", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "Middleware Facturación Electrónica", 
-          costoOP: 2000, 
-          costoOC: 100,
-          parametro: "x cada 5 Razones Sociales"
-        },
-        { 
-          tipo: "Middleware Retenciones Electrónicas", 
-          costoOP: 1500, 
-          costoOC: 100,
-          parametro: "x cada 5 Razones Sociales"
-        },
-        { 
-          tipo: "Middleware Percepciones Electrónicas", 
-          costoOP: 1500, 
-          costoOC: 0,
-          parametro: "x cada 5 Razones Sociales"
-        },
-        { 
-          tipo: "Middleware Guías de Remisión Electrónicas", 
-          costoOP: 1500, 
-          costoOC: 0,
-          parametro: "x cada 5 Razones Sociales"
-        },
-        { 
-          tipo: "AddOn de Provisión de Gastos", 
-          costoOP: 2500, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn Extractor de Pedidos B2B", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "Intercompany Seidor", 
-          costoOP: 2500, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "Aplicación Mobile Seidor", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Usuarios Ilimitados"
-        },
-        { 
-          tipo: "Portal Web Caja Chica / Entregas a Rendir (SICER)", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Usuarios Ilimitados"
-        },
-        { 
-          tipo: "Portal Web de Requerimientos", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Usuarios Ilimitados"
-        },
-        { 
-          tipo: "Web Reporting", 
-          costoOP: 3000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-    ],
-    },
-    {
-      categoria: "Verticales SAP Business One",
-      licencias: [
-        { 
-          tipo: "AddOn de Lotes y Ubicaciones", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn de Transporte y Distribución", 
-          costoOP: 1500, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn de Manifiesto de Transporte", 
-          costoOP: 3500, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn Bitácora de Importaciones", 
-          costoOP: 5000, 
-          costoOC: 250,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "AddOn de Mantenimiento de Equipos", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "Addon de Inmobiliaria Seidor", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "Addon de Educación Seidor", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Licencia de Única Vez"
-        },
-        { 
-          tipo: "Portal Web Proveedores", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Usuarios Ilimitados"
-        },
-        { 
-          tipo: "Reporteros Electrónicos", 
-          costoOP: 5000, 
-          costoOC: 0,
-          parametro: "Usuarios Ilimitados"
+        if (!response.ok) {
+            throw new Error('Error en la solicitud: ' + response.status);
         }
-    ],
-    },
-  ];
+
+        const data = await response.json();
+        setLicenciasSAP(data);
+      } catch (error) {
+        console.error('Error al obtener las licencias SAP:', error);
+      }
+    };
+
+    // Función para obtener las licencias Seidor
+    const fetchLicenciasSeidor = async () => {
+      try {
+        const response = await fetch('http://localhost:5015/api/licencias_seidor', { 
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            throw new Error('Error en la solicitud: ' + response.status);
+        }
+
+        const data = await response.json();
+        setLicenciasSeidor(data);
+      } catch (error) {
+        console.error('Error al obtener las licencias Seidor:', error);
+      }
+    };
+
+    // Llamar a las funciones
+    fetchLicenciasSAP();
+    fetchLicenciasSeidor();
+  }, []);
 
   // Filtrar licencias según la base de datos seleccionada (SQL o Hana)
-  const filtrarLicenciasPorBD = (licencias: typeof licenciasSAP, bd: string) => {
-    return licencias.map((grupo) => {
-      const licenciasFiltradas = grupo.licencias.filter((licencia) => {
-        if (bd === 'Hana' && licencia.tipo === 'Microsoft SQL Standard edition (User based)') {
-          return false; // Ocultar SQL licencias si la base de datos es HANA
+  const filtrarLicencias = (licencias: any[], bd: string, solution: string) => {
+    return licencias.filter((licencia) => {
+      // Filtrar según la base de datos (solo aplica a SAP)
+      if (licencia.user_type === 'Database') {
+        if (bd === 'Hana' && licencia.name.includes('SQL')) {
+          return false; // Ocultar SQL si se selecciona HANA
         }
-        if (bd === 'SQL' && licencia.tipo === 'SAP Business One Engine for SAP HANA') {
-          return false; // Ocultar HANA licencias si la base de datos es SQL
+        if (bd === 'SQL' && licencia.name.includes('HANA')) {
+          return false; // Ocultar HANA si se selecciona SQL
         }
-        return true; // Mostrar todas las demás licencias
-      });
-      return { ...grupo, licencias: licenciasFiltradas };
+      }
+  
+      // Filtrar según el tipo de licencia (On-Premise u On-Cloud)
+      if (solution === 'OP' && licencia.type !== 'On-Premise') {
+        return false; // Mostrar solo licencias On-Premise si se selecciona OP
+      }
+      if (solution === 'OC' && licencia.type !== 'On-Cloud') {
+        return false; // Mostrar solo licencias On-Cloud si se selecciona OC
+      }
+  
+      return true; // Mostrar todas las demás licencias que cumplen los filtros
     });
   };
 
@@ -524,23 +338,23 @@ export default function Home() {
     setMostrarModalLicencias(true); // Abrir el segundo pop-up
   };
 
-  const handleCantidadChange = (licencia: string, value: number) => {
+  const handleCantidadChange = (licenciaId: string, value: number) => {
     if (subtipoCotizacion === 'Licencias SAP') {
       setCantidadesLicenciasSAP((prev) => {
-        const newCantidades = { ...prev, [licencia]: isNaN(value) ? 0 : value };
+        const newCantidades = { ...prev, [licenciaId]: isNaN(value) ? 0 : value };
         console.log('Cantidades de licencias SAP actualizadas:', newCantidades);
         return newCantidades;
       });
     } else if (subtipoCotizacion === 'Licencias Seidor') {
       setCantidadesLicenciasSeidor((prev) => {
-        const newCantidades = { ...prev, [licencia]: isNaN(value) ? 0 : value };
+        const newCantidades = { ...prev, [licenciaId]: isNaN(value) ? 0 : value };
         console.log('Cantidades de licencias Seidor actualizadas:', newCantidades);
         return newCantidades;
       });
     }
-    
+  
     calcularSubtotales();
-  };
+  };  
   
   // Función para formatear números en el formato de moneda
   const formatNumber = (number: number) => {
@@ -555,94 +369,119 @@ export default function Home() {
     calcularSubtotales();
   }, [subtotalUsuario, subtotalBD, descuentoPorVolumen, cantidadesLicenciasSAP, cantidadesLicenciasSeidor, descuentoEspecial, descuentoEspecialPartner, solution]);  // Array de dependencias
   
-  // Función para calcular los subtotales y aplicar descuentos
-  const calcularSubtotales = () => {
-    let subtotalUsuarioTemp = 0;
-    let subtotalBDTemp = 0;
+  // Función para obtener el precio correcto de acuerdo a la solución (On-Premise o On-Cloud) y la cantidad seleccionada
+  const obtenerPrecio = (priceRanges: any[], cantidad: number) => {
+    const rango = priceRanges.find((rango) =>
+      (rango.from_range <= cantidad && (!rango.to_range || cantidad <= rango.to_range))
+    );
   
-    // Calcular subtotales dependiendo del subtipo de cotización
-    if (subtipoCotizacion === 'Licencias SAP') {
-      // Calcular subtotales para Licencias SAP
-      licenciasSAP.forEach((grupo) => {
-        grupo.licencias.forEach((licencia) => {
-          const cantidad = cantidadesLicenciasSAP[licencia.tipo] || 0;  // Usamos las cantidades de SAP
-          const costo = solution === 'OP' ? licencia.costoOP : licencia.costoOC;
-          const total = cantidad * costo;
-  
-          if (grupo.categoria.includes("Usuarios")) {
-            subtotalUsuarioTemp += total;
-          } else if (grupo.categoria.includes("Databases")) {
-            subtotalBDTemp += total;
-          }
-        });
-      });
-  
-      // Aplicar descuento por volumen solo si es SAP
-      const totalConBD = subtotalUsuarioTemp + subtotalBDTemp;
-      let descuento = 0;
-  
-      if (totalConBD > 300000) {
-        descuento = subtotalUsuarioTemp * 0.40;
-      } else if (totalConBD > 150000) {
-        descuento = subtotalUsuarioTemp * 0.30;
-      } else if (totalConBD > 30000) {
-        descuento = subtotalUsuarioTemp * 0.20;
-      } else if (totalConBD > 15000) {
-        descuento = subtotalUsuarioTemp * 0.10;
-      }
-  
-      if (subtotalUsuarioTemp === 0) {
-        setDescuentoPorVolumen(0);
-        setDescuentoPorVolumenPorcentaje(0);
-      } else {
-        setDescuentoPorVolumen(descuento);
-        setDescuentoPorVolumenPorcentaje((descuento / subtotalUsuarioTemp) * 100);
-      }
-  
-      const totalVentaTemp = (subtotalUsuarioTemp + subtotalBDTemp)
-        - (subtotalUsuarioTemp * (descuentoPorVolumenPorcentaje / 100))
-        - (subtotalUsuarioTemp * (descuentoEspecial / 100));
-  
-      setTotalVenta(totalVentaTemp);
+    return rango ? parseFloat(rango.price) : 0; // Asegúrate de devolver solo el precio
+  };
 
-      const A = subtotalUsuarioTemp + subtotalBD - (subtotalUsuarioTemp * descuentoPorVolumenPorcentaje / 100);
-      const B = subtotalUsuarioTemp - (subtotalUsuarioTemp * descuentoPorVolumenPorcentaje / 100);
-      const C = (B/2) + (B * (descuentoEspecialPartner/100));
-      const costoVentaTemp = A - C;
+  // Función para obtener el precio según el tipo (OP = On-Premise, OC = On-Cloud)
+  const obtenerPrecioPorTipo = (priceType: any[], solution: string) => {
+    const tipoSeleccionado = solution === 'OP' ? 'On-Premise' : 'On-Cloud';
+    const precio = priceType.find((p) => p.type === tipoSeleccionado);
+    return precio ? Number(precio.price) : 0;
+  };
 
-      setCostoVenta(costoVentaTemp);
-  
-      const margenVentaTemp = totalVentaTemp - costoVentaTemp;
-  
-      setMargenVenta(margenVentaTemp);
-    } 
-    else if (subtipoCotizacion === 'Licencias Seidor') {
-      // Calcular subtotales para Licencias Seidor
-      licenciasSeidor.forEach((grupo) => {
-        grupo.licencias.forEach((licencia) => {
-          const cantidad = cantidadesLicenciasSeidor[licencia.tipo] || 0;  // Usamos las cantidades de Seidor
-          const costo = solution === 'OP' ? licencia.costoOP : licencia.costoOC;
-          subtotalUsuarioTemp += cantidad * costo;
-        });
-      });
-  
-      // No aplicamos descuento por volumen en Seidor
+// Función para calcular los subtotales y aplicar descuentos
+const calcularSubtotales = () => {
+  let subtotalUsuarioTemp = 0;
+  let subtotalBDTemp = 0;
+
+  // Asegúrate de que las variables de descuento y solución estén inicializadas correctamente
+  const descuentoEspecialParsed = Number(descuentoEspecial) || 0;
+  const descuentoEspecialPartnerParsed = Number(descuentoEspecialPartner) || 0;
+  const descuentoPorVolumenParsed = Number(descuentoPorVolumenPorcentaje) || 0;
+
+  // Calcular subtotales dependiendo del subtipo de cotización
+  if (subtipoCotizacion === 'Licencias SAP') {
+    // Calcular subtotales para Licencias SAP
+    licenciasSAP.forEach((licencia) => {
+      const cantidad = cantidadesLicenciasSAP[licencia.id] || 0;  // Usamos las cantidades de SAP
+      const costo = solution === 'OP' ? obtenerPrecio(licencia.price_ranges, cantidad) : obtenerPrecio(licencia.price_ranges, cantidad);
+      const total = cantidad * costo;
+
+      // Identificar si es Named User o Database
+      if (licencia.user_type.includes('Named User')) {
+        subtotalUsuarioTemp += total;
+      } else if (licencia.user_type.includes('Database')) {
+        subtotalBDTemp += total;
+      } else if (licencia.user_type.includes('Partner Hosted Option')) {
+        subtotalUsuarioTemp += total;
+      } else if (licencia.user_type.includes('Product Option')) {
+        subtotalUsuarioTemp += total
+      }
+    });
+    console.log('Subtotal Usuario:', subtotalUsuarioTemp);
+    // Aplicar descuento por volumen solo si es SAP
+    const totalConBD = subtotalUsuarioTemp + subtotalBDTemp;
+    let descuentoPorVolumenTemp = 0;
+
+    if (totalConBD > 300000) {
+      descuentoPorVolumenTemp = subtotalUsuarioTemp * 0.40;
+    } else if (totalConBD > 150000) {
+      descuentoPorVolumenTemp = subtotalUsuarioTemp * 0.30;
+    } else if (totalConBD > 30000) {
+      descuentoPorVolumenTemp = subtotalUsuarioTemp * 0.20;
+    } else if (totalConBD > 15000) {
+      descuentoPorVolumenTemp = subtotalUsuarioTemp * 0.10;
+    }
+
+    // Actualizar descuentos por volumen
+    if (subtotalUsuarioTemp === 0) {
       setDescuentoPorVolumen(0);
       setDescuentoPorVolumenPorcentaje(0);
-  
-      // Para Seidor, el total de venta no incluye BD
-      const totalVentaTemp = subtotalUsuarioTemp - (subtotalUsuarioTemp * (descuentoEspecial / 100));
-      setTotalVenta(totalVentaTemp);
-  
-      // El costo de venta y margen en Seidor es más simple
-      setCostoVenta(0);  // No calculas el costo de venta en Seidor
-      setMargenVenta(totalVentaTemp);  // El margen es igual al total de venta en Seidor
+    } else {
+      setDescuentoPorVolumen(descuentoPorVolumenTemp);
+      setDescuentoPorVolumenPorcentaje((descuentoPorVolumenTemp / subtotalUsuarioTemp) * 100);
     }
-  
-    // Establecemos los subtotales de usuario y BD
-    setSubtotalUsuario(subtotalUsuarioTemp);
-    setSubtotalBD(subtotalBDTemp);
-  };  
+
+    // Calcular total de venta después de los descuentos
+    const totalVentaTemp = (subtotalUsuarioTemp + subtotalBDTemp)
+      - (subtotalUsuarioTemp * (descuentoPorVolumenParsed / 100))
+      - (subtotalUsuarioTemp * (descuentoEspecialParsed / 100));
+
+    setTotalVenta(totalVentaTemp);
+
+    // Calcular costo de venta
+    const A = subtotalUsuarioTemp + subtotalBDTemp - (subtotalUsuarioTemp * descuentoPorVolumenParsed / 100);
+    const B = subtotalUsuarioTemp - (subtotalUsuarioTemp * descuentoPorVolumenParsed / 100);
+    const C = (B / 2) + (B * (descuentoEspecialPartnerParsed / 100));
+    const costoVentaTemp = A - C;
+
+    setCostoVenta(costoVentaTemp);
+
+    // Calcular margen de venta
+    const margenVentaTemp = totalVentaTemp - costoVentaTemp;
+    setMargenVenta(margenVentaTemp);
+  } 
+  else if (subtipoCotizacion === 'Licencias Seidor') {
+    // Calcular subtotales para Licencias Seidor
+    licenciasSeidor.forEach((licencia) => {
+      const cantidad = cantidadesLicenciasSeidor[licencia.id] || 0;  // Usamos las cantidades de Seidor
+      const costo = obtenerPrecioPorTipo(licencia.price_type, solution);
+      subtotalUsuarioTemp += cantidad * costo;
+    });
+
+    // No aplicamos descuento por volumen en Seidor
+    setDescuentoPorVolumen(0);
+    setDescuentoPorVolumenPorcentaje(0);
+
+    // Para Seidor, el total de venta no incluye BD
+    const totalVentaTemp = subtotalUsuarioTemp - (subtotalUsuarioTemp * (descuentoEspecialParsed / 100));
+    setTotalVenta(totalVentaTemp);
+
+    // El costo de venta y margen en Seidor es más simple
+    setCostoVenta(0);  // No calculas el costo de venta en Seidor
+    setMargenVenta(totalVentaTemp);  // El margen es igual al total de venta en Seidor
+  }
+
+  // Establecemos los subtotales de usuario y BD
+  setSubtotalUsuario(subtotalUsuarioTemp);
+  setSubtotalBD(subtotalBDTemp);
+};
   
   // Función para resetear los campos de licencias
   const resetearCampos = () => {
@@ -677,65 +516,66 @@ export default function Home() {
   // Función para agregar un ítem a la cotización
   const agregarItemCotizacion = () => {
     const licenciasSeleccionadas = subtipoCotizacion === 'Licencias SAP' 
-      ? Object.entries(cantidadesLicenciasSAP).filter(([, cantidad]) => cantidad > 0).map(([licencia, cantidad]) => {
-          // Buscar la licencia en licenciasSAP
-          const licenciaObj = licenciasSAP.find(grupo =>
-            grupo.licencias.find(l => l.tipo === licencia)
-          )?.licencias.find(l => l.tipo === licencia);
-  
-          const costo = licenciaObj ? (solution === 'OP' ? licenciaObj.costoOP : licenciaObj.costoOC) : 0;
-  
+      ? Object.entries(cantidadesLicenciasSAP).filter(([, cantidad]) => cantidad > 0).map(([licenciaId, cantidad]) => {
+          // Buscar la licencia en licenciasSAP usando el id directamente
+          const licenciaObj = licenciasSAP.find(l => l.id === licenciaId);
+          console.log('Licencia:', licenciaObj);
+          
+          // Usar la función obtenerPrecio para determinar el costo basado en la cantidad
+          const costo = licenciaObj ? obtenerPrecio(licenciaObj.price_ranges, cantidad) : 0;
+
           return {
-            tipo: licencia,
+            tipo: licenciaObj.id,  // ID de la licencia
             cantidad,
             costo,
-            total: cantidad * costo,
+            total: cantidad * costo,  // Calcular el total basado en la cantidad y el costo
           };
         })
-      : Object.entries(cantidadesLicenciasSeidor).filter(([, cantidad]) => cantidad > 0).map(([licencia, cantidad]) => {
-          // Buscar la licencia en licenciasSeidor
-          const licenciaObj = licenciasSeidor.find(grupo =>
-            grupo.licencias.find(l => l.tipo === licencia)
-          )?.licencias.find(l => l.tipo === licencia);
-  
-          const costo = licenciaObj ? (solution === 'OP' ? licenciaObj.costoOP : licenciaObj.costoOC) : 0;
-  
+      : Object.entries(cantidadesLicenciasSeidor).filter(([, cantidad]) => cantidad > 0).map(([licenciaId, cantidad]) => {
+          // Buscar la licencia en licenciasSeidor usando el id directamente
+          const licenciaObj = licenciasSeidor.find(l => l.id === licenciaId);
+          
+          // Usar la función obtenerPrecioPorTipo para determinar el costo basado en On-Premise o On-Cloud
+          const costo = licenciaObj 
+            ? obtenerPrecioPorTipo(licenciaObj.price_types, solution) 
+            : 0;
+
           return {
-            tipo: licencia,
+            tipo: licenciaObj.id,  // Usar el nombre de la licencia o el ID si no hay nombre
             cantidad,
             costo,
-            total: cantidad * costo,
+            total: cantidad * costo,  // Calcular el total basado en la cantidad y el costo
           };
         });
-  
+    console.log('SOLUTION', solution);
     const nuevoItem = {
       tipoCotizacion: subtipoCotizacion,
-      baseDeDatos,
-      solution,
+      baseDeDatos, // Solo para SAP
+      solution,    // On-Premise o On-Cloud
       subtotalUsuario,
       subtotalBD,
       descuentoPorVolumen,
       totalVenta,
       costoVenta,
       margenVenta,
-      licenciasSeleccionadas,
+      licenciasSeleccionadas,  // Lista de licencias seleccionadas con tipo, cantidad, costo y total
     };
-  
+
     let nuevosItems;
     if (editingIndex !== null) {
       nuevosItems = [...itemsCotizacion];
-      nuevosItems[editingIndex] = nuevoItem;
+      nuevosItems[editingIndex] = nuevoItem;  // Reemplazar el item editado
     } else {
-      nuevosItems = [...itemsCotizacion, nuevoItem];
+      nuevosItems = [...itemsCotizacion, nuevoItem];  // Agregar un nuevo item a la cotización
     }
-  
-    setItemsCotizacion(nuevosItems);
-  
-    // Cerrar el modal de licencias y resetear campos
+
+    setItemsCotizacion(nuevosItems);  // Actualizar el estado de los items de cotización
+
+    // Cerrar el modal de licencias y resetear los campos
     setMostrarModalLicencias(false);
     resetearCampos();
     setSubtipoCotizacion('');
-  };  
+  };
 
   // Función para eliminar un ítem de la cotización
   const eliminarItemCotizacion = (index: number) => {
@@ -797,6 +637,7 @@ export default function Home() {
     console.log('Total Venta:', totalVentaGeneral);
     console.log('Costo Venta:', costoVentaGeneral);
     console.log('Margen Venta:', margenVentaGeneral);
+    console.log("Nombre oopr", nombreOportunidad);
     try {
       const nuevaOportunidad = {
         cliente_id: clienteSeleccionado.id,
@@ -808,21 +649,39 @@ export default function Home() {
         itemsCotizacion: itemsCotizacion,
       };
 
-      // Realizar la petición al backend Flask
-      const response = await fetch('http://localhost:5015/api/oportunidades', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(nuevaOportunidad),
-      });
+      let response;
+      let message;
+      // Si estamos editando (oportunidadEnEdicion tiene un id), entonces hacemos un PUT
+      if (oportunidadEnEdicion) {
+        response = await fetch(`http://localhost:5015/api/oportunidades/${oportunidadEnEdicion}`, {
+          method: 'PUT',  // PUT para editar
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(nuevaOportunidad),  // Actualizamos con los nuevos datos
+        });
+        message = 'Oportunidad actualizada con éxito';
+      } else {
+        // Si no hay id, estamos creando una nueva oportunidad
+        response = await fetch('http://localhost:5015/api/oportunidades', {
+          method: 'POST',  // POST para crear una nueva oportunidad
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(nuevaOportunidad),
+        });
+        message = 'Oportunidad creada con éxito';
+      }
 
       // Manejar la respuesta del servidor
       if (response.ok) {
         const data = await response.json();
-        toast.success(data.message);  // Mostrar notificación de éxito
+        toast.success(message);  // Mostrar notificación de éxito
         setMostrarDetalles(false);    // Cerrar los detalles
+
+        await fetchOportunidades();  // Actualizar la lista de oportunidades
       } else {
         const error = await response.json();
         toast.error(error.error || 'Error al crear la oportunidad');
@@ -843,20 +702,47 @@ export default function Home() {
 
   const handleBaseDeDatosChange = (value: string) => {
     setBaseDeDatos(value);
-
+  
+    // Crear una copia de las cantidades actuales
     const nuevasCantidades = {...cantidadesLicenciasSAP};
-
-    const basededatoslicencias = licenciasSAP.find(grupo => grupo.categoria === 'SAP Business Databases');
-
-    if (basededatoslicencias) {
-      basededatoslicencias.licencias.forEach(licencia => {
-        nuevasCantidades[licencia.tipo] = 0;
-      });
-    }
-
+  
+    // Filtrar licencias que son del tipo "Database"
+    const basededatoslicencias = licenciasSAP.filter(licencia => licencia.user_type === 'Database');
+  
+    // Reiniciar las cantidades de las licencias de base de datos según el tipo seleccionado
+    basededatoslicencias.forEach(licencia => {
+      if (value === 'SQL' && licencia.db_engine === 'SQL') {
+        nuevasCantidades[licencia.id] = 0;
+      } else if (value === 'Hana' && licencia.db_engine === 'HANA') {
+        nuevasCantidades[licencia.id] = 0;
+      }
+    });
+  
     setCantidadesLicenciasSAP(nuevasCantidades);
-    
-  }
+  }; 
+  
+  const handleSolutionChange = (newSolution: string) => {
+    // Actualizar la solución seleccionada
+    setSolution(newSolution);
+  
+    // Reiniciar las cantidades de licencias SAP y Seidor al cambiar de solución
+    if (subtipoCotizacion === 'Licencias SAP') {
+      const nuevasCantidadesSAP = Object.keys(cantidadesLicenciasSAP).reduce((acc, key) => {
+        acc[key] = 0;  // Reinicia todas las cantidades a 0
+        return acc;
+      }, {} as Record<string, number>);
+      setCantidadesLicenciasSAP(nuevasCantidadesSAP);
+    } else if (subtipoCotizacion === 'Licencias Seidor') {
+      const nuevasCantidadesSeidor = Object.keys(cantidadesLicenciasSeidor).reduce((acc, key) => {
+        acc[key] = 0;  // Reinicia todas las cantidades a 0
+        return acc;
+      }, {} as Record<string, number>);
+      setCantidadesLicenciasSeidor(nuevasCantidadesSeidor);
+    }
+  
+    // Vuelve a calcular los subtotales con las nuevas cantidades en cero
+    calcularSubtotales();
+  };  
 
   ////////////////////////////////////////////////////RETURN//////////////////////////////////////////////////////////////////////////////////////
 
@@ -1164,7 +1050,7 @@ export default function Home() {
                 {/* Select para Solution */}
                 <div className="w-1/2">
                   <label className="block text-sm font-medium mb-1">Solution</label>
-                  <Select value={solution} onValueChange={setSolution}>
+                  <Select value={solution} onValueChange={handleSolutionChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecciona Solution" />
                     </SelectTrigger>
@@ -1192,35 +1078,114 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtrarLicenciasPorBD(licenciasSAP, baseDeDatos).map((grupo, grupoIndex) => (
-                      <React.Fragment key={grupoIndex}>
-                        <tr>
-                          <td className="bg-gray-200 font-semibold px-4 py-2" colSpan={6}>
-                            {grupo.categoria}
-                          </td>
-                        </tr>
-                        {grupo.licencias.map((licencia, licenciaIndex) => (
-                          <tr key={licenciaIndex}>
-                            <td className="px-4 py-2 border-b">{licencia.tipo}</td>
-                            <td className="px-4 py-2 border-b text-center">{licencia.salesUnit}</td>
-                            <td className="px-4 py-2 border-b text-center">{licencia.metricas}</td>
+                  {/* Separación entre Named Users y Database */}
+                  {solution === 'OP' && (
+                    <>
+                      {/* Sección para Named Users */}
+                      <tr>
+                        <td colSpan={6} className="bg-gray-200 font-semibold px-4 py-2">SAP Business One Named Users</td>
+                      </tr>
+                      {filtrarLicencias(licenciasSAP, baseDeDatos, solution)
+                        .filter(licencia => licencia.user_type === 'Named User')
+                        .map((licencia) => (
+                          <tr key={licencia.id}>
+                            <td className="px-4 py-2 border-b">{licencia.name}</td>
+                            <td className="px-4 py-2 border-b text-center">{licencia.sales_unit}</td>
+                            <td className="px-4 py-2 border-b text-center">{licencia.metric}</td>
                             <td className="px-4 py-2 border-b text-center">
-                              {solution === 'OP' ? licencia.costoOP : licencia.costoOC}
+                              {obtenerPrecio(licencia.price_ranges, cantidadesLicenciasSAP[licencia.id])}
                             </td>
                             <td className="px-4 py-2 border-b text-center">
                               <HookUsage
-                                value={cantidadesLicenciasSAP[licencia.tipo] || 0}
-                                onChange={(value) => handleCantidadChange(licencia.tipo, value)}
+                                value={cantidadesLicenciasSAP[licencia.id] || 0}
+                                onChange={(value) => handleCantidadChange(licencia.id, Number(value))}
                               />
                             </td>
                             <td className="px-4 py-2 border-b text-center">
-                              {(cantidadesLicenciasSAP[licencia.tipo] || 0) * (solution === 'OP' ? licencia.costoOP : licencia.costoOC)}
+                              {(cantidadesLicenciasSAP[licencia.id] || 0) * obtenerPrecio(licencia.price_ranges, cantidadesLicenciasSAP[licencia.id])}
                             </td>
                           </tr>
                         ))}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
+
+                      {/* Sección para Product Option */}
+                      <tr>
+                        <td colSpan={6} className="bg-gray-200 font-semibold px-4 py-2">SAP Business One Product Option</td>
+                      </tr>
+                      {filtrarLicencias(licenciasSAP, baseDeDatos, solution)
+                        .filter(licencia => licencia.user_type === 'Product Option')
+                        .map((licencia) => (
+                          <tr key={licencia.id}>
+                            <td className="px-4 py-2 border-b">{licencia.name}</td>
+                            <td className="px-4 py-2 border-b text-center">{licencia.sales_unit}</td>
+                            <td className="px-4 py-2 border-b text-center">{licencia.metric}</td>
+                            <td className="px-4 py-2 border-b text-center">
+                              {obtenerPrecio(licencia.price_ranges, cantidadesLicenciasSAP[licencia.id])}
+                            </td>
+                            <td className="px-4 py-2 border-b text-center">
+                              <HookUsage
+                                value={cantidadesLicenciasSAP[licencia.id] || 0}
+                                onChange={(value) => handleCantidadChange(licencia.id, Number(value))}
+                              />
+                            </td>
+                            <td className="px-4 py-2 border-b text-center">
+                              {(cantidadesLicenciasSAP[licencia.id] || 0) * obtenerPrecio(licencia.price_ranges, cantidadesLicenciasSAP[licencia.id])}
+                            </td>
+                          </tr>
+                        ))}
+
+                      {/* Sección para Database */}
+                      <tr>
+                        <td colSpan={6} className="bg-gray-200 font-semibold px-4 py-2">SAP Business One Databases</td>
+                      </tr>
+                      {filtrarLicencias(licenciasSAP, baseDeDatos, solution)
+                        .filter(licencia => licencia.user_type === 'Database')
+                        .map((licencia) => (
+                          <tr key={licencia.id}>
+                            <td className="px-4 py-2 border-b">{licencia.name}</td>
+                            <td className="px-4 py-2 border-b text-center">{licencia.sales_unit}</td>
+                            <td className="px-4 py-2 border-b text-center">{licencia.metric}</td>
+                            <td className="px-4 py-2 border-b text-center">
+                              {obtenerPrecio(licencia.price_ranges, cantidadesLicenciasSAP[licencia.id])}
+                            </td>
+                            <td className="px-4 py-2 border-b text-center">
+                              <HookUsage
+                                value={cantidadesLicenciasSAP[licencia.id] || 0}
+                                onChange={(value) => handleCantidadChange(licencia.id, Number(value))}
+                              />
+                            </td>
+                            <td className="px-4 py-2 border-b text-center">
+                              {(cantidadesLicenciasSAP[licencia.id] || 0) * obtenerPrecio(licencia.price_ranges, cantidadesLicenciasSAP[licencia.id])}
+                            </td>
+                          </tr>
+                        ))}
+                    </>
+                  )}
+
+                  {/* Cuando no es On-Premise (por ejemplo, On-Cloud), mostrar todas las licencias sin separar */}
+                  {solution === 'OC' && (
+                    <>
+                      {filtrarLicencias(licenciasSAP, baseDeDatos, solution).map((licencia) => (
+                        <tr key={licencia.id}>
+                          <td className="px-4 py-2 border-b">{licencia.name}</td>
+                          <td className="px-4 py-2 border-b text-center">{licencia.sales_unit}</td>
+                          <td className="px-4 py-2 border-b text-center">{licencia.metric}</td>
+                          <td className="px-4 py-2 border-b text-center">
+                            {obtenerPrecio(licencia.price_ranges, cantidadesLicenciasSAP[licencia.id])}
+                          </td>
+                          <td className="px-4 py-2 border-b text-center">
+                            <HookUsage
+                              value={cantidadesLicenciasSAP[licencia.id] || 0}
+                              onChange={(value) => handleCantidadChange(licencia.id, Number(value))}
+                            />
+                          </td>
+                          <td className="px-4 py-2 border-b text-center">
+                            {(cantidadesLicenciasSAP[licencia.id] || 0) * obtenerPrecio(licencia.price_ranges, cantidadesLicenciasSAP[licencia.id])}
+                          </td>
+                        </tr>
+                      ))}
+                    </>
+                  )}
+                </tbody>
                 </table>
               </div>
             )}
@@ -1239,32 +1204,23 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {licenciasSeidor.map((grupo, grupoIndex) => (
-                      <React.Fragment key={grupoIndex}>
-                        <tr>
-                          <td className="bg-gray-200 font-semibold px-4 py-2" colSpan={4}>
-                            {grupo.categoria}
-                          </td>
-                        </tr>
-                        {grupo.licencias.map((licencia, licenciaIndex) => (
-                          <tr key={licenciaIndex}>
-                            <td className="px-4 py-2 border-b">{licencia.tipo}</td>
+                    {licenciasSeidor.map((licencia) => (
+                          <tr key={licencia.id}>
+                            <td className="px-4 py-2 border-b">{licencia.name}</td>
                             <td className="px-4 py-2 border-b text-center">
-                              {solution === 'OP' ? licencia.costoOP : licencia.costoOC}
+                              {obtenerPrecioPorTipo(licencia.price_type, solution)}
                             </td>
                             <td className="px-4 py-2 border-b text-center">
                               <HookUsage
-                                value={cantidadesLicenciasSeidor[licencia.tipo] || 0}
-                                onChange={(value) => handleCantidadChange(licencia.tipo, value)}
+                                value={cantidadesLicenciasSeidor[licencia.id] || 0}
+                                onChange={(value) => handleCantidadChange(licencia.id, Number(value))}
                               />
                             </td>
                             <td className="px-4 py-2 border-b text-center">
-                              {(cantidadesLicenciasSeidor[licencia.tipo] || 0) * (solution === 'OP' ? licencia.costoOP : licencia.costoOC)}
+                              {(cantidadesLicenciasSeidor[licencia.id] || 0) * (obtenerPrecioPorTipo(licencia.price_type, solution))}
                             </td>
                           </tr>
                         ))}
-                      </React.Fragment>
-                    ))}
                   </tbody>
                 </table>
               </div>

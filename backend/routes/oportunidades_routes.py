@@ -51,6 +51,7 @@ def get_oportunidad_by_id(current_user, id):
             'id': concepto.id,
             'tipoCotizacion': concepto.nombre_concepto,
             'baseDeDatos': concepto.base_datos,
+            'solution': concepto.solution,
             'totalVenta': concepto.total_venta,
             'costoVenta': concepto.costo_venta,
             'margenVenta': concepto.margen_venta,
@@ -155,6 +156,7 @@ def create_oportunidad(current_user):
                 oportunidad_id=nueva_oportunidad.id,
                 nombre_concepto=item.get('tipoCotizacion'),
                 base_datos=item.get('baseDeDatos', ''),
+                solution = item.get('solution', ''),
                 total_venta=item.get('totalVenta'),
                 costo_venta=item.get('costoVenta'),
                 margen_venta=item.get('margenVenta')
@@ -196,3 +198,91 @@ def create_oportunidad(current_user):
         db.session.rollback()  # Revertir los cambios si ocurre un error
         print("Error al crear oportunidad:", str(e))
         return jsonify({"error": "Error al crear la oportunidad"}), 500
+
+# Actualizar oportunidad completa por ID (ruta con el ID en la URL)
+@oportunidades_bp.route('/<string:id>', methods=['PUT'])  # Cambiado a PUT para actualización completa
+@token_required
+def update_oportunidad_completa_by_id(current_user, id):
+    data = request.json
+
+    cliente_id = data.get('cliente_id')
+    nombre_op = data.get('nombre_op')
+    total_venta = data.get('total_venta')
+    costo_venta = data.get('costo_venta')
+    margen_venta = data.get('margen_venta')
+    itemsCotizacion = data.get('itemsCotizacion')
+
+    try:
+        oportunidad = Oportunidad.query.get(id)
+
+        if not oportunidad:
+            return jsonify({"error": "Oportunidad no encontrada"}), 404
+
+        # Asegurar que el usuario actual es el propietario (cotizador) o es admin
+        if oportunidad.owner != current_user.id and current_user.role != 'admin':
+            return jsonify({"error": "No tienes permiso para actualizar esta oportunidad"}), 403
+
+        # Verificar que el cliente exista
+        cliente = Cliente.query.get(cliente_id)
+        if not cliente:
+            return jsonify({"error": "Cliente no encontrado"}), 404
+
+        # Actualizar los campos de la oportunidad
+        oportunidad.nombre_op = nombre_op
+        oportunidad.cliente_id = cliente_id
+        oportunidad.total_venta = total_venta
+        oportunidad.costo_venta = costo_venta
+        oportunidad.margen_venta = margen_venta
+
+        # Eliminar los conceptos y detalles asociados a la oportunidad
+        for concepto in oportunidad.conceptos:
+            for detalle in concepto.detalles:
+                db.session.delete(detalle)
+            db.session.delete(concepto)
+
+        # Insertar los nuevos conceptos y detalles
+        for item in itemsCotizacion:
+            nuevo_concepto = Concepto(
+                oportunidad_id=oportunidad.id,
+                nombre_concepto=item.get('tipoCotizacion'),
+                base_datos=item.get('baseDeDatos', ''),
+                solution = item.get('solution', ''),
+                total_venta=item.get('totalVenta'),
+                costo_venta=item.get('costoVenta'),
+                margen_venta=item.get('margenVenta')
+            )
+
+            # Agregar el concepto a la base de datos
+            db.session.add(nuevo_concepto)
+            db.session.commit()  # Commit para que el concepto obtenga su ID
+
+            # Insertar los detalles relacionados al concepto
+            for licencia in item.get('licenciasSeleccionadas', []):
+                nuevo_detalle = DetalleConcepto(
+                    concepto_id=nuevo_concepto.id,
+                    nombre_item=licencia.get('tipo'),
+                    cantidad=licencia.get('cantidad'),
+                    costo=licencia.get('costo'),
+                    total=licencia.get('total')
+                )
+
+                # Agregar el detalle del concepto
+                db.session.add(nuevo_detalle)
+
+        # Hacer commit para guardar los detalles
+        db.session.commit()
+
+        return jsonify({
+            'id': oportunidad.id,
+            'nombre_op': oportunidad.nombre_op,
+            'cliente': oportunidad.cliente.nombre,
+            'total_venta': oportunidad.total_venta,
+            'costo_venta': oportunidad.costo_venta,
+            'margen_venta': oportunidad.margen_venta
+        }), 200
+    
+    except Exception as e:
+        db.session.rollback()
+        print("Error al actualizar oportunidad completa:", str(e))
+        return jsonify({"error": "Error al actualizar la oportunidad"}), 500
+    

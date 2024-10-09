@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flasgger import Swagger
+from flask_migrate import Migrate
 
 # Importar la configuración y las rutas
 from config import Config
@@ -17,6 +18,8 @@ app.config.from_object(Config)
 # Inicializar extensiones
 db.init_app(app)  # SQLAlchemy
 
+migrate = Migrate(app, db)
+
 with app.app_context():
     db.create_all()
 
@@ -30,7 +33,7 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')  # Origen correcto
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')  # Incluye Authorization
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS,PUT')  # Métodos permitidos
     
     # Si es una solicitud OPTIONS, devolver una respuesta vacía
     if request.method == 'OPTIONS':
