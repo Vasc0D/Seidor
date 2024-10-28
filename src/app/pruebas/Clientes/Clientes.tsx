@@ -51,37 +51,39 @@ const Clientes = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Mis Clientes</h1>
+      <h1 className="text-xl font-poppins mb-4">Mis Clientes</h1>
 
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border">Nombre</th>
-            <th className="py-2 px-4 border">RUC</th>
-            <th className="py-2 px-4 border">Sociedades</th>
-            <th className="py-2 px-4 border">Empleados</th>
-          </tr>
-        </thead>
-        <tbody>
-          {clientes && clientes.length > 0 ? (
-            clientes.map((cliente) => (
-              <tr key={cliente.id}>
-                <td className="py-2 px-4 border">{cliente.nombre}</td>
-                <td className="py-2 px-4 border">{cliente.ruc}</td>
-                <td className="py-2 px-4 border">{cliente.sociedades}</td>
-                <td className="py-2 px-4 border">{cliente.empleados}</td>
-              </tr>
-            ))
-          ) : (
+      <div className="overflow-hidden rounded-lg shadow-md">
+        <table className="min-w-full divide-y divide-gray-200 bg-white">
+          <thead className="bg-blue-500 text-white">
             <tr>
-              <td colSpan={4} className="text-center py-2 px-4 border">
-                No hay clientes disponibles.
-              </td>
+              <th className="py-3 px-6 text-left text-sm font-semibold uppercase tracking-wider border">Nombre</th>
+              <th className="py-3 px-6 text-left text-sm font-semibold uppercase tracking-wider border">RUC</th>
+              <th className="py-3 px-6 text-left text-sm font-semibold uppercase tracking-wider border">Sociedades</th>
+              <th className="py-3 px-6 text-left text-sm font-semibold uppercase tracking-wider border">Empleados</th>
             </tr>
-          )}
-        </tbody>
-      </table>
-
+          </thead>
+          <tbody>
+            {clientes && clientes.length > 0 ? (
+              clientes.map((cliente) => (
+                <tr key={cliente.id}>
+                  <td className="py-2 px-4 border">{cliente.nombre}</td>
+                  <td className="py-2 px-4 border">{cliente.ruc}</td>
+                  <td className="py-2 px-4 border">{cliente.sociedades}</td>
+                  <td className="py-2 px-4 border">{cliente.empleados}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4} className="text-center py-6">
+                  No hay clientes disponibles.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      
       {/* Botón para crear cliente */}
       <div className="mt-6 flex flex-col items-end space-y-4">
         <CrearClienteModal onCreate={fetchClientes} /> {/* El callback refresca la lista */}

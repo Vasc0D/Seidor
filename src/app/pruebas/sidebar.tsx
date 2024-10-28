@@ -1,6 +1,8 @@
+// sidebar.tsx
+
 import { AiOutlineHome } from 'react-icons/ai';
 import { BiLogOut } from 'react-icons/bi';
-import { FaUsers, FaBoxes, FaPersonBooth, FaPeopleArrows } from 'react-icons/fa';
+import { FaUsers, FaBoxes, FaPersonBooth, FaPeopleArrows, FaClipboardList } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -11,11 +13,14 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePageChange }) => {
+  const [isCotizacionesOpen, setIsCotizacionesOpen] = useState(false); // Menú expandible
   const [isAdminOpen, setIsAdminOpen] = useState(false); // Estado para el menú de Administrador
   const [isAdmin, setIsAdmin] = useState(false); // Estado para determinar si el usuario es Admin
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [role, setRole] = useState('');
+
+  const toggleCotizacionesMenu = () => setIsCotizacionesOpen(!isCotizacionesOpen); // Toggle Cotizaciones
 
   // Función para manejar la expansión/collapse del menú Administrador
   const toggleAdminMenu = () => {
@@ -125,6 +130,61 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
             <AiOutlineHome className="text-2xl" />
             {!isCollapsed && <span className="ml-4">Home</span>}
           </div>
+
+          {/* Opción Cotizaciones */}
+          <div
+            className={`w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
+              !isCollapsed && 'justify-start'
+            }`}
+            onClick={toggleCotizacionesMenu}
+          >
+            <FaClipboardList className="text-2xl" />
+            {!isCollapsed && (
+              <div className="flex justify-between w-full">
+                <span className="ml-4">Cotizaciones</span>
+                <span>{isCotizacionesOpen ? '▲' : '▼'}</span>
+              </div>
+            )}
+          </div>
+
+          {!isCollapsed && isCotizacionesOpen && (
+            <div className="ml-8 space-y-5">
+              {role === 'Gerente de Operaciones' ? (
+                <>
+                  {/* Opción Cotizaciones Pendientes para Gerente de Operaciones */}
+                  <div
+                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
+                    onClick={() => handlePageChange('cotizaciones-pendientes')}
+                  >
+                    Cotizaciones Pendientes
+                  </div>
+                  {/* Historial de Cotizaciones para Gerente de Operaciones */}
+                  <div
+                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
+                    onClick={() => handlePageChange('historial-cotizaciones')}
+                  >
+                    Historial de Cotizaciones
+                  </div>
+                </>
+              ) : (
+                // Opción Cotizaciones Pendientes General y Historial de Cotizaciones General para otros roles
+                <>
+                  <div
+                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
+                    onClick={() => handlePageChange('cotizaciones-pendientes')}
+                  >
+                    Cotizaciones Pendientes
+                  </div>
+                  <div
+                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
+                    onClick={() => handlePageChange('historial-cotizaciones')}
+                  >
+                    Historial de Cotizaciones
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Opción Clientes */}
           <div

@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from models import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
+from auth import token_required
 
 usuarios_bp = Blueprint('usuarios', __name__)
 
@@ -13,6 +14,7 @@ def get_users():
 
         # Agrupar usuarios por rol
         usuarios_por_rol = {
+            "Administradores": [u.serialize() for u in usuarios if u.role == 'Administrador'],
             "Gerentes Comerciales": [u.serialize() for u in usuarios if u.role == 'Gerente Comercial'],
             "Gerentes de Operaciones": [u.serialize() for u in usuarios if u.role == 'Gerente de Operaciones'],
             "Gerentes Ejecutivos": [u.serialize() for u in usuarios if u.role == 'Gerente Ejecutivo'],
@@ -95,3 +97,16 @@ def update_user(user_id):
     except Exception as e:
         db.session.rollback()  # Revertir cambios si ocurre un error
         return jsonify({'error': 'Error al actualizar el usuario', 'details': str(e)}), 500
+    
+# get gerentes de operaciones de usuarios
+@usuarios_bp.route('/gerentes_operaciones', methods=['GET'])
+@token_required
+def get_gerentes_operaciones(current_user):
+    try:
+        # Obtener todos los usuarios desde la base de datos
+        gerentes_operaciones = User.query.filter_by(role='Gerente de Operaciones').all()
+        
+        result = [{'id': g.id, 'username': g.username} for g in gerentes_operaciones]
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": "Error al obtener gerentes de operaciones"}), 500

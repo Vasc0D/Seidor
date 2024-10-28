@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Select, SelectItem, SelectTrigger, SelectContent } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 interface CrearConceptoModalProps {
   isOpen: boolean;
@@ -23,29 +25,23 @@ const CrearConceptoModal: React.FC<CrearConceptoModalProps> = ({ isOpen, onClose
           <h2 className="text-lg font-bold mb-4">Crear Concepto</h2>
           <div>
             <label className="block text-sm font-medium mb-2">Tipo de Concepto</label>
-            <select
-              value={conceptType}
-              onChange={(e) => setConceptType(e.target.value)}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="">Seleccione una opción</option>
-              <option value="SAP">Licencia SAP</option>
-              <option value="Seidor">Licencia Seidor</option>
-            </select>
+            <Select onValueChange={(value) => setConceptType(value)}>
+              <SelectTrigger className="w-full">
+                <span>{conceptType || "Seleccione una opción"}</span>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SAP">Licencia SAP</SelectItem>
+                <SelectItem value="Seidor">Licencia Seidor</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="mt-4 flex justify-end">
-            <button 
-              onClick={handleCreate} 
-              className="bg-blue-500 text-white px-4 py-2 mr-2 rounded"
-            >
+            <Button onClick={handleCreate} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
               Crear
-            </button>
-            <button 
-              onClick={onClose} 
-              className="bg-gray-500 text-white px-4 py-2 rounded"
-            >
+            </Button>
+            <Button onClick={onClose} className="bg-gray-200 text-gray-800 px-4 py-2 rounded">
               Cancelar
-            </button>
+            </Button>
           </div>
         </div>
       </div>

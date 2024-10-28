@@ -66,6 +66,7 @@ class DetalleConcepto(db.Model):
     __tablename__ = 'Detalle_Conceptos'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)  # UUID
     concepto_id = db.Column(db.String(36), db.ForeignKey('Conceptos.id'), nullable=False)  # UUID FK
+    licencia_id = db.Column(db.String(255), nullable=True)
     nombre_item = db.Column(db.String(255), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False)
     costo = db.Column(db.Numeric(10, 2), nullable=False)
@@ -119,3 +120,58 @@ class LicenciasSeidorTipo(db.Model):
     
     def __repr__(self):
         return f'<LicenciaSeidorTipo {self.licencia_id} - {self.type}>'
+
+class CotizacionSolicitada(db.Model):
+    __tablename__ = 'CotizacionesSolicitadas'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)
+    nombre_proyecto = db.Column(db.String(100), nullable=False)  # Nombre del proyecto o servicio
+    oportunidad_id = db.Column(db.String(36), db.ForeignKey('Oportunidades.id'), nullable=False)
+    total_venta = db.Column(db.Numeric(10, 2), default=0)
+    costo_venta = db.Column(db.Numeric(10, 2), default=0)
+    margen_venta = db.Column(db.Numeric(10, 2), default=0)
+    owner = db.Column(db.String(36), db.ForeignKey('Users.id'), nullable=False)
+    estado = db.Column(db.String(20), nullable=False, default='En proceso')
+    fecha_creacion = db.Column(db.DateTime, default=db.func.current_timestamp())
+    fecha_terminacion = db.Column(db.DateTime, nullable=True)
+
+    owner_relacion = db.relationship('User', foreign_keys=[owner], backref='cotizaciones_solicitadas')
+    oportunidad = db.relationship('Oportunidad', backref='cotizaciones_solicitadas')
+    conceptos = db.relationship('ConceptoServicio', backref='cotizacion')
+
+    def __repr__(self):
+        return f'<CotizacionSolicitada {self.nombre_proyecto} - Estado: {self.estado}>'
+
+class ConceptoServicio(db.Model):
+    __tablename__ = 'ConceptosServicio'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)
+    cotizacion_id = db.Column(db.String(36), db.ForeignKey('CotizacionesSolicitadas.id'), nullable=False)
+    nombre_concepto = db.Column(db.String(100), nullable=False)
+    gerente_id = db.Column(db.String(36), db.ForeignKey('Users.id'), nullable=False)
+    estado = db.Column(db.String(20), nullable=False, default='En proceso')
+    total_venta = db.Column(db.Numeric(10, 2), default=0)
+    costo_venta = db.Column(db.Numeric(10, 2), default=0)
+    margen_venta = db.Column(db.Numeric(10, 2), default=0)
+    porcentaje_margen = db.Column(db.Numeric(5, 2), default=0)
+
+    gerente = db.relationship('User', backref='conceptos_servicio')
+    recursos = db.relationship('RecursoCotizacion', backref='concepto')
+
+class RecursoCotizacion(db.Model):
+    __tablename__ = 'RecursosCotizacion'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)
+    concepto_id = db.Column(db.String(36), db.ForeignKey('ConceptosServicio.id'), nullable=False)
+    recurso = db.Column(db.String(100), nullable=False)  # Ej. "Gerente de Proyecto"
+    tarifa_lista = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    tarifa_venta = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    preparacion = db.Column(db.Integer, nullable=False, default=0)
+    bbp = db.Column(db.Integer, nullable=False, default=0)
+    r_dev = db.Column(db.Integer, nullable=False, default=0)
+    r_pya = db.Column(db.Integer, nullable=False, default=0)
+    pi_pya = db.Column(db.Integer, nullable=False, default=0)
+    pi_deply = db.Column(db.Integer, nullable=False, default=0)
+    acompanamiento = db.Column(db.Integer, nullable=False, default=0)
+    total_dias = db.Column(db.Integer, nullable=False, default=0)
+    total_venta = db.Column(db.Numeric(10, 2), default=0)
+    costo_venta = db.Column(db.Numeric(10, 2), default=0)
+    margen_venta = db.Column(db.Numeric(10, 2), default=0)
+    porcentaje_margen = db.Column(db.Numeric(5, 2), default=0)

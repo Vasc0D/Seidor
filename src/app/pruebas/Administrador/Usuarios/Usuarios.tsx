@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { AiOutlineEdit } from 'react-icons/ai';
+import { FiPlus } from 'react-icons/fi';
 import CrearUsuarioModal from './CrearUsuarioModal';
 
 interface Usuario {
-    id: string;
-    username: string;
-    role: string;  // Agregamos el rol para poder manejarlo en la edición
+  id: string;
+  username: string;
+  role: string;
 }
 
 interface UsuariosPorRol {
+  "Administradores": Usuario[];
   "Gerentes Comerciales": Usuario[];
   "Gerentes de Operaciones": Usuario[];
   "Gerentes Ejecutivos": Usuario[];
@@ -16,6 +18,7 @@ interface UsuariosPorRol {
 
 const Usuarios = () => {
   const [usuarios, setUsuarios] = useState<UsuariosPorRol>({
+    "Administradores": [],
     "Gerentes Comerciales": [],
     "Gerentes de Operaciones": [],
     "Gerentes Ejecutivos": [],
@@ -23,7 +26,7 @@ const Usuarios = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Usuario | null>(null);
 
-  // Función para cargar usuarios desde la API
+  // Obtener usuarios de la API
   const fetchUsuarios = async () => {
     try {
       const response = await fetch('http://localhost:5015/api/usuarios', {
@@ -45,84 +48,78 @@ const Usuarios = () => {
     }
   };
 
-  // Cargar usuarios al montar el componente
   useEffect(() => {
     fetchUsuarios();
   }, []);
 
-  // Función para actualizar la lista cuando se cree o edite un usuario
   const handleCreateOrUpdate = () => {
-    fetchUsuarios(); // Refrescamos la lista de usuarios
-    setIsModalOpen(false); // Cerramos el modal
+    fetchUsuarios();
+    setIsModalOpen(false);
   };
 
-  // Función para abrir el modal en modo edición
   const handleEdit = (usuario: Usuario) => {
-    setEditingUser(usuario);  // Seteamos el usuario actual que se va a editar
-    setIsModalOpen(true);     // Abrimos el modal
+    setEditingUser(usuario);
+    setIsModalOpen(true);
+  };
+
+  const resetValues = () => {
+    setEditingUser(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingUser(null);
+    // Limpiar el formulario
+    resetValues();
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Usuarios</h1>
+    <div className="p-8 min-h-screen">
+      <h1 className="text-3xl font-extrabold mb-8 text-gray-800">Usuarios</h1>
 
-      {/* Sección de Gerentes Comerciales */}
-      <h2 className="text-xl font-semibold mt-4">Gerentes Comerciales:</h2>
-      <div className='mt-3'></div>
-      <div className="grid grid-cols-2 gap-4">
-        {usuarios["Gerentes Comerciales"].map((usuario) => (
-          <div key={usuario.id} className="flex items-center space-x-4 bg-blue-300 p-4 rounded-lg">
-            <span className="flex-1 text-white text-center text-lg font-bold">{usuario.username}</span>
-            <button className="text-black" onClick={() => handleEdit(usuario)}>
-              <AiOutlineEdit className="cursor-pointer" />
-            </button>
+      <div className="overflow-auto max-h-[60vh]">
+        {Object.entries(usuarios).map(([rol, listaUsuarios]) => (
+          <div key={rol} className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">{rol}:</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {listaUsuarios.map((usuario: Usuario) => (
+                <div
+                  key={usuario.id}
+                  className="flex items-center bg-white shadow-md rounded-lg p-4 transition hover:shadow-lg"
+                >
+                  <span className="flex-1 text-gray-900 font-medium text-lg">
+                    {usuario.username}
+                  </span>
+                  <button
+                    className="text-gray-500 hover:text-blue-600"
+                    onClick={() => handleEdit(usuario)}
+                  >
+                    <AiOutlineEdit className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Sección de Gerentes de Operaciones */}
-      <h2 className="text-xl font-semibold mt-4">Gerentes de Operaciones:</h2>
-      <div className='mt-3'></div>
-      <div className="grid grid-cols-2 gap-4">
-        {usuarios["Gerentes de Operaciones"].map((usuario) => (
-          <div key={usuario.id} className="flex items-center space-x-4 bg-blue-300 p-4 rounded-lg">
-            <span className="flex-1 text-white text-center text-lg font-bold">{usuario.username}</span>
-            <button className="text-black" onClick={() => handleEdit(usuario)}>
-              <AiOutlineEdit className="cursor-pointer" />
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Sección de Gerentes Ejecutivos */}
-      <h2 className="text-xl font-semibold mt-4">Gerentes Ejecutivos:</h2>
-      <div className='mt-3'></div>
-      <div className="grid grid-cols-2 gap-4">
-        {usuarios["Gerentes Ejecutivos"].map((usuario) => (
-          <div key={usuario.id} className="flex items-center bg-blue-300 p-4 rounded-lg">
-            <span className="flex-1 text-white text-center text-lg font-bold">{usuario.username}</span>
-            <button className="text-black" onClick={() => handleEdit(usuario)}>
-              <AiOutlineEdit className="cursor-pointer" />
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Botón para crear usuario */}
       <button
-        className="fixed bottom-6 right-6 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg"
-        onClick={() => { setEditingUser(null); setIsModalOpen(true); }}
+        className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-500 transition"
+        onClick={() => {
+          setEditingUser(null);
+          setIsModalOpen(true);
+        }}
       >
-        Crear Usuario
+        <FiPlus className="w-6 h-6" />
       </button>
 
-      {isModalOpen && (
-        <CrearUsuarioModal
-          onCreate={handleCreateOrUpdate}  // Llamado cuando se crea un usuario
-          onUpdate={handleCreateOrUpdate}  // Llamado cuando se actualiza un usuario
-          existingUser={editingUser || undefined}       // Pasamos el usuario a editar (si es edición)
-        />
-      )}
+      <CrearUsuarioModal
+        onCreate={handleCreateOrUpdate}
+        onUpdate={handleCreateOrUpdate}
+        existingUser={editingUser || undefined}
+        onClose={handleCloseModal}
+        isOpen={isModalOpen}
+      />
     </div>
   );
 };

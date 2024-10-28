@@ -1,3 +1,5 @@
+// Oportunidades.tsx
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -7,8 +9,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { toast, ToastContainer } from 'react-toastify';  // Importar Toastify
 import 'react-toastify/dist/ReactToastify.css';  // Importar los estilos de Toastify
+import ServiciosTabla from './ServiciosTabla';
 
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import MostrarModalServicios from './MostrarModalServicios';
+import EditarServicio from './EditarServicioModal';
+
+import { Servicio , Concepto } from './interfaces'
 
 function HookUsage({
   value,
@@ -198,6 +205,8 @@ export default function Home() {
       setNombreOportunidad(data.nombre_op);
       console.log('Nombre Oportunidad:', data.nombre_op);
       setMostrarDetalles(true);
+
+      setServicios(data.servicios);
     } catch (error) {
       console.error('Error al editar la oportunidad:', error);
     }
@@ -247,6 +256,34 @@ export default function Home() {
   const [licenciasSAP, setLicenciasSAP] = useState<any[]>([]);  // Estado para las licencias SAP
   const [licenciasSeidor, setLicenciasSeidor] = useState<any[]>([]);  // Estado para las licencias Seidor
 
+  const [mostrarModalServicio, setMostrarModalServicio] = useState<boolean>(false);  // Estado para mostrar el pop-up de servicios
+
+  const [servicios, setServicios] = useState<any[]>([]);
+  const [servicioSeleccionado, setServicioSeleccionado] = useState<Servicio | null>(null);
+
+  // Función para agregar un servicio al estado
+  const agregarServicio = (nuevoServicio: any) => {
+    setServicios([...servicios, nuevoServicio]);
+  };
+
+
+  const handleEditarServicio = (servicio: Servicio) => {
+    setServicioSeleccionado(servicio);
+  };
+  
+
+  const handleGuardarServicio = (servicioEditado: Servicio) => {
+    const serviciosActualizados = servicios.map((s) =>
+      s.nombre_proyecto === servicioEditado.nombre_proyecto ? servicioEditado : s
+    );
+    setServicios(serviciosActualizados);
+    setServicioSeleccionado(null);
+  };
+
+  const handleCancelarEdicion = () => {
+    setServicioSeleccionado(null); // Regresar a la vista principal
+  };  
+  
   // Función para manejar el despliegue/colapso
   const toggleDespliegue = (index: number) => {
     setDesplegados(prev => 
@@ -259,7 +296,6 @@ export default function Home() {
   // Estructura de opciones de cotización
   const cotizacionMap: Record<string, string[]> = {
     'Licencia': ['Licencias SAP', 'Licencias Seidor', 'Licencias Boyum'],
-    'Servicio': ['Consultoría', 'Soporte', 'Capacitación'],
     'Infraestructura': ['Servidores', 'Almacenamiento', 'Redes'],
   };
 
@@ -335,7 +371,11 @@ export default function Home() {
   // Función para manejar cuando se abre el segundo pop-up
   const handleAceptarCotizacionTipo = () => {
     setMostrarModalTipo(false); // Cerrar el primer pop-up
-    setMostrarModalLicencias(true); // Abrir el segundo pop-up
+    if(cotizacionTipo === 'Licencia') {
+      setMostrarModalLicencias(true); // Abrir el segundo pop-up
+    } else if (cotizacionTipo === 'Servicio') {
+      setMostrarModalServicio(true);
+    }
   };
 
   const handleCantidadChange = (licenciaId: string, value: number) => {
@@ -508,6 +548,7 @@ const calcularSubtotales = () => {
   // Define el tipo de las licencias seleccionadas
   interface LicenciaSeleccionada {
     tipo: string;
+    name: string;
     cantidad: number;
     costo: number;
     total: number;
@@ -526,6 +567,7 @@ const calcularSubtotales = () => {
 
           return {
             tipo: licenciaObj.id,  // ID de la licencia
+            name: licenciaObj.name,  // Nombre de la licencia
             cantidad,
             costo,
             total: cantidad * costo,  // Calcular el total basado en la cantidad y el costo
@@ -541,7 +583,8 @@ const calcularSubtotales = () => {
             : 0;
 
           return {
-            tipo: licenciaObj.id,  // Usar el nombre de la licencia o el ID si no hay nombre
+            tipo: licenciaObj.id,  // Usar el ID de la licencia
+            name: licenciaObj.name,  // Nombre de la licencia
             cantidad,
             costo,
             total: cantidad * costo,  // Calcular el total basado en la cantidad y el costo
@@ -628,10 +671,18 @@ const calcularSubtotales = () => {
   
     // Mostrar el modal para editar
     setMostrarModalLicencias(true);
-  };  
+  }; 
+  
+  // Estado para manejar el loading
+  const [loading, setLoading] = useState(false);
 
   // Función para enviar la cotización a la base de datos
   const enviarCotizacion = async () => {
+    // Evitar solicitudes duplicadas
+    if (loading) return;
+
+    setLoading(true);  // Establecer loading en true
+
     const { totalVentaGeneral, costoVentaGeneral, margenVentaGeneral } = calcularTotalesGenerales();
 
     console.log('Total Venta:', totalVentaGeneral);
@@ -647,6 +698,7 @@ const calcularSubtotales = () => {
         margen_venta: margenVentaGeneral,
         estado: 'Pendiente',  // Estado inicial
         itemsCotizacion: itemsCotizacion,
+        servicios: servicios,
       };
 
       let response;
@@ -680,8 +732,14 @@ const calcularSubtotales = () => {
         const data = await response.json();
         toast.success(message);  // Mostrar notificación de éxito
         setMostrarDetalles(false);    // Cerrar los detalles
-
+      
         await fetchOportunidades();  // Actualizar la lista de oportunidades
+        setClienteSeleccionado(null);  // Limpiar el cliente seleccionado
+        setItemsCotizacion([]);  // Limpiar los items de la cotización
+        setNombreOportunidad('');  // Limpiar el nombre de la oportunidad
+        setEstado('Pendiente');  // Reiniciar el estado
+
+        console.log('Data:', data);
       } else {
         const error = await response.json();
         toast.error(error.error || 'Error al crear la oportunidad');
@@ -689,6 +747,8 @@ const calcularSubtotales = () => {
     } catch (error) {
       console.error('Error al crear la oportunidad:', error);
       toast.error('Error al crear la oportunidad');
+    } finally {
+      setLoading(false);  // Restablecer loading a false
     }
   };
 
@@ -742,7 +802,7 @@ const calcularSubtotales = () => {
   
     // Vuelve a calcular los subtotales con las nuevas cantidades en cero
     calcularSubtotales();
-  };  
+  };
 
   ////////////////////////////////////////////////////RETURN//////////////////////////////////////////////////////////////////////////////////////
 
@@ -771,35 +831,50 @@ const calcularSubtotales = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {oportunidades.map((oportunidad, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{oportunidad.nombre_op}</TableCell>
-                    <TableCell>{oportunidad.cliente}</TableCell>
-                    <TableCell>{oportunidad.total_venta}</TableCell>
-                    <TableCell>{oportunidad.costo_venta}</TableCell>
-                    <TableCell>{oportunidad.margen_venta}</TableCell>
-                    <TableCell>
-                      <select
+                {oportunidades.length > 0 ? (
+                  oportunidades.map((oportunidad, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{oportunidad.nombre_op}</TableCell>
+                      <TableCell>{oportunidad.cliente}</TableCell>
+                      <TableCell>{oportunidad.total_venta}</TableCell>
+                      <TableCell>{oportunidad.costo_venta}</TableCell>
+                      <TableCell>{oportunidad.margen_venta}</TableCell>
+                      <TableCell>
+                      <Select
                         value={oportunidad.estado}
-                        onChange={(e) => handleEstadoChange(index, e.target.value)}
-                        className={`p-1 rounded ${
-                          oportunidad.estado === 'Ganada' ? 'bg-green-500 text-white' : 
-                          oportunidad.estado === 'Perdida' ? 'bg-red-500 text-white' :
-                          'bg-yellow-500 text-white'
-                        }`}
+                        onValueChange={(value) => handleEstadoChange(index, value)}
                       >
-                        <option value="Pendiente">Pendiente</option>
-                        <option value="Ganada">Ganada</option>
-                        <option value="Perdida">Perdida</option>
-                      </select>
-                    </TableCell>
-                    <TableCell>
-                      <Button className="bg-blue-500 text-white" onClick={() => handleEditarOportunidad(oportunidad.id)}>
-                        Editar
-                      </Button>
+                        <SelectTrigger
+                          className={`p-1 rounded ${
+                            oportunidad.estado === 'Ganada' ? 'bg-green-500 text-white' : 
+                            oportunidad.estado === 'Perdida' ? 'bg-red-500 text-white' :
+                            'bg-yellow-500 text-white'
+                          }`}
+                        >
+                          <span>{oportunidad.estado}</span>
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          <SelectItem value="Pendiente">Pendiente</SelectItem>
+                          <SelectItem value="Ganada">Ganada</SelectItem>
+                          <SelectItem value="Perdida">Perdida</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Button className="bg-blue-500 text-white" onClick={() => handleEditarOportunidad(oportunidad.id)}>
+                          Editar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-5">
+                      No hay oportunidades creadas
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
             {/* Botones para crear cliente y crear oportunidad */}
@@ -815,21 +890,24 @@ const calcularSubtotales = () => {
                   </DialogHeader>
                   <div className="grid grid-cols-1 gap-4">
                     {/* Selecciona un cliente */}
-                    <select 
-                      className="w-full border rounded-md p-2"
+                    <Select 
                       value={clienteSeleccionado?.id || ''}
-                      onChange={(e) => {
-                        const selectedCliente = clientes.find(c => c.id === e.target.value);  
+                      onValueChange={(value) => {
+                        const selectedCliente = clientes.find(c => c.id === value);  
                         setClienteSeleccionado(selectedCliente || null); 
                       }}
                     >
-                      <option value="">Selecciona un cliente</option>
-                      {clientes.map((cliente, index) => (
-                        <option key={index} value={cliente.id}>
-                          {cliente.nombre}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full p-2 border rounded-md">
+                        {clienteSeleccionado ? clienteSeleccionado.nombre : 'Selecciona un cliente'}
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clientes.map((cliente, index) => (
+                          <SelectItem key={index} value={cliente.id}>
+                            {cliente.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
                     {/* Nombre de la oportunidad */}
                     <Input
@@ -888,9 +966,9 @@ const calcularSubtotales = () => {
             </div>
 
             {/* Tabla de ítems agregados a la cotización */}
-            {itemsCotizacion && itemsCotizacion.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-xl font-semibold mb-4">Conceptos</h3>
+                <h3 className="text-lg font-semibold mb-4">Conceptos Licencias</h3>
+                {itemsCotizacion && itemsCotizacion.length > 0 ? (
                 <table className="min-w-full bg-white border border-gray-200 text-sm">
                   <thead>
                     <tr>
@@ -914,21 +992,21 @@ const calcularSubtotales = () => {
                               {desplegados.includes(index) ? '▼' : '▶'}
                             </button>
                           </td>
-                          <td className="px-4 py-2 border-b">{item.tipoCotizacion}</td>
-                          <td className="px-4 py-2 border-b text-center">{item.baseDeDatos}</td>
-                          <td className="px-4 py-2 border-b text-center">{item.solution}</td>
-                          <td className="px-4 py-2 border-b text-center">{formatNumber(item.totalVenta)}</td>
-                          <td className="px-4 py-2 border-b text-center">{formatNumber(item.costoVenta)}</td>
-                          <td className="px-4 py-2 border-b text-center">{formatNumber(item.margenVenta)}</td>
-                          <td className="px-4 py-2 border-b text-center">
+                          <td className="px-4 py-1 border-b">{item.tipoCotizacion}</td>
+                          <td className="px-4 py-1 border-b text-center">{item.baseDeDatos}</td>
+                          <td className="px-4 py-1 border-b text-center">{item.solution}</td>
+                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.totalVenta)}</td>
+                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.costoVenta)}</td>
+                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.margenVenta)}</td>
+                          <td className="px-4 py-1 border-b text-center">
                             <Button
-                              className="bg-yellow-500 text-white px-2 py-1 mr-2"
+                              className="bg-yellow-500 text-white rounded-full px-3 py-1 mr-2"
                               onClick={() => editarItemCotizacion(index)}
                             >
                               Editar
                             </Button>
                             <Button
-                              className="bg-red-500 text-white px-2 py-1"
+                              className="bg-red-500 text-white rounded-full px-3 py-1"
                               onClick={() => eliminarItemCotizacion(index)}
                             >
                               Eliminar
@@ -952,7 +1030,7 @@ const calcularSubtotales = () => {
                               <tbody>
                                 {item.licenciasSeleccionadas.map((licencia: LicenciaSeleccionada, licIndex: number) => (
                                   <tr key={licIndex}>
-                                    <td className="px-4 py-2">{licencia.tipo}</td>
+                                    <td className="px-4 py-2">{licencia.name}</td>
                                     <td className="px-4 py-2 text-center">{licencia.cantidad}</td>
                                     <td className="px-4 py-2 text-center">{formatNumber(licencia.costo)}</td>
                                     <td className="px-4 py-2 text-center">{formatNumber(licencia.total)}</td>
@@ -967,8 +1045,11 @@ const calcularSubtotales = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
+              ) : (
+                <div className="text-base text-center text-gray-500">No hay licencias registradas</div>
+              )}
+            </div>
+
 
             {/* Primer Pop-up para seleccionar tipo y subtipo de cotización */}
             <Dialog open={mostrarModalTipo} onOpenChange={setMostrarModalTipo}>
@@ -993,7 +1074,7 @@ const calcularSubtotales = () => {
                 </div>
 
                 {/* Segundo Select - Subtipo de Cotización (aparece después de seleccionar el tipo) */}
-                {cotizacionTipo && (
+                {cotizacionTipo && cotizacionTipo != "Servicio" && (
                   <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Subtipo de Cotización</label>
                     <Select value={subtipoCotizacion} onValueChange={setSubtipoCotizacion}>
@@ -1013,7 +1094,7 @@ const calcularSubtotales = () => {
                 )}
 
                 {/* Botón Aceptar solo aparece cuando ambos selects tienen valores */}
-                {cotizacionTipo && subtipoCotizacion && (
+                {(cotizacionTipo === "Servicio" || (cotizacionTipo && subtipoCotizacion)) && (
                   <div className="flex justify-end">
                     <Button className="bg-blue-500 text-white" onClick={handleAceptarCotizacionTipo}>
                       Aceptar
@@ -1323,6 +1404,27 @@ const calcularSubtotales = () => {
               </div>
             </DialogContent>
           </Dialog>
+
+          {/* Mostrar modal servicios */}
+          <MostrarModalServicios
+            isOpen={mostrarModalServicio}
+            onClose={() => setMostrarModalServicio(false)}
+            onGuardarServicio={agregarServicio}
+          />
+
+          <div>
+            <ServiciosTabla servicios={servicios} setServicios={setServicios} onEditar={handleEditarServicio} />
+
+            {servicioSeleccionado && (
+              <EditarServicio
+                servicio={servicioSeleccionado}
+                isOpen={!!servicioSeleccionado}
+                onGuardar={handleGuardarServicio}
+                onCancelar={handleCancelarEdicion}
+              />
+            )}
+          </div>
+
           {itemsCotizacion.length > 0 && (
           <div className="mt-6 flex justify-end">
             {(() => {
@@ -1354,8 +1456,14 @@ const calcularSubtotales = () => {
         )}
             {/* Botón de Crear Cotización */}
             <div className="flex justify-end mt-6">
-              <Button onClick={enviarCotizacion} className="bg-green-500 text-white px-4 py-2">
-                Crear Cotización
+              <Button
+                onClick={enviarCotizacion} 
+                disabled={loading} 
+                className={`bg-blue-500 text-white rounded-full px-8 py-3 mt-4 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {loading ? 'Creando Cotización...' : 'Crear Cotización'}
               </Button>
             </div>
           </div>

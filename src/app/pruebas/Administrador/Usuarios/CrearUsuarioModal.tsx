@@ -1,149 +1,124 @@
 import { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 interface CrearUsuarioModalProps {
   onCreate?: () => void;
   onUpdate?: (id: string) => void;
   existingUser?: { id: string; username: string; role: string };
-  onDelete?: (id: string) => void;
+  onClose?: () => void;
+  isOpen: boolean;
 }
 
-const CrearUsuarioModal = ({ onCreate, onUpdate, existingUser }: CrearUsuarioModalProps) => {
+const CrearUsuarioModal: React.FC<CrearUsuarioModalProps> = ({ onCreate, onUpdate, existingUser, onClose, isOpen }) => {
   const [nombre, setNombre] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('');
 
   useEffect(() => {
     if (existingUser) {
-        setNombre(existingUser.username);
-        setRol(existingUser.role);
-        }
-    }, [existingUser]);
-
-const handleSaveChanges = async () => {
-    if (existingUser) {
-      // Si es una edición, hacemos un PUT
-      try {
-        const updatedUser = {
-          username: nombre,
-          role: rol,
-        };
-
-        const response = await fetch(`http://localhost:5015/api/usuarios/${existingUser.id}`, {
-          method: 'PUT',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(updatedUser),
-        });
-
-        if (response.ok) {
-          onUpdate?.(existingUser.id); // Notificar que el usuario se ha actualizado
-          alert('Usuario actualizado con éxito');
-        } else {
-          alert('Error al actualizar el usuario');
-        }
-      } catch (error) {
-        console.error('Error al actualizar usuario:', error);
-        alert('Error al actualizar usuario');
-      }
+      setNombre(existingUser.username);
+      setRol(existingUser.role);
     } else {
-      // Si no existe, es creación (esto ya estaba)
-      try {
-        const nuevoUsuario = {
-          username: nombre,
-          password: password,
-          role: rol,
-        };
-
-        const response = await fetch('http://localhost:5015/api/usuarios', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(nuevoUsuario),
-        });
-
-        if (response.ok) {
-          setNombre('');
-          setPassword('');
-          setRol('');
-          onCreate?.(); // Notificar que el usuario se ha creado
-          alert('Usuario creado con éxito');
-        } else {
-          alert('Error al crear el usuario');
-        }
-      } catch (error) {
-        console.error('Error al crear usuario:', error);
-        alert('Error al crear usuario');
-      }
+      setNombre('');
+      setPassword('');
+      setRol('');
     }
-  };    
+  }, [existingUser]);
+
+  const handleSaveChanges = async () => {
+    if (!nombre || !rol) {
+      alert('Por favor complete todos los campos obligatorios.');
+      return;
+    }
+
+    try {
+      const userData = existingUser
+        ? { username: nombre, role: rol }
+        : { username: nombre, password, role: rol };
+
+      const url = existingUser
+        ? `http://localhost:5015/api/usuarios/${existingUser.id}`
+        : 'http://localhost:5015/api/usuarios';
+
+      const method = existingUser ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (response.ok) {
+        alert(existingUser ? 'Usuario actualizado con éxito' : 'Usuario creado con éxito');
+        onCreate?.();
+        onClose?.();
+      } else {
+        alert('Error al guardar el usuario.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Ocurrió un error al procesar la solicitud.');
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-md shadow-lg w-1/3">
-        <h2 className="text-2xl font-bold mb-4">{existingUser ? 'Editar Usuario' : 'Crear Usuario'}</h2>
-
-        {/* Campo de Nombre */}
-        <div className="mb-4">
-          <label className="block mb-2">Nombre:</label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full border p-2 rounded-md"
-            placeholder="Nombre de Usuario"
-          />
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{existingUser ? 'Editar Usuario' : 'Crear Usuario'}</DialogTitle>
+        </DialogHeader>
+        <div className="grid grid-cols-1 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Nombre</label>
+            <Input
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              placeholder="Nombre de Usuario..."
+            />
+          </div>
+          {!existingUser && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Contraseña</label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Contraseña..."
+              />
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium mb-1">Rol</label>
+            <Select value={rol} onValueChange={setRol}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleccione un Rol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Gerente Comercial">Gerente Comercial</SelectItem>
+                <SelectItem value="Gerente de Operaciones">Gerente de Operaciones</SelectItem>
+                <SelectItem value="Gerente Ejecutivo">Gerente Ejecutivo</SelectItem>
+                <SelectItem value="Administrador">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-
-        {/* Campo de Contraseña */}
-        <div className="mb-4">
-          <label className="block mb-2">Contraseña:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border p-2 rounded-md"
-            placeholder="Contraseña"
-          />
-        </div>
-
-        {/* Selección de Rol */}
-        <div className="mb-4">
-          <label className="block mb-2">Rol:</label>
-          <select
-            value={rol}
-            onChange={(e) => setRol(e.target.value)}
-            className="w-full border p-2 rounded-md"
-          >
-            <option value="Seleccione un Role">Seleccione un Role</option>
-            <option value="Gerente Comercial">Gerente Comercial</option>
-            <option value="Gerente de Operaciones">Gerente de Operaciones</option>
-            <option value="Gerente Ejecutivo">Gerente Ejecutivo</option>
-          </select>
-        </div>
-
-        {/* Botones de acción */}
-        <div className="flex justify-end">
-          <button
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md mr-2"
-            onClick={onCreate}
-          >
+        <div className="flex justify-end mt-4 space-x-2">
+          <Button onClick={onClose} className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition">
             Cancelar
-          </button>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md"
-            onClick={handleSaveChanges}
-          >
+          </Button>
+          <Button onClick={handleSaveChanges} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
             {existingUser ? 'Guardar Cambios' : 'Crear Usuario'}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

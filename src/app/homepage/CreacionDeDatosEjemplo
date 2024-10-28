@@ -43,9 +43,28 @@
 -- SELECT * FROM Conceptos
 -- SELECT * FROM Detalle_Conceptos
 
+-- SELECT * FROM ConceptosServicio
+
+-- DELETE FROM RecursosCotizacion
 -- DELETE FROM Detalle_Conceptos
 -- DELETE FROM Conceptos
+-- DELETE FROM ConceptosServicio
+-- DELETE FROM CotizacionesSolicitadas
 -- DELETE FROM Oportunidades
+
+-- DELETE FROM RecursosCotizacion
+
+-- SELECT * FROM CotizacionesSolicitadas;
+-- SELECT * FROM ConceptosServicio
+-- SELECT * FROM RecursosCotizacion
+-- SELECT * FROM Users
+
+-- UPDATE ConceptosServicio SET estado = 'En proceso' WHERE id = 'ae27f361-4c2b-48a9-afef-5f0b370d07a6'
+-- UPDATE CotizacionesSolicitadas SET estado = 'Terminada' WHERE id = 'c1506d49-4a24-433a-9fdf-407bcea9919f'
+
+-- DELETE FROM RecursosCotizacion
+-- DELETE FROM ConceptosServicio
+-- DELETE FROM CotizacionesSolicitadas
 
 -- DELETE FROM Oportunidades where nombre_op = 'OpPrueba'
 
@@ -213,3 +232,10 @@
 -- (NEWID(), '026', 'On-Cloud', 5100.00),  -- Portal Web Proveedores On-Cloud
 -- (NEWID(), '027', 'On-Cloud', 5100.00),  -- Receptores Electrónicos On-Cloud
 -- (NEWID(), '028', 'On-Cloud', 5100.00);  -- Solución E-Commerce On-Cloud
+
+-- SELECT * FROM LicenciasSAP
+-- DELETE FROM LicenciasSAPPriceRange WHERE licencia_id = '1234567'
+-- DELETE FROM LicenciasSAP WHERE id = '1234567'
+
+
+-- SELECT * FROM USERS
