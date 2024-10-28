@@ -5,6 +5,7 @@ export interface Concepto {
     costo_venta: number;
     margen_venta: number;
     porcentaje_margen: number;
+    recursos: RecursoCotizacion[];
   }
   
   export interface Servicio {
