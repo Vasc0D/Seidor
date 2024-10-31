@@ -1,16 +1,14 @@
-// EditarRecursosModal.tsx
-
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { RecursoCotizacion } from "./interfaces"; // Asegúrate de importar correctamente
+import { RecursoCotizacion } from "./interfaces";
 
 interface EditarRecursosModalProps {
   recursos: RecursoCotizacion[];
   isOpen: boolean;
-  onGuardar: (recursosEditados: RecursoCotizacion[]) => void;
-  onCancelar: () => void;
+  onGuardar: (recursosEditados: RecursoCotizacion[]) => void; // Agregamos la función onGuardar
+  onCancelar: () => void; // Cambiamos onClose a onCancelar
 }
 
 const EditarRecursosModal: React.FC<EditarRecursosModalProps> = ({
@@ -21,42 +19,63 @@ const EditarRecursosModal: React.FC<EditarRecursosModalProps> = ({
 }) => {
   const [recursosEditados, setRecursosEditados] = useState<RecursoCotizacion[]>(recursos);
 
-    // Al abrir el modal, inicializamos los recursos editados con los originales
-    useEffect(() => {
-        if (isOpen) {
-          setRecursosEditados([...recursos]); // Crear una copia nueva de los recursos
-        }
-      }, [isOpen, recursos]);
+  useEffect(() => {
+    if (isOpen) {
+      setRecursosEditados([...recursos]);
+    }
+  }, [isOpen, recursos]);
 
-  // Manejar cambios en la Tarifa de Venta y recalcular Total Venta y Margen Venta
-    const handleTarifaVentaChange = (index: number, tarifaVenta: number) => {
-        const nuevosRecursos = recursosEditados.map((recurso, i) =>
-        i === index
-            ? {
-                ...recurso,
-                tarifa_venta: tarifaVenta,
-                total_venta: tarifaVenta * recurso.total_dias,
-                margen_venta: (tarifaVenta * recurso.total_dias) - recurso.costo_venta,
-                porcentaje_margen: parseFloat(
-                    (
-                        ((tarifaVenta * recurso.total_dias - recurso.costo_venta) /
-                        (tarifaVenta * recurso.total_dias)) * 100
-                    ).toFixed(2)
-                ),
-            }
-            : recurso
-        );
-        setRecursosEditados(nuevosRecursos);
-    };
-
-  // Guardar los cambios
-  const handleGuardar = () => {
-    onGuardar(recursosEditados);
+  const handleTarifaVentaChange = (index: number, tarifaVenta: number) => {
+    const nuevosRecursos = recursosEditados.map((recurso, i) =>
+      i === index
+        ? {
+            ...recurso,
+            tarifa_venta: tarifaVenta,
+            total_venta: tarifaVenta * recurso.total_dias,
+            margen_venta: tarifaVenta * recurso.total_dias - recurso.costo_venta,
+            porcentaje_margen: parseFloat(
+              (((tarifaVenta * recurso.total_dias - recurso.costo_venta) / (tarifaVenta * recurso.total_dias)) * 100).toFixed(2)
+            ),
+          }
+        : recurso
+    );
+    setRecursosEditados(nuevosRecursos);
   };
 
-  // Cancelar los cambios y cerrar el modal
+  const actualizarRecursos = async () => {
+    try {
+      const response = await fetch(`http://localhost:5015/api/cotizaciones_servicios/recursos/actualizar`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(recursosEditados),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al actualizar los recursos");
+      }
+
+      alert("Recursos actualizados correctamente");
+
+      onGuardar(recursosEditados); // Llamamos a onGuardar para actualizar los datos en el modal padre
+      onCancelar(); // Cerrar el modal después de guardar
+    } catch (error) {
+      console.error(error);
+      alert("Error al actualizar los recursos");
+    }
+  };
+
+  const handleGuardar = () => {
+    const confirmed = window.confirm("¿Estás seguro de guardar los cambios?");
+    if (confirmed) {
+      actualizarRecursos();
+    }
+  };
+
   const handleCancelar = () => {
-    setRecursosEditados([...recursos]); // Restaurar los valores originales
+    setRecursosEditados([...recursos]);
     onCancelar();
   };
 
@@ -94,9 +113,7 @@ const EditarRecursosModal: React.FC<EditarRecursosModalProps> = ({
                   <td className="border px-4 py-2 text-center">
                     <Input
                       value={recurso.tarifa_venta}
-                      onChange={(e) =>
-                        handleTarifaVentaChange(index, parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => handleTarifaVentaChange(index, parseFloat(e.target.value) || 0)}
                       className="w-24"
                     />
                   </td>
@@ -118,7 +135,7 @@ const EditarRecursosModal: React.FC<EditarRecursosModalProps> = ({
             </tbody>
           </table>
           <div className="flex justify-between mt-6">
-            <Button className="bg-red-500 text-white px-6 py-2" onClick={onCancelar}>
+            <Button className="bg-red-500 text-white px-6 py-2" onClick={handleCancelar}>
               Cancelar
             </Button>
             <Button className="bg-blue-500 text-white px-6 py-2" onClick={handleGuardar}>

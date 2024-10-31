@@ -1,10 +1,8 @@
-// EditarServicioModal.tsx
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Servicio, Concepto, RecursoCotizacion } from "./interfaces";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EditarRecursosModal from "./EditarConceptoModal";
 
 interface EditarServicioModalProps {
@@ -22,45 +20,69 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
 }) => {
   const [nombreProyecto, setNombreProyecto] = useState(servicio.nombre_proyecto);
   const [conceptoSeleccionado, setConceptoSeleccionado] = useState<Concepto | null>(null);
-  const [ conceptos, setConceptos ] = useState<Concepto[]>(servicio.conceptos);
+  const [conceptos, setConceptos] = useState<Concepto[]>(servicio.conceptos);
   const [isRecursosModalOpen, setIsRecursosModalOpen] = useState(false);
   
   const handleAbrirRecursosModal = (concepto: Concepto) => {
-    setConceptoSeleccionado(concepto); // Guardamos el concepto seleccionado
-    setIsRecursosModalOpen(true); // Abrimos el modal
+    setConceptoSeleccionado(concepto);
+    setIsRecursosModalOpen(true);
+  };
+
+  const handleGuardarRecursos = (recursosEditados: RecursoCotizacion[]) => {
+    if (conceptoSeleccionado) {
+      // Convertir los valores a números explícitamente para evitar concatenaciones de strings
+      const total_venta = recursosEditados.reduce(
+        (acc, recurso) => acc + Number(recurso.total_venta), 
+        0
+      );
+      const costo_venta = recursosEditados.reduce(
+        (acc, recurso) => acc + Number(recurso.costo_venta), 
+        0
+      );
+      const margen_venta = total_venta - costo_venta;
+      const porcentaje_margen = total_venta !== 0 ? (margen_venta / total_venta) * 100 : 0;
+  
+      // Redondear los valores a dos decimales y convertir a número
+      const conceptoActualizado = {
+        ...conceptoSeleccionado,
+        recursos: recursosEditados,
+        total_venta: parseFloat(total_venta.toFixed(2)),
+        costo_venta: parseFloat(costo_venta.toFixed(2)),
+        margen_venta: parseFloat(margen_venta.toFixed(2)),
+        porcentaje_margen: parseFloat(porcentaje_margen.toFixed(2)),
+      };
+  
+      setConceptos((prevConceptos) =>
+        prevConceptos.map((concepto) =>
+          concepto.id === conceptoSeleccionado.id ? conceptoActualizado : concepto
+        )
+      );
+    }
+  
+    setIsRecursosModalOpen(false); // Cierra solo el segundo modal
   };
   
-  const handleGuardarRecursos = (recursosEditados: RecursoCotizacion[]) => {
-    // Actualizar los recursos del concepto seleccionado
-    if (conceptoSeleccionado) {
-      const nuevosConceptos = servicio.conceptos.map((concepto) =>
-        concepto.id === conceptoSeleccionado.id
-          ? { ...concepto, recursos: recursosEditados }
-          : concepto
-      );
-      onGuardar({ ...servicio, conceptos: nuevosConceptos });
-    }
-    setIsRecursosModalOpen(false);
-  };
-
-  // Guardar los cambios y enviar los datos
+  // Guardar los cambios y enviar los datos del primer modal
   const handleGuardar = () => {
-    const totalVenta = conceptos.reduce((acc, concepto) => acc + concepto.total_venta, 0);
-    const costoVenta = conceptos.reduce((acc, concepto) => acc + concepto.costo_venta, 0);
+    // Asegurarnos de que todos los cálculos sean numéricos
+    const totalVenta = conceptos.reduce((acc, concepto) => acc + Number(concepto.total_venta), 0);
+    const costoVenta = conceptos.reduce((acc, concepto) => acc + Number(concepto.costo_venta), 0);
     const margenVenta = totalVenta - costoVenta;
-
+  
+    // Redondear los valores a dos decimales y convertir a número
     const servicioEditado: Servicio = {
       ...servicio,
       nombre_proyecto: nombreProyecto,
       conceptos,
-      total_venta: totalVenta,
-      costo_venta: costoVenta,
-      margen_venta: margenVenta,
+      total_venta: parseFloat(totalVenta.toFixed(2)),
+      costo_venta: parseFloat(costoVenta.toFixed(2)),
+      margen_venta: parseFloat(margenVenta.toFixed(2)),
     };
-
+  
     onGuardar(servicioEditado);
   };
-
+  
+  
   return (
     <Dialog open={isOpen} onOpenChange={onCancelar}>
       <DialogContent className="max-w-2xl">
@@ -90,28 +112,20 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
               </tr>
             </thead>
             <tbody>
-              {servicio.conceptos.map((concepto, index) => (
+              {conceptos.map((concepto) => (
                 <tr key={concepto.id}>
                   <td className="border px-4 py-2">{concepto.nombre_concepto}</td>
-                  <td className="border px-4 py-2 text-right">
-                    <span>{concepto.total_venta}</span>
-                  </td>
-                  <td className="border px-4 py-2 text-right">
-                    <span>{concepto.costo_venta}</span>
-                  </td>
-                  <td className="border px-4 py-2 text-right">
-                    {concepto.margen_venta}
-                  </td>
-                  <td className="border px-4 py-2 text-right">
-                    {concepto.porcentaje_margen}%
-                  </td>
+                  <td className="border px-4 py-2 text-right">{concepto.total_venta}</td>
+                  <td className="border px-4 py-2 text-right">{concepto.costo_venta}</td>
+                  <td className="border px-4 py-2 text-right">{concepto.margen_venta}</td>
+                  <td className="border px-4 py-2 text-right">{concepto.porcentaje_margen}%</td>
                   <td className="border px-4 py-2 text-center">
-                  <Button
+                    <Button
                       className="bg-yellow-500 text-white rounded-full px-3 py-1"
                       onClick={() => handleAbrirRecursosModal(concepto)}
-                  >
-                    Editar
-                  </Button>               
+                    >
+                      Editar
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -119,12 +133,12 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
           </table>
 
           {conceptoSeleccionado && (
-          <EditarRecursosModal
-            recursos={conceptoSeleccionado.recursos || []}
-            isOpen={isRecursosModalOpen}
-            onGuardar={handleGuardarRecursos}
-            onCancelar={() => setIsRecursosModalOpen(false)}
-          />
+            <EditarRecursosModal
+              recursos={conceptoSeleccionado.recursos || []}
+              isOpen={isRecursosModalOpen}
+              onGuardar={handleGuardarRecursos}
+              onCancelar={() => setIsRecursosModalOpen(false)}
+            />
           )}
 
           <div className="flex justify-between mt-6">

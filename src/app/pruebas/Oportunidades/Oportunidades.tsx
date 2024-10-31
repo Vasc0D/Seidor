@@ -1463,7 +1463,7 @@ const calcularSubtotales = () => {
                   loading ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                {loading ? 'Creando Cotización...' : 'Crear Cotización'}
+                {loading ? 'Creando Cotización...' : 'Terminar Cotización'}
               </Button>
             </div>
           </div>

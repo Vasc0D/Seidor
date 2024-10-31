@@ -240,14 +240,20 @@ def enviar_cotizacion(current_user, cotizacion_id):
 @token_required
 def obtener_historial_cotizaciones(current_user):
     try:
-        # Filtrar cotizaciones cuyo estado sea 'Terminada'
-        cotizaciones = CotizacionSolicitada.query.filter_by(estado='Terminada').all()
+        # Filtrar los conceptos asignados al usuario actual que están en estado 'Terminado'
+        conceptos_terminados = ConceptoServicio.query.filter_by(gerente_id=current_user.id, estado='Terminado').all()
+
+        # Recopilar los IDs de las cotizaciones relacionadas con estos conceptos
+        cotizacion_ids = {concepto.cotizacion_id for concepto in conceptos_terminados}
+
+        # Obtener las cotizaciones correspondientes a esos IDs
+        cotizaciones = CotizacionSolicitada.query.filter(CotizacionSolicitada.id.in_(cotizacion_ids)).all()
 
         # Construir la respuesta con los datos relevantes
         resultado = []
         for cotizacion in cotizaciones:
-            conceptos = ConceptoServicio.query.filter_by(cotizacion_id=cotizacion.id).all()
-            conceptos_data = [
+            # Solo incluir conceptos en estado 'Terminado' para el usuario actual
+            conceptos = [
                 {
                     "id": concepto.id,
                     "nombre_concepto": concepto.nombre_concepto,
@@ -257,7 +263,8 @@ def obtener_historial_cotizaciones(current_user):
                     "margen_venta": concepto.margen_venta,
                     "porcentaje_margen": concepto.porcentaje_margen,
                 }
-                for concepto in conceptos
+                for concepto in cotizacion.conceptos
+                if concepto.gerente_id == current_user.id and concepto.estado == 'Terminado'
             ]
 
             resultado.append({
@@ -269,7 +276,7 @@ def obtener_historial_cotizaciones(current_user):
                 "total_venta": cotizacion.total_venta,
                 "costo_venta": cotizacion.costo_venta,
                 "margen_venta": cotizacion.margen_venta,
-                "conceptos": conceptos_data,
+                "conceptos": conceptos,
             })
 
         return jsonify(resultado), 200
@@ -339,3 +346,85 @@ def obtener_historial_cotizaciones_general(current_user):
     except Exception as e:
         print(f"Error al obtener historial de cotizaciones: {str(e)}")
         return jsonify({"error": "Error al obtener historial de cotizaciones"}), 500
+    
+@cotizaciones_servicios_bp.route('/recursos/actualizar', methods=['PATCH'])
+@token_required
+def actualizar_recursos(current_user):
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "No se han enviado datos"}), 400
+
+    try:
+        concepto_ids = set()
+
+        # Actualizar cada recurso y recolectar los IDs de conceptos relacionados
+        for recurso_data in data:
+            recurso_id = recurso_data['id']
+            tarifa_venta = float(recurso_data['tarifa_venta'])
+            total_venta = float(recurso_data['total_venta'])
+            margen_venta = float(recurso_data['margen_venta'])
+            porcentaje_margen = float(recurso_data['porcentaje_margen'])
+
+            recurso = RecursoCotizacion.query.get(recurso_id)
+            if not recurso:
+                return jsonify({"error": f"Recurso con ID {recurso_id} no encontrado"}), 404
+
+            # Actualizar datos del recurso
+            recurso.tarifa_venta = tarifa_venta
+            recurso.total_venta = total_venta
+            recurso.margen_venta = margen_venta
+            recurso.porcentaje_margen = porcentaje_margen
+
+            # Añadir el concepto_id del recurso para recalcular ConceptoServicio luego
+            concepto_ids.add(recurso.concepto_id)
+
+        # Recalcular y actualizar los totales para cada ConceptoServicio
+        cotizacion_ids = set()
+        for concepto_id in concepto_ids:
+            concepto = ConceptoServicio.query.get(concepto_id)
+            if not concepto:
+                continue
+
+            # Sumar los valores de todos los recursos asociados al concepto
+            total_venta_concepto = sum(float(r.total_venta) for r in concepto.recursos)
+            costo_venta_concepto = sum(float(r.costo_venta) for r in concepto.recursos)
+            margen_venta_concepto = total_venta_concepto - costo_venta_concepto
+            porcentaje_margen_concepto = (margen_venta_concepto / total_venta_concepto) * 100 if total_venta_concepto else 0
+
+            # Actualizar el concepto con los valores recalculados
+            concepto.total_venta = total_venta_concepto
+            concepto.costo_venta = costo_venta_concepto
+            concepto.margen_venta = margen_venta_concepto
+            concepto.porcentaje_margen = porcentaje_margen_concepto
+
+            # Agregar el cotizacion_id para calcular CotizacionSolicitada después
+            cotizacion_ids.add(concepto.cotizacion_id)
+
+        # Recalcular y actualizar los totales para cada CotizacionSolicitada
+        for cotizacion_id in cotizacion_ids:
+            cotizacion = CotizacionSolicitada.query.get(cotizacion_id)
+            if not cotizacion:
+                continue
+
+            # Sumar los valores de todos los conceptos asociados a la cotización
+            total_venta_cotizacion = sum(float(c.total_venta) for c in cotizacion.conceptos)
+            costo_venta_cotizacion = sum(float(c.costo_venta) for c in cotizacion.conceptos)
+            margen_venta_cotizacion = total_venta_cotizacion - costo_venta_cotizacion
+            porcentaje_margen_cotizacion = (margen_venta_cotizacion / total_venta_cotizacion) * 100 if total_venta_cotizacion else 0
+
+            # Actualizar la cotización con los valores recalculados
+            cotizacion.total_venta = total_venta_cotizacion
+            cotizacion.costo_venta = costo_venta_cotizacion
+            cotizacion.margen_venta = margen_venta_cotizacion
+            cotizacion.porcentaje_margen = porcentaje_margen_cotizacion
+
+        # Confirmar todas las actualizaciones en la base de datos
+        db.session.commit()
+
+        return jsonify({"message": "Recursos, conceptos y cotización actualizados correctamente"}), 200
+
+    except Exception as e:
+        print(f"Error al actualizar recursos: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": "Error al actualizar recursos"}), 500

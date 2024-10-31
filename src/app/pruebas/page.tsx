@@ -10,6 +10,7 @@ import Conceptos from './Administrador/Conceptos/Conceptos';
 import CotizacionesPendientes from './SolicitudCotizaciones/cotizacionesPendientesGerenteOperaciones'; // Importar
 import HistorialCotizaciones from './SolicitudCotizaciones/historialCotizacionesGerenteOperaciones'; // Importar
 import CotizacionesPendientesGeneral from './SolicitudCotizaciones/cotizacionesPendientesGeneral'; // Importar
+import HistorialCotizacionesGeneral from './SolicitudCotizaciones/historialCotizacionesGeneral'; // Importar
 
 const Page = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -79,7 +80,11 @@ const Page = () => {
 
         {activePage === 'historial-cotizaciones' && (
           <div>
-            <HistorialCotizaciones />
+            {role === 'Gerente de Operaciones' ? (
+              <HistorialCotizaciones />
+            ) : (
+              <HistorialCotizacionesGeneral />
+            )}
           </div>
         )}
 
