@@ -52,12 +52,20 @@
 -- DELETE FROM CotizacionesSolicitadas
 -- DELETE FROM Oportunidades
 
+-- DELETE FROM ConceptosServicio WHERE cotizacion_id = '6d9b8094-491f-4162-b3f4-bc7154710b2a'
+-- DELETE FROM CotizacionesSolicitadas WHERE id = '6d9b8094-491f-4162-b3f4-bc7154710b2a'
+-- DELETE FROM Oportunidades WHERE id = 'dc4fd9a4-c29b-4076-bc8b-2050ed4a7f5b';
+
+-- DELETE FROM ConceptosServicio WHERE cotizacion_id = '271b8ce0-6b7d-4b3a-bc2b-67122faa8034';
+-- DELETE FROM CotizacionesSolicitadas WHERE id = '271b8ce0-6b7d-4b3a-bc2b-67122faa8034';
+-- DELETE FROM Oportunidades WHERE id = 'ef840020-bdd7-4e91-a0ba-65c3fc90b6d7'
+
 -- DELETE FROM RecursosCotizacion
 
 -- SELECT * FROM CotizacionesSolicitadas;
-SELECT * FROM ConceptosServicio;
+-- SELECT * FROM ConceptosServicio;
 -- SELECT * FROM RecursosCotizacion
-SELECT * FROM Users
+-- SELECT * FROM Users
 
 -- UPDATE ConceptosServicio SET estado = 'En proceso' WHERE id = 'ae27f361-4c2b-48a9-afef-5f0b370d07a6'
 -- UPDATE CotizacionesSolicitadas SET estado = 'Terminada' WHERE id = 'c1506d49-4a24-433a-9fdf-407bcea9919f'

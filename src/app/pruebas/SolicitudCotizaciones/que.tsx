@@ -50,6 +50,7 @@ const CotizacionesPendientes = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [conceptoSeleccionado, setConceptoSeleccionado] = useState<Concepto | null>(null);
 
+  // Fetch de las cotizaciones pendientes
   const fetchCotizacionesPendientes = async () => {
     try {
       const response = await fetch('http://localhost:5015/api/cotizaciones_servicios/pendientes', {
@@ -97,7 +98,7 @@ const CotizacionesPendientes = () => {
     } catch (error) {
       console.error('Error al enviar la cotización:', error);
     }
-  };   
+  };
 
   const handleEditar = async (concepto: Concepto) => {
     try {
@@ -118,7 +119,7 @@ const CotizacionesPendientes = () => {
   };
 
   if (isLoading) {
-    return <p className="text-center text-lg font-medium text-gray-600 py-5">Cargando cotizaciones pendientes...</p>;
+    return <p>Cargando cotizaciones pendientes...</p>;
   }
 
   if (conceptoSeleccionado) {
@@ -140,18 +141,12 @@ const CotizacionesPendientes = () => {
 
   const actualizarEstadoConcepto = async (conceptoId: string, nuevoEstado: string) => {
     try {
-      const response = await fetch(`http://localhost:5015/api/cotizaciones_servicios/conceptos/${conceptoId}/estado`, {
+      await fetch(`http://localhost:5015/api/cotizaciones_servicios/conceptos/${conceptoId}/estado`, {
         method: 'PATCH',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: nuevoEstado }),
       });
-
-      if (!response.ok) {
-        alert('Error al actualizar el estado del concepto.');
-      }
     } catch (error) {
       console.error('Error al actualizar el estado:', error);
     }
@@ -186,7 +181,7 @@ const CotizacionesPendientes = () => {
             cotizaciones.map((cotizacion) => (
               <React.Fragment key={cotizacion.id}>
                 <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="border-b px-4 py-4 flex items-center space-x-2">
+                  <td className="border-b px-4 py-2 flex items-center space-x-2">
                     <button onClick={() => toggleExpandCotizacion(cotizacion.id)} className="text-gray-600 hover:text-gray-900">
                       {expandedCotizacion === cotizacion.id ? <FaChevronDown /> : <FaChevronRight />}
                     </button>
@@ -196,7 +191,7 @@ const CotizacionesPendientes = () => {
                   <td className="border-b px-4 py-2 text-gray-700">{cotizacion.owner}</td>
                   <td className="border-b px-4 py-2">
                     <Button
-                      className="bg-red-500 text-white px-4 py-2 rounded"
+                      className="bg-blue-500 text-white px-3 py-1 rounded-full"
                       onClick={() => handleEnviarCotizacion(cotizacion.id)}
                       disabled={!todosConceptosTerminados(cotizacion)}
                     >
@@ -206,45 +201,42 @@ const CotizacionesPendientes = () => {
                 </tr>
                 {expandedCotizacion === cotizacion.id && (
                   <tr>
-                    <td colSpan={4} className="bg-gray-50">
-                      <div className="p-4">
-                        <h2 className="text-lg font-medium text-gray-700 mb-4">Detalles de Conceptos</h2>
-                        <table className="w-full border-collapse">
-                          <thead>
-                            <tr>
-                              <th className="border-b px-4 py-2 text-left text-sm font-semibold text-gray-600">Concepto</th>
-                              <th className="border-b px-4 py-2 text-left text-sm font-semibold text-gray-600">Estado</th>
-                              <th className="border-b px-4 py-2 text-left text-sm font-semibold text-gray-600">Acción</th>
+                    <td colSpan={4} className="bg-gray-50 p-4 rounded-lg">
+                      <table className="w-full">
+                        <thead>
+                          <tr>
+                            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600">Concepto</th>
+                            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600">Estado</th>
+                            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600">Acción</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {cotizacion.conceptos.map((concepto) => (
+                            <tr key={concepto.id}>
+                              <td className="px-4 py-2 text-gray-800">{concepto.nombre_concepto}</td>
+                              <td className="px-4 py-2">
+                                <Select
+                                  value={concepto.estado}
+                                  onValueChange={(nuevoEstado) => handleEstadoChange(concepto.id, nuevoEstado)}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona un estado" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="En proceso">En proceso</SelectItem>
+                                    <SelectItem value="Completado">Completado</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                              <td className="px-4 py-2">
+                                <Button className="bg-yellow-500 text-white px-3 py-1 rounded-full" onClick={() => handleEditar(concepto)}>
+                                  Atender/Editar
+                                </Button>
+                              </td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {cotizacion.conceptos.map((concepto) => (
-                              <tr key={concepto.id} className="hover:bg-white transition-colors">
-                                <td className="px-4 py-2 text-gray-800">{concepto.nombre_concepto}</td>
-                                <td className="px-4 py-2">
-                                  <Select
-                                    value={concepto.estado}
-                                    onValueChange={(nuevoEstado) => handleEstadoChange(concepto.id, nuevoEstado)}
-                                  >
-                                    <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Selecciona un estado" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="En proceso">En proceso</SelectItem>
-                                      <SelectItem value="Completado">Completado</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </td>
-                                <td className="px-4 py-2">
-                                  <Button className="bg-yellow-500 text-white px-3 py-1 rounded" onClick={() => handleEditar(concepto)}>
-                                    Atender/Editar
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
                     </td>
                   </tr>
                 )}
@@ -252,8 +244,8 @@ const CotizacionesPendientes = () => {
             ))
           ) : (
             <tr>
-              <td className="px-4 py-5 text-center text-gray-600" colSpan={4}>
-                Usted no cuenta con Cotizaciones Pendientes.
+              <td className="border-b px-4 py-2 text-center text-gray-600" colSpan={4}>
+                No tienes cotizaciones pendientes.
               </td>
             </tr>
           )}
