@@ -79,6 +79,14 @@ const EditarRecursosModal: React.FC<EditarRecursosModalProps> = ({
     onCancelar();
   };
 
+  function formatNumberWithCommas(number: any) {
+    if (typeof number !== 'number') {
+      number = Number(number); // Convertir a número si es posible
+      if (isNaN(number)) return '-'; // Retornar un guion si el valor no es un número válido
+    }
+    return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onCancelar}>
       <DialogContent className="max-w-screen-xl">
@@ -124,9 +132,9 @@ const EditarRecursosModal: React.FC<EditarRecursosModalProps> = ({
                   <td className="border px-3 py-2 text-center">{recurso.pi_deply}</td>
                   <td className="border px-3 py-2 text-center">{recurso.acompanamiento}</td>
                   <td className="border px-3 py-2 text-center">{recurso.total_dias}</td>
-                  <td className="border px-3 py-2 text-center">{recurso.total_venta}</td>
-                  <td className="border px-3 py-2 text-center">{recurso.costo_venta}</td>
-                  <td className="border px-3 py-2 text-center">{recurso.margen_venta}</td>
+                  <td className="border px-3 py-2 text-center">{formatNumberWithCommas(recurso.total_venta)}</td>
+                  <td className="border px-3 py-2 text-center">{formatNumberWithCommas(recurso.costo_venta)}</td>
+                  <td className="border px-3 py-2 text-center">{formatNumberWithCommas(recurso.margen_venta)}</td>
                   <td className="border px-3 py-2 text-center">
                     {recurso.porcentaje_margen}%
                   </td>

@@ -1,6 +1,7 @@
 export interface Concepto {
     id: string;
     nombre_concepto: string;
+    gerente_id: string;
     total_venta: number;
     costo_venta: number;
     margen_venta: number;

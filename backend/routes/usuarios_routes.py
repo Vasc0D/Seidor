@@ -30,12 +30,16 @@ def create_user():
     data = request.json
 
     username = data.get('username')
+    name = data.get('name')
     password = data.get('password')
     role = data.get('role')
 
     # Verificar si todos los campos necesarios están presentes
     if not username :
         return jsonify({'message': 'Faltan el username'}), 400
+    
+    if not name:
+        return jsonify({'message': 'Falta el nombre'}), 400
     
     if not password:
         return jsonify({'message': 'Falta la contraseña'}), 400
@@ -53,7 +57,7 @@ def create_user():
 
 
     # Crear nuevo usuario
-    new_user = User(username=username, password=hashed_password, role=role)
+    new_user = User(username=username, name=name, password=hashed_password, role=role)
 
     # Guardar en la base de datos
     try:
@@ -69,6 +73,8 @@ def create_user():
 def update_user(user_id):
     data = request.json
 
+    print("DATA", data)
+
     # Obtener el usuario existente
     user = User.query.get(user_id)
     if not user:
@@ -76,10 +82,14 @@ def update_user(user_id):
 
     # Actualizar los campos necesarios
     username = data.get('username')
+    name = data.get('name')
     role = data.get('role')
 
     if username:
         user.username = username
+
+    if name:
+        user.name = name
     
     if role:
         user.role = role

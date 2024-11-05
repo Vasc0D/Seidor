@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight, FaSearch } from 'react-icons/fa';
 import React from 'react';
 
 interface Concepto {
@@ -19,8 +19,10 @@ interface Cotizacion {
 
 const HistorialCotizacionesGerenteOperaciones = () => {
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
+  const [filteredCotizaciones, setFilteredCotizaciones] = useState<Cotizacion[]>([]);
   const [expandedCotizacion, setExpandedCotizacion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch de las cotizaciones terminadas
   const fetchHistorialCotizaciones = async () => {
@@ -33,6 +35,7 @@ const HistorialCotizacionesGerenteOperaciones = () => {
       if (response.ok) {
         const data = await response.json();
         setCotizaciones(data);
+        setFilteredCotizaciones(data);
         console.log('Historial de cotizaciones:', data);
       } else {
         console.error('Error al obtener el historial de cotizaciones.');
@@ -49,6 +52,20 @@ const HistorialCotizacionesGerenteOperaciones = () => {
     fetchHistorialCotizaciones();
   }, []);
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value) {
+      const filtered = cotizaciones.filter((cotizacion) =>
+        cotizacion.cliente.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCotizaciones(filtered);
+    } else {
+      setFilteredCotizaciones(cotizaciones);
+    }
+  };
+
   const toggleExpandCotizacion = (cotizacionId: string) => {
     setExpandedCotizacion((prevId) => (prevId === cotizacionId ? null : cotizacionId));
   };
@@ -61,6 +78,18 @@ const HistorialCotizacionesGerenteOperaciones = () => {
     <div className="p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-3xl font-semibold text-gray-800 mb-6 border-b pb-4">Historial de Cotizaciones</h1>
 
+      {/* Buscador */}
+      <div className="mb-4 flex items-center border rounded px-3 py-2">
+        <FaSearch className="text-gray-600 mr-2" />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder="Cliente"
+          className="px-2 flex border rounded w-full"
+        />
+      </div>
+
       <table className="w-full border-collapse">
         <thead>
           <tr className="bg-gray-100">
@@ -71,8 +100,8 @@ const HistorialCotizacionesGerenteOperaciones = () => {
           </tr>
         </thead>
         <tbody>
-          {cotizaciones.length > 0 ? (
-            cotizaciones.map((cotizacion) => (
+          {filteredCotizaciones.length > 0 ? (
+            filteredCotizaciones.map((cotizacion) => (
               <React.Fragment key={cotizacion.id}>
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="border-b px-4 py-2 flex items-center space-x-2">

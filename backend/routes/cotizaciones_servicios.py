@@ -3,6 +3,7 @@
 from flask import Blueprint, request, jsonify
 from models import CotizacionSolicitada, ConceptoServicio, RecursoCotizacion, db
 from auth import token_required
+from sqlalchemy import or_
 
 cotizaciones_servicios_bp = Blueprint('cotizaciones_servicios', __name__)
 
@@ -11,8 +12,9 @@ cotizaciones_servicios_bp = Blueprint('cotizaciones_servicios', __name__)
 def obtener_cotizaciones_pendientes(current_user):
     try:
         # Filtrar los conceptos en proceso del gerente actual
-        conceptos_en_proceso = ConceptoServicio.query.filter_by(
-            gerente_id=current_user.id, estado='En proceso'
+        conceptos_en_proceso = ConceptoServicio.query.filter(
+            ConceptoServicio.gerente_id == current_user.id,
+            or_(ConceptoServicio.estado == 'En proceso', ConceptoServicio.estado == 'Completado')
         ).all()
 
         # Crear un diccionario agrupando los conceptos por cotización

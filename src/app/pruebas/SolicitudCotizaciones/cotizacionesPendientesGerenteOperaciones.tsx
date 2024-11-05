@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight, FaSearch } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 import RecursosCotizacion from './atenderCotizacion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -46,9 +46,11 @@ interface Cotizacion {
 
 const CotizacionesPendientes = () => {
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
+  const [filteredCotizaciones, setFilteredCotizaciones] = useState<Cotizacion[]>([]);
   const [expandedCotizacion, setExpandedCotizacion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [conceptoSeleccionado, setConceptoSeleccionado] = useState<Concepto | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchCotizacionesPendientes = async () => {
     try {
@@ -60,6 +62,7 @@ const CotizacionesPendientes = () => {
       if (response.ok) {
         const data = await response.json();
         setCotizaciones(data);
+        setFilteredCotizaciones(data);
       } else {
         console.error('Error al obtener las cotizaciones pendientes.');
       }
@@ -73,6 +76,20 @@ const CotizacionesPendientes = () => {
   useEffect(() => {
     fetchCotizacionesPendientes();
   }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value) {
+      const filtered = cotizaciones.filter((cotizacion) =>
+        cotizacion.cliente.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCotizaciones(filtered);
+    } else {
+      setFilteredCotizaciones(cotizaciones);
+    }
+  };
 
   const toggleExpandCotizacion = (cotizacionId: string) => {
     setExpandedCotizacion((prevId) => (prevId === cotizacionId ? null : cotizacionId));
@@ -138,8 +155,23 @@ const CotizacionesPendientes = () => {
     return cotizacion.conceptos.every((concepto) => concepto.estado === 'Completado');
   };
 
-  const actualizarEstadoConcepto = async (conceptoId: string, nuevoEstado: string) => {
+  const handleEstadoChange = async (conceptoId: string, nuevoEstado: string) => {
+    // Encontrar el concepto actual para verificar los recursos
+    const concepto = cotizaciones
+      .map((cotizacion) => cotizacion.conceptos)
+      .flat()
+      .find((concepto) => concepto.id === conceptoId);
+
+
+    console.log('Concept' , concepto);
+    // Verificar si el estado nuevo es 'Completado' y si el concepto tiene recursos
+    if (nuevoEstado === 'Completado' && concepto?.recursos?.length === 0) {
+      alert('No se puede marcar como completado un concepto sin recursos.');
+      return;
+    }
+  
     try {
+      // Enviar el nuevo estado al backend
       const response = await fetch(`http://localhost:5015/api/cotizaciones_servicios/conceptos/${conceptoId}/estado`, {
         method: 'PATCH',
         credentials: 'include',
@@ -148,29 +180,42 @@ const CotizacionesPendientes = () => {
         },
         body: JSON.stringify({ estado: nuevoEstado }),
       });
+  
+      if (response.ok) {
+        // Actualizar el estado local solo si la respuesta del backend es exitosa
+        const nuevasCotizaciones = cotizaciones.map((cotizacion) => ({
+          ...cotizacion,
+          conceptos: cotizacion.conceptos.map((concepto) =>
+            concepto.id === conceptoId ? { ...concepto, estado: nuevoEstado } : concepto
+          ),
+        }));
+        setCotizaciones(nuevasCotizaciones);
 
-      if (!response.ok) {
-        alert('Error al actualizar el estado del concepto.');
+        await fetchCotizacionesPendientes();
+      } else {
+        alert('Error al actualizar el estado del concepto en el backend.');
       }
     } catch (error) {
       console.error('Error al actualizar el estado:', error);
     }
   };
-
-  const handleEstadoChange = (conceptoId: string, nuevoEstado: string) => {
-    const nuevasCotizaciones = cotizaciones.map((cotizacion) => ({
-      ...cotizacion,
-      conceptos: cotizacion.conceptos.map((concepto) =>
-        concepto.id === conceptoId ? { ...concepto, estado: nuevoEstado } : concepto
-      ),
-    }));
-    setCotizaciones(nuevasCotizaciones);
-    actualizarEstadoConcepto(conceptoId, nuevoEstado);
-  };
+  
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-3xl font-semibold text-gray-800 mb-6 border-b pb-4">Cotizaciones Pendientes</h1>
+
+      {/* Buscador */}
+      <div className="mb-4 flex items-center border rounded px-3 py-2">
+        <FaSearch className="text-gray-600 mr-2" />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder="Cliente"
+          className="px-2 flex border rounded w-full"
+        />
+      </div>
 
       <table className="w-full border-collapse">
         <thead>
@@ -182,8 +227,8 @@ const CotizacionesPendientes = () => {
           </tr>
         </thead>
         <tbody>
-          {cotizaciones.length > 0 ? (
-            cotizaciones.map((cotizacion) => (
+          {filteredCotizaciones.length > 0 ? (
+            filteredCotizaciones.map((cotizacion) => (
               <React.Fragment key={cotizacion.id}>
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="border-b px-4 py-4 flex items-center space-x-2">

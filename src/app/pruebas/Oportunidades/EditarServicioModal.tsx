@@ -81,7 +81,14 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
   
     onGuardar(servicioEditado);
   };
-  
+
+  function formatNumberWithCommas(number: any) {
+    if (typeof number !== 'number') {
+      number = Number(number); // Convertir a número si es posible
+      if (isNaN(number)) return '-'; // Retornar un guion si el valor no es un número válido
+    }
+    return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
   
   return (
     <Dialog open={isOpen} onOpenChange={onCancelar}>
@@ -115,9 +122,9 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
               {conceptos.map((concepto) => (
                 <tr key={concepto.id}>
                   <td className="border px-4 py-2">{concepto.nombre_concepto}</td>
-                  <td className="border px-4 py-2 text-right">{concepto.total_venta}</td>
-                  <td className="border px-4 py-2 text-right">{concepto.costo_venta}</td>
-                  <td className="border px-4 py-2 text-right">{concepto.margen_venta}</td>
+                  <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.total_venta)}</td>
+                  <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.costo_venta)}</td>
+                  <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.margen_venta)}</td>
                   <td className="border px-4 py-2 text-right">{concepto.porcentaje_margen}%</td>
                   <td className="border px-4 py-2 text-center">
                     <Button

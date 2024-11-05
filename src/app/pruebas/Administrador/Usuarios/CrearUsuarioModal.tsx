@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
@@ -7,37 +7,41 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@
 interface CrearUsuarioModalProps {
   onCreate?: () => void;
   onUpdate?: (id: string) => void;
-  existingUser?: { id: string; username: string; role: string };
+  existingUser?: { id: string; username: string; name: string; role: string };
   onClose?: () => void;
   isOpen: boolean;
 }
 
 const CrearUsuarioModal: React.FC<CrearUsuarioModalProps> = ({ onCreate, onUpdate, existingUser, onClose, isOpen }) => {
-  const [nombre, setNombre] = useState('');
+  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('');
 
   useEffect(() => {
     if (existingUser) {
-      setNombre(existingUser.username);
+      setUsername(existingUser.username);
+      setName(existingUser.name); 
       setRol(existingUser.role);
+      console.log('existingUser:', existingUser);
     } else {
-      setNombre('');
+      setUsername('');
+      setName('');
       setPassword('');
       setRol('');
     }
   }, [existingUser]);
 
   const handleSaveChanges = async () => {
-    if (!nombre || !rol) {
+    if (!username || !rol || !name) {
       alert('Por favor complete todos los campos obligatorios.');
       return;
     }
 
     try {
       const userData = existingUser
-        ? { username: nombre, role: rol }
-        : { username: nombre, password, role: rol };
+        ? { username, name, role: rol }
+        : { username, name, password, role: rol };
 
       const url = existingUser
         ? `http://localhost:5015/api/usuarios/${existingUser.id}`
@@ -78,8 +82,16 @@ const CrearUsuarioModal: React.FC<CrearUsuarioModalProps> = ({ onCreate, onUpdat
           <div>
             <label className="block text-sm font-medium mb-1">Nombre</label>
             <Input
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nombre de la persona..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Nombre de Usuario</label>
+            <Input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               placeholder="Nombre de Usuario..."
             />
           </div>

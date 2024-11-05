@@ -6,6 +6,7 @@ import CrearUsuarioModal from './CrearUsuarioModal';
 interface Usuario {
   id: string;
   username: string;
+  name: string;
   role: string;
 }
 

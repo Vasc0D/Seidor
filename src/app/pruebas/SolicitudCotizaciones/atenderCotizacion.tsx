@@ -213,134 +213,145 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
     }
   };
 
+  function formatNumberWithCommas(number: any) {
+    if (typeof number !== 'number') {
+      number = Number(number); // Convertir a número si es posible
+      if (isNaN(number)) return '-'; // Retornar un guion si el valor no es un número válido
+    }
+    return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">Cotización de: {concepto.nombre_concepto}</h1>
-      <table className="w-full border-collapse bg-gray-50 rounded-lg shadow-sm">
-        <thead>
-          <tr className="bg-gray-100 text-gray-700 text-sm font-semibold">
-            <th className="px-4 py-2">Recursos</th>
-            <th className="px-4 py-2">Tarifa</th>
-            <th className="px-4 py-2">Preparación</th>
-            <th className="px-4 py-2">BBP</th>
-            <th className="px-4 py-2">DEV</th>
-            <th className="px-4 py-2">PYA</th>
-            <th className="px-4 py-2">PYA</th>
-            <th className="px-4 py-2">DEPLY</th>
-            <th className="px-4 py-2">Acompañamiento</th>
-            <th className="px-4 py-2">Total días</th>
-            <th className="px-4 py-2">Total venta</th>
-            <th className="px-4 py-2">Costo venta</th>
-            <th className="px-4 py-2">Margen venta</th>
-            <th className="px-4 py-2">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recursos.map((recurso, index) => (
-            <tr key={index} className="text-center hover:bg-gray-50 transition">
-              <td className="border border-gray-300 px-4 py-2">
-                <Select
-                  value={recurso.recurso}
-                  onValueChange={(value) => handleChange(index, 'recurso', value)}
-                >
-                  <SelectTrigger className="rounded-full w-full bg-white text-sm">
-                    <SelectValue placeholder="Selecciona un recurso" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {recursosDisponibles.map((recursoDisponible) => (
-                      <SelectItem key={recursoDisponible.id} value={recursoDisponible.recurso}>
-                        {recursoDisponible.recurso}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </td>
-              <td className="border border-gray-300 px-4 py-2 text-gray-700 text-sm">
-                {recurso.tarifa_lista}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Input
-                  value={recurso.preparacion}
-                  onChange={(e) => handleChange(index, 'preparacion', e.target.value)}
-                  className="text-center rounded bg-gray-50 text-sm"
-                />
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Input
-                  value={recurso.bbp}
-                  onChange={(e) => handleChange(index, 'bbp', e.target.value)}
-                  className="text-center rounded bg-gray-50 text-sm"
-                />
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Input
-                  value={recurso.r_dev}
-                  onChange={(e) => handleChange(index, 'r_dev', e.target.value)}
-                  className="text-center rounded bg-gray-50 text-sm"
-                />
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Input
-                  value={recurso.r_pya}
-                  onChange={(e) => handleChange(index, 'r_pya', e.target.value)}
-                  className="text-center rounded bg-gray-50 text-sm"
-                />
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Input
-                  value={recurso.pi_pya}
-                  onChange={(e) => handleChange(index, 'pi_pya', e.target.value)}
-                  className="text-center rounded bg-gray-50 text-sm"
-                />
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Input
-                  value={recurso.pi_deply}
-                  onChange={(e) => handleChange(index, 'pi_deply', e.target.value)}
-                  className="text-center rounded bg-gray-50 text-sm"
-                />
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Input
-                  value={recurso.acompanamiento}
-                  onChange={(e) => handleChange(index, 'acompanamiento', e.target.value)}
-                  className="text-center rounded bg-gray-50 text-sm"
-                />
-              </td>
-              <td className="border border-gray-300 px-4 py-2 text-gray-700 text-sm">
-                {recurso.total_dias}
-              </td>
-              <td className="border border-gray-300 px-4 py-2 text-gray-700 text-sm">
-                {recurso.total_venta}
-              </td>
-              <td className="border border-gray-300 px-4 py-2 text-gray-700 text-sm">
-                {recurso.costo_venta}
-              </td>
-              <td className="border border-gray-300 px-4 py-2 text-gray-700 text-sm">
-                {recurso.margen_venta}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Button
-                  onClick={() => handleEliminarRecurso(index)}
-                  className="bg-red-500 text-white rounded-full px-3 py-1 text-sm"
-                >
-                  -
-                </Button>
-              </td>
+      <h1 className="text-xl font-bold mb-4 text-gray-800">Cotización de: {concepto.nombre_concepto}</h1>
+
+      <div className='overflow-hidden'>
+        <table className="w-full border-collapse bg-gray-50 rounded-lg shadow-sm text-xs">
+          <thead>
+            <tr className="bg-gray-100 text-gray-700 font-semibold">
+              <th className="px-2 py-1">Recursos</th>
+              <th className="px-2 py-1">Tarifa</th>
+              <th className="px-2 py-1">Preparación</th>
+              <th className="px-2 py-1">BBP</th>
+              <th className="px-2 py-1">DEV</th>
+              <th className="px-2 py-1">PYA</th>
+              <th className="px-2 py-1">PYA</th>
+              <th className="px-2 py-1">DEPLY</th>
+              <th className="px-2 py-1">Acompañamiento</th>
+              <th className="px-2 py-1">Total días</th>
+              <th className="px-2 py-1">Total venta</th>
+              <th className="px-2 py-1">Costo venta</th>
+              <th className="px-2 py-1">Margen venta</th>
+              <th className="px-2 py-1">Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {recursos.map((recurso, index) => (
+              <tr key={index} className="text-center hover:bg-gray-50 transition">
+                <td className="border border-gray-300 px-2 py-1">
+                  <Select
+                    value={recurso.recurso}
+                    onValueChange={(value) => handleChange(index, 'recurso', value)}
+                  >
+                    <SelectTrigger className="rounded-full w-full bg-white text-xs">
+                      <SelectValue placeholder="Selecciona un recurso" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {recursosDisponibles.map((recursoDisponible) => (
+                        <SelectItem key={recursoDisponible.id} value={recursoDisponible.recurso}>
+                          {recursoDisponible.recurso}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </td>
+                <td className="border border-gray-300 px-2 py-1 text-gray-700 text-xs">
+                  {recurso.tarifa_lista}
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  <Input
+                    value={recurso.preparacion}
+                    onChange={(e) => handleChange(index, 'preparacion', e.target.value)}
+                    className="text-center rounded bg-gray-50 text-xs"
+                  />
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  <Input
+                    value={recurso.bbp}
+                    onChange={(e) => handleChange(index, 'bbp', e.target.value)}
+                    className="text-center rounded bg-gray-50 text-xs"
+                  />
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  <Input
+                    value={recurso.r_dev}
+                    onChange={(e) => handleChange(index, 'r_dev', e.target.value)}
+                    className="text-center rounded bg-gray-50 text-xs"
+                  />
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  <Input
+                    value={recurso.r_pya}
+                    onChange={(e) => handleChange(index, 'r_pya', e.target.value)}
+                    className="text-center rounded bg-gray-50 text-xs"
+                  />
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  <Input
+                    value={recurso.pi_pya}
+                    onChange={(e) => handleChange(index, 'pi_pya', e.target.value)}
+                    className="text-center rounded bg-gray-50 text-xs"
+                  />
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  <Input
+                    value={recurso.pi_deply}
+                    onChange={(e) => handleChange(index, 'pi_deply', e.target.value)}
+                    className="text-center rounded bg-gray-50 text-xs"
+                  />
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  <Input
+                    value={recurso.acompanamiento}
+                    onChange={(e) => handleChange(index, 'acompanamiento', e.target.value)}
+                    className="text-center rounded bg-gray-50 text-xs"
+                  />
+                </td>
+                <td className="border border-gray-300 px-2 py-1 text-gray-700 text-xs">
+                  {recurso.total_dias}
+                </td>
+                <td className="border border-gray-300 px-2 py-1 text-gray-700 text-xs">
+                  {formatNumberWithCommas(recurso.total_venta)}
+                </td>
+                <td className="border border-gray-300 px-2 py-1 text-gray-700 text-xs">
+                  {formatNumberWithCommas(recurso.costo_venta)}
+                </td>
+                <td className="border border-gray-300 px-2 py-1 text-gray-700 text-xs">
+                  {formatNumberWithCommas(recurso.margen_venta)}
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  <Button
+                    onClick={() => handleEliminarRecurso(index)}
+                    className="bg-red-500 text-white rounded-full px-3 py-1 text-xs"
+                  >
+                    -
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
   
       <div className="flex justify-between mt-6">
         <Button onClick={handleAgregarRecurso} className="bg-green-500 text-white rounded-full px-3 py-1 text-sm">
           +
         </Button>
         <div className="space-x-4">
-          <Button onClick={onClose} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">
+          <Button onClick={onClose} className="bg-red-500 text-white px-4 py-2 rounded-lg text-xs">
             Cancelar
           </Button>
-          <Button onClick={() => handleGuardar(recursos)} className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
+          <Button onClick={() => handleGuardar(recursos)} className="bg-blue-500 text-white px-4 py-2 rounded-lg text-xs">
             Terminar Cotización
           </Button>
         </div>

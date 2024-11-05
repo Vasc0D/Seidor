@@ -20,6 +20,9 @@
 
 -- DELETE FROM Clientes WHERE id = 1
 
+-- UPDATE Users SET name = 'Jorge Rocca' WHERE id = '7e65e326-1467-49d8-b943-301c17cad43d';
+SELECT * FROM Users;
+
 -- DROP TABLE Detalle_Conceptos;
 -- DROP TABLE Conceptos;
 -- DROP TABLE Oportunidades;
@@ -40,10 +43,10 @@
 -- SELECT * FROM Conceptos
 
 -- SELECT * FROM Oportunidades
--- SELECT * FROM Conceptos
+-- SELECT * FROM Conceptos;
 -- SELECT * FROM Detalle_Conceptos
 
--- SELECT * FROM ConceptosServicio
+-- SELECT * FROM ConceptosServicio;
 
 -- DELETE FROM RecursosCotizacion
 -- DELETE FROM Detalle_Conceptos
@@ -60,11 +63,17 @@
 -- DELETE FROM CotizacionesSolicitadas WHERE id = '271b8ce0-6b7d-4b3a-bc2b-67122faa8034';
 -- DELETE FROM Oportunidades WHERE id = 'ef840020-bdd7-4e91-a0ba-65c3fc90b6d7'
 
+-- UPDATE ConceptosServicio SET estado = 'Terminado' WHERE id = '71fb7b11-312e-4e24-b771-166a440be0dc';
+-- UPDATE CotizacionesSolicitadas SET estado = 'Terminada' WHERE id = '64945b72-fbd2-4b26-9de7-a64a1a0ed412';
+-- SELECT * FROM CotizacionesSolicitadas;
+
+UPDATE ConceptosServicio SET estado = 'En proceso' WHERE id = '599a447c-d6b4-417f-9274-065e5d8ed510';
+
 -- DELETE FROM RecursosCotizacion
 
 -- SELECT * FROM CotizacionesSolicitadas;
--- SELECT * FROM ConceptosServicio;
--- SELECT * FROM RecursosCotizacion
+SELECT * FROM ConceptosServicio;
+SELECT * FROM RecursosCotizacion;
 -- SELECT * FROM Users
 
 -- UPDATE ConceptosServicio SET estado = 'En proceso' WHERE id = 'ae27f361-4c2b-48a9-afef-5f0b370d07a6'
