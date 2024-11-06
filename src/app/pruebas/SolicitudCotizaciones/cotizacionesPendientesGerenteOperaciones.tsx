@@ -50,7 +50,8 @@ const CotizacionesPendientes = () => {
   const [expandedCotizacion, setExpandedCotizacion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [conceptoSeleccionado, setConceptoSeleccionado] = useState<Concepto | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchCliente, setSearchCliente] = useState('');
+  const [searchSolicitante, setSearchSolicitante] = useState('');
 
   const fetchCotizacionesPendientes = async () => {
     try {
@@ -77,19 +78,17 @@ const CotizacionesPendientes = () => {
     fetchCotizacionesPendientes();
   }, []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-
-    if (value) {
-      const filtered = cotizaciones.filter((cotizacion) =>
-        cotizacion.cliente.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredCotizaciones(filtered);
-    } else {
-      setFilteredCotizaciones(cotizaciones);
-    }
+  const handleSearchChange = () => {
+    const filtered = cotizaciones.filter((cotizacion) => 
+      cotizacion.cliente.toLowerCase().includes(searchCliente.toLowerCase()) &&
+      cotizacion.owner.toLowerCase().includes(searchSolicitante.toLowerCase())
+    );
+    setFilteredCotizaciones(filtered);
   };
+
+  useEffect(() => {
+    handleSearchChange();
+  }, [searchCliente, searchSolicitante]);
 
   const toggleExpandCotizacion = (cotizacionId: string) => {
     setExpandedCotizacion((prevId) => (prevId === cotizacionId ? null : cotizacionId));
@@ -114,7 +113,7 @@ const CotizacionesPendientes = () => {
     } catch (error) {
       console.error('Error al enviar la cotización:', error);
     }
-  };   
+  };
 
   const handleEditar = async (concepto: Concepto) => {
     try {
@@ -154,6 +153,7 @@ const CotizacionesPendientes = () => {
   const todosConceptosTerminados = (cotizacion: Cotizacion) => {
     return cotizacion.conceptos.every((concepto) => concepto.estado === 'Completado');
   };
+
 
   const handleEstadoChange = async (conceptoId: string, nuevoEstado: string) => {
     // Encontrar el concepto actual para verificar los recursos
@@ -200,21 +200,35 @@ const CotizacionesPendientes = () => {
     }
   };
   
-
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-3xl font-semibold text-gray-800 mb-6 border-b pb-4">Cotizaciones Pendientes</h1>
 
-      {/* Buscador */}
-      <div className="mb-4 flex items-center border rounded px-3 py-2">
-        <FaSearch className="text-gray-600 mr-2" />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          placeholder="Cliente"
-          className="px-2 flex border rounded w-full"
-        />
+      {/* Buscadores de Cliente y Solicitante */}
+      <div className="mb-4 flex space-x-4">
+        {/* Buscador por Cliente */}
+        <div className="flex items-center border rounded px-3 py-2 flex-1">
+          <FaSearch className="text-gray-600 mr-2" />
+          <input
+            type="text"
+            value={searchCliente}
+            onChange={(e) => setSearchCliente(e.target.value)}
+            placeholder="Buscar por Cliente"
+            className="px-2 w-full border-none focus:outline-none"
+          />
+        </div>
+
+        {/* Buscador por Solicitante */}
+        <div className="flex items-center border rounded px-3 py-2 flex-1">
+          <FaSearch className="text-gray-600 mr-2" />
+          <input
+            type="text"
+            value={searchSolicitante}
+            onChange={(e) => setSearchSolicitante(e.target.value)}
+            placeholder="Buscar por Solicitante"
+            className="px-2 w-full border-none focus:outline-none"
+          />
+        </div>
       </div>
 
       <table className="w-full border-collapse">

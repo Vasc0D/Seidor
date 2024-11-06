@@ -96,7 +96,7 @@ const HistorialCotizaciones = () => {
           <tr className="bg-gray-100">
             <th className="border-b px-4 py-2 text-left text-sm font-semibold text-gray-600">Nombre de la solicitud</th>
             <th className="border-b px-4 py-2 text-left text-sm font-semibold text-gray-600">Cliente</th>
-            <th className="border-b px-4 py-2 text-left text-sm font-semibold text-gray-600">Gerente</th>
+            <th className="border-b px-4 py-2 text-left text-sm font-semibold text-gray-600">Solicitante</th>
             <th className="border-b px-4 py-2 text-left text-sm font-semibold text-gray-600">Estado</th>
           </tr>
         </thead>

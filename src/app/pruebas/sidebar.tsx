@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
         <div className="mt-7"></div>
 
         {/* Botones del sidebar */}
-        <div className="flex flex-col w-full space-y-4">
+        <div className="flex flex-col w-full space-y-2">
           {/* Opción Home */}
           <div
             className={`w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
@@ -148,7 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
           </div>
 
           {!isCollapsed && isCotizacionesOpen && (
-            <div className="ml-8 space-y-5">
+            <div className="space-y-1">
               {role === 'Gerente de Operaciones' ? (
                 <>
                   {/* Opción Cotizaciones Pendientes para Gerente de Operaciones */}
@@ -228,7 +228,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
 
               {/* Submenú de Administrador (solo visible si el menú está abierto) */}
               {!isCollapsed && isAdminOpen && (
-                <div className="ml-8 space-y-5">
+                <div className="ml-9 space-y-1">
                   <div
                     className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
                     onClick={() => handlePageChange('usuarios')}
