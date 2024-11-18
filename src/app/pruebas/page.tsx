@@ -11,6 +11,7 @@ import CotizacionesPendientes from './SolicitudCotizaciones/cotizacionesPendient
 import HistorialCotizaciones from './SolicitudCotizaciones/historialCotizacionesGerenteOperaciones'; // Importar
 import CotizacionesPendientesGeneral from './SolicitudCotizaciones/cotizacionesPendientesGeneral'; // Importar
 import HistorialCotizacionesGeneral from './SolicitudCotizaciones/historialCotizacionesGeneral'; // Importar
+import Home from './HomePage/home';
 
 const Page = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -62,8 +63,8 @@ const Page = () => {
       <div className="flex-1 p-10">
         {activePage === 'home' && (
           <div>
-            <h1 className="text-3xl font-bold">Página de Inicio</h1>
-            <p>Contenido principal de la página de inicio.</p>
+            <h1 className="text-3xl font-bold mb-6">Home Page</h1>
+            <Home/> {/* Muestra el componente Home */}
           </div>
         )}
 

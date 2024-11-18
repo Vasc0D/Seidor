@@ -61,9 +61,9 @@ const EditarLicenciaSAPModal: React.FC<EditarLicenciaSAPModalProps> = ({ isOpen,
     };
 
     const handlePriceRangeChange = (index: number, field: string, value: any) => {
-        const updateRanges = [...priceRanges];
-        updateRanges[index][field] = value;
-        setPriceRanges(updateRanges);
+      const updatedRanges = [...priceRanges];
+      updatedRanges[index][field] = value === '' ? null : value;
+      setPriceRanges(updatedRanges);
     };
 
     const handleAddPriceRange = () => {
@@ -180,9 +180,9 @@ const EditarLicenciaSAPModal: React.FC<EditarLicenciaSAPModalProps> = ({ isOpen,
                   />
                   <input
                     type="number"
-                    value={range.to_range}
+                    value={range.to_range === null ? '' : range.to_range}
                     onChange={(e) => handlePriceRangeChange(index, 'to_range', e.target.value)}
-                    placeholder="Hasta"
+                    placeholder="Hasta (vacío para infinito)"
                     className="w-1/3 border rounded px-3 py-1"
                   />
                   <input

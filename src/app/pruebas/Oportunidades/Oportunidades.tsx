@@ -98,6 +98,8 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error al obtener oportunidades:', error);
+    } finally {
+      setLoadingOportunidades(false);
     }
   };
 
@@ -398,11 +400,14 @@ export default function Home() {
   
   // Función para formatear números en el formato de moneda
   const formatNumber = (number: number) => {
-    if(isNaN(number)) return 0;
-    return number.toLocaleString("en-US", {
+    if(isNaN(number)) return "$ 0.00";
+    const formattedNumber = number.toLocaleString("en-US", {
       style: "currency",
       currency: "USD",
     });
+    
+    // Reemplazamos el símbolo de dólar seguido del número con "$ "
+    return formattedNumber.replace("$", "$ ");
   };
 
   useEffect(() => {
@@ -754,9 +759,18 @@ const calcularSubtotales = () => {
 
   // Función para calcular los totales de venta, costo y margen
   const calcularTotalesGenerales = () => {
-    const totalVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.totalVenta, 0);
-    const costoVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.costoVenta, 0);
-    const margenVentaGeneral = itemsCotizacion.reduce((acc, item) => acc + item.margenVenta, 0);
+    const totalVentaGeneralLicencias = itemsCotizacion.reduce((acc, item) => acc + item.totalVenta, 0);
+    const costoVentaGeneralLicencias = itemsCotizacion.reduce((acc, item) => acc + item.costoVenta, 0);
+    const margenVentaGeneralLicencias = itemsCotizacion.reduce((acc, item) => acc + item.margenVenta, 0);
+
+    const totalVentaGeneralServicios = servicios.reduce((acc, servicio) => acc + parseInt(servicio.total_venta), 0);
+    const costoVentaGeneralServicios = servicios.reduce((acc, servicio) => acc + parseInt(servicio.costo_venta), 0);
+    const margenVentaGeneralServicios = servicios.reduce((acc, servicio) => acc + parseInt(servicio.margen_venta), 0);
+
+    const totalVentaGeneral = totalVentaGeneralLicencias + totalVentaGeneralServicios;
+    const costoVentaGeneral = costoVentaGeneralLicencias + costoVentaGeneralServicios;
+    const margenVentaGeneral = margenVentaGeneralLicencias + margenVentaGeneralServicios;
+    
     return { totalVentaGeneral, costoVentaGeneral, margenVentaGeneral };
   };
 
@@ -804,6 +818,13 @@ const calcularSubtotales = () => {
     calcularSubtotales();
   };
 
+  const [loadingOportunidades, setLoadingOportunidades] = useState(true);
+
+  // funcion para cuando esta cargando las oportunidades
+  if (loadingOportunidades) {
+    return <p>Cargando oportunidades...</p>;
+  }
+
   ////////////////////////////////////////////////////RETURN//////////////////////////////////////////////////////////////////////////////////////
 
   return (
@@ -836,9 +857,9 @@ const calcularSubtotales = () => {
                     <TableRow key={index}>
                       <TableCell>{oportunidad.nombre_op}</TableCell>
                       <TableCell>{oportunidad.cliente}</TableCell>
-                      <TableCell>{oportunidad.total_venta}</TableCell>
-                      <TableCell>{oportunidad.costo_venta}</TableCell>
-                      <TableCell>{oportunidad.margen_venta}</TableCell>
+                      <TableCell>{formatNumber(parseInt(oportunidad.total_venta))}</TableCell>
+                      <TableCell>{formatNumber(parseInt(oportunidad.costo_venta))}</TableCell>
+                      <TableCell>{formatNumber(parseInt(oportunidad.margen_venta))}</TableCell>
                       <TableCell>
                       <Select
                         value={oportunidad.estado}
@@ -931,7 +952,7 @@ const calcularSubtotales = () => {
         {/* Mostrar los detalles del cliente seleccionado */}
         {mostrarDetalles && clienteSeleccionado && (
           <div>
-            <h1 className="text-2xl font-bold mb-4">Detalles del Cliente</h1>
+            <h1 className="text-xl font-bold mb-4">Detalles del Cliente</h1>
             
             {/* Detalles del cliente */}
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -953,22 +974,22 @@ const calcularSubtotales = () => {
               </div>
             </div>
   
-            {/* Botón para regresar a la vista de oportunidades */}
-            <Button className="bg-blue-500 text-white" onClick={volverAHome}>
-              Volver a Oportunidades
-            </Button>
-  
-            {/* Botón para abrir modal de agregar item */}
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-between w-full">
+              {/* Botón para regresar a la vista de oportunidades */}
+              <Button className="bg-blue-500 text-white" onClick={volverAHome}>
+                Volver a Oportunidades
+              </Button>
+
+              {/* Botón para abrir modal de agregar item */}
               <Button className="bg-blue-500 text-white" onClick={() => setMostrarModalTipo(true)}>
                 Crear Item
               </Button>
             </div>
 
             {/* Tabla de ítems agregados a la cotización */}
+            {itemsCotizacion && itemsCotizacion.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-4">Conceptos Licencias</h3>
-                {itemsCotizacion && itemsCotizacion.length > 0 ? (
+                <h3 className="text-base font-semibold mb-4">Conceptos Licencias</h3>
                 <table className="min-w-full bg-white border border-gray-200 text-sm">
                   <thead>
                     <tr>
@@ -1045,11 +1066,8 @@ const calcularSubtotales = () => {
                     ))}
                   </tbody>
                 </table>
-              ) : (
-                <div className="text-base text-center text-gray-500">No hay licencias registradas</div>
-              )}
             </div>
-
+            )}
 
             {/* Primer Pop-up para seleccionar tipo y subtipo de cotización */}
             <Dialog open={mostrarModalTipo} onOpenChange={setMostrarModalTipo}>
@@ -1145,7 +1163,7 @@ const calcularSubtotales = () => {
 
               {/* Tabla de Licencias SAP */}
               {subtipoCotizacion === 'Licencias SAP' && (
-              <div className="overflow-auto max-h-72">
+              <div className="overflow-auto max-h-48">
                 <h3 className="text-md font-semibold">Licencias SAP</h3>
                 <table className="min-w-full bg-white border border-gray-200 text-sm">
                   <thead>
@@ -1425,7 +1443,6 @@ const calcularSubtotales = () => {
             )}
           </div>
 
-          {itemsCotizacion.length > 0 && (
           <div className="mt-6 flex justify-end">
             {(() => {
               const { totalVentaGeneral, costoVentaGeneral, margenVentaGeneral } = calcularTotalesGenerales();
@@ -1453,9 +1470,9 @@ const calcularSubtotales = () => {
               );
             })()}
           </div>
-        )}
+
             {/* Botón de Crear Cotización */}
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-end mt-3">
               <Button
                 onClick={enviarCotizacion} 
                 disabled={loading} 

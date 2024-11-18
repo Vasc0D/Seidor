@@ -28,13 +28,15 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=True)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), nullable=False)
+    correo = db.Column(db.String(100), nullable=True)
 
     def serialize(self):
         return {
             'id': self.id,
             'username': self.username,
             'name': self.name,
-            'role': self.role
+            'role': self.role,
+            'correo': self.correo
         }
 
 class Oportunidad(db.Model):

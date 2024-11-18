@@ -16,7 +16,8 @@ def get_user_info(current_user):
         return jsonify({
             'username': user.username,
             'name': user.name,
-            'role': user.role
+            'role': user.role,
+            'correo': user.correo
         }), 200
     except Exception as e:
         print(f"Error al obtener la información del usuario: {str(e)}")

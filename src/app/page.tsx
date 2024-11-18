@@ -43,28 +43,36 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6">Login</h1>
-        <div className="mb-4">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+      <div className="bg-white p-10 rounded-xl shadow-lg w-full max-w-md transform transition-all duration-300 hover:shadow-2xl">
+        <h1 className="text-4xl font-bold text-center text-blue-600 mb-4">Universal Quoter</h1>
+        <p className="text-center text-gray-500 mb-8">Accede a tu cuenta para continuar</p>
+        
+        <div className="mb-6">
           <Input 
             value={username} 
             onChange={(e) => setUsername(e.target.value)} 
-            placeholder="Username" 
-            className="w-full"
+            placeholder="Nombre de usuario" 
+            className="w-full py-2 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="mb-4">
+        
+        <div className="mb-6">
           <Input 
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
-            placeholder="Password" 
+            placeholder="Contraseña" 
             type="password"
-            className="w-full"
+            className="w-full py-2 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <Button className="w-full" onClick={handleLogin} disabled={loading}>
-          {loading ? 'Loading...' : 'Login'}
+        
+        <Button 
+          className={`w-full py-3 rounded-lg text-white ${loading ? 'bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'} transition-all duration-200 ease-in-out`} 
+          onClick={handleLogin} 
+          disabled={loading}
+        >
+          {loading ? 'Cargando...' : 'Iniciar Sesión'}
         </Button>
       </div>
     </div>

@@ -7,7 +7,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@
 interface CrearUsuarioModalProps {
   onCreate?: () => void;
   onUpdate?: (id: string) => void;
-  existingUser?: { id: string; username: string; name: string; role: string };
+  existingUser?: { id: string; username: string; name: string; role: string; correo: string };
   onClose?: () => void;
   isOpen: boolean;
 }
@@ -17,31 +17,34 @@ const CrearUsuarioModal: React.FC<CrearUsuarioModalProps> = ({ onCreate, onUpdat
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('');
+  const [correo, setCorreo] = useState('');
 
   useEffect(() => {
     if (existingUser) {
       setUsername(existingUser.username);
       setName(existingUser.name); 
       setRol(existingUser.role);
+      setCorreo(existingUser.correo);
       console.log('existingUser:', existingUser);
     } else {
       setUsername('');
       setName('');
       setPassword('');
       setRol('');
+      setCorreo('');
     }
   }, [existingUser]);
 
   const handleSaveChanges = async () => {
-    if (!username || !rol || !name) {
+    if (!username || !rol || !name || !correo || (!existingUser && !password)) {
       alert('Por favor complete todos los campos obligatorios.');
       return;
     }
 
     try {
       const userData = existingUser
-        ? { username, name, role: rol }
-        : { username, name, password, role: rol };
+        ? { username, name, role: rol, correo }
+        : { username, name, password, role: rol, correo };
 
       const url = existingUser
         ? `http://localhost:5015/api/usuarios/${existingUser.id}`
@@ -93,6 +96,14 @@ const CrearUsuarioModal: React.FC<CrearUsuarioModalProps> = ({ onCreate, onUpdat
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Nombre de Usuario..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Correo Electrónico</label>
+            <Input
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              placeholder="Correo Electrónico..."
             />
           </div>
           {!existingUser && (

@@ -1,10 +1,9 @@
-// sidebar.tsx
-
 import { AiOutlineHome } from 'react-icons/ai';
 import { BiLogOut } from 'react-icons/bi';
-import { FaUsers, FaBoxes, FaPersonBooth, FaPeopleArrows, FaClipboardList } from 'react-icons/fa';
+import { FaUsers, FaBoxes, FaClipboardList, FaAddressBook, FaBook } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Tooltip from '@mui/material/Tooltip';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -13,81 +12,82 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePageChange }) => {
-  const [isCotizacionesOpen, setIsCotizacionesOpen] = useState(false); // Menú expandible
-  const [isAdminOpen, setIsAdminOpen] = useState(false); // Estado para el menú de Administrador
-  const [isAdmin, setIsAdmin] = useState(false); // Estado para determinar si el usuario es Admin
+  const [isCotizacionesOpen, setIsCotizacionesOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingCotizaciones, setPendingCotizaciones] = useState(0);
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [role, setRole] = useState('');
 
-  const toggleCotizacionesMenu = () => setIsCotizacionesOpen(!isCotizacionesOpen); // Toggle Cotizaciones
+  const toggleCotizacionesMenu = () => setIsCotizacionesOpen(!isCotizacionesOpen);
+  const toggleAdminMenu = () => setIsAdminOpen(!isAdminOpen);
 
-  // Función para manejar la expansión/collapse del menú Administrador
-  const toggleAdminMenu = () => {
-    setIsAdminOpen(!isAdminOpen);
-  };
-
-  // Verificar el rol del usuario al cargar el componente
   useEffect(() => {
-    const role = sessionStorage.getItem('role'); // Obtener el rol del sessionStorage
-
-    console.log('Rol:', role);
-    if (role === 'Administrador') {
-      setIsAdmin(true); // Solo si es Administrador, mostramos la opción
-    }
+    const role = sessionStorage.getItem('role');
+    if (role === 'Administrador') setIsAdmin(true);
 
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch('http://localhost:5015/api/user', {
-          method: 'GET',
-          credentials: 'include', // Para asegurarse de que la cookie con el token sea enviada
-        });
-  
+        const response = await fetch('http://localhost:5015/api/user', { method: 'GET', credentials: 'include' });
         if (response.ok) {
           const data = await response.json();
           setUsername(data.username);
           setRole(data.role);
-        } else {
-          console.error('Error al obtener la información del usuario');
-        }
+        } else console.error('Error al obtener la información del usuario');
       } catch (error) {
         console.error('Error en la solicitud de obtener información del usuario:', error);
       }
     };
-  
+
+      // Obtener número de cotizaciones pendientes
+      const fetchPendingCotizaciones = async () => {
+        try {
+          const response = await fetch('http://localhost:5015/api/cotizaciones_servicios/pendientes', { method: 'GET', credentials: 'include' });
+          if (response.ok) {
+            const data = await response.json();
+            setPendingCotizaciones(data.length);
+            console.log('Número de cotizaciones pendientes:', data.length);
+          } else {
+            console.error('Error al obtener el número de cotizaciones pendientes');
+          }
+        } catch (error) {
+          console.error('Error en la solicitud de cotizaciones pendientes:', error);
+        }
+      };
+
     fetchUserInfo();
+    fetchPendingCotizaciones();
   }, []);
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:5015/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include', // Esto asegura que las cookies se incluyan
-      });
-
+      const response = await fetch('http://localhost:5015/api/auth/logout', { method: 'POST', credentials: 'include' });
       if (response.ok) {
-        // Limpiamos el sessionStorage
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('role');
-
-        // Redirigir al usuario a la página de inicio de sesión
         router.push('/');
-      } else {
-        console.error('Error al cerrar sesión');
-      }
+      } else console.error('Error al cerrar sesión');
     } catch (error) {
       console.error('Error en la solicitud de logout:', error);
     }
   };
 
+  const menuItems = [
+    { label: 'Home', icon: AiOutlineHome, page: 'home' },
+    { label: 'Clientes', icon: FaUsers, page: 'clientes' },
+    { label: 'Oportunidades', icon: FaBoxes, page: 'oportunidades' },
+  ];
+
   return (
     <div
-      className={`bg-gray-800 text-white h-screen p-5 pt-8 relative duration-300 ${
+      className={`bg-gray-900 text-white h-screen p-5 pt-8 relative duration-300 flex flex-col justify-between ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
+      {/* Botón de colapso */}
       <button
-        className={`absolute top-9 -right-3 w-7 h-7 bg-blue-500 text-white rounded-full transform duration-300 ${
+        className={`absolute top-9 -right-3 w-7 h-7 bg-blue-500 text-white rounded-full transition-transform ${
           isCollapsed ? 'rotate-180' : ''
         }`}
         onClick={handleToggle}
@@ -96,168 +96,133 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
       </button>
 
       <div className="flex flex-col items-center">
-        {/* Imagen del usuario */}
+        {/* Imagen y nombre de usuario */}
         <div className="flex flex-col items-center mt-4">
-          <img
-            src="https://via.placeholder.com/150"
-            alt="User"
-            className="w-20 h-20 rounded-full cursor-pointer mb-4"
-          />
+          <img src="https://via.placeholder.com/150" alt="User" className="w-16 h-16 rounded-full mb-4" />
+          {!isCollapsed && (
+            <>
+              <span className="text-center font-semibold">{username}</span>
+              <span className="text-center text-sm text-gray-400">{role}</span>
+            </>
+          )}
         </div>
 
-        {/* Nombre de usuario */}
-        <div className="text-center">
-          <span>{username}</span>
-        </div>
-
-        {/* Rol del usuario */}
-        <div className="mt-3 text-center text-xs">
-          <span>{role}</span>
-        </div>
-
-        {/* Separador para dar espacio entre la imagen y los botones */}
-        <div className="mt-7"></div>
-
-        {/* Botones del sidebar */}
-        <div className="flex flex-col w-full space-y-2">
-          {/* Opción Home */}
-          <div
-            className={`w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
-              !isCollapsed && 'justify-start'
-            }`}
-            onClick={() => handlePageChange('home')}
-          >
-            <AiOutlineHome className="text-2xl" />
-            {!isCollapsed && <span className="ml-4">Home</span>}
-          </div>
-
-          {/* Opción Cotizaciones */}
-          <div
-            className={`w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
-              !isCollapsed && 'justify-start'
-            }`}
-            onClick={toggleCotizacionesMenu}
-          >
-            <FaClipboardList className="text-2xl" />
-            {!isCollapsed && (
-              <div className="flex justify-between w-full">
-                <span className="ml-4">Cotizaciones</span>
-                <span>{isCotizacionesOpen ? '▲' : '▼'}</span>
+        {/* Menú principal */}
+        <div className="mt-8 flex flex-col space-y-1 w-full">
+          {menuItems.map(({ label, icon: Icon, page }, index) => (
+            <Tooltip title={isCollapsed ? label : ''} key={index} placement="right" arrow>
+              <div
+                onClick={() => handlePageChange(page)}
+                className={`flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors ${
+                  !isCollapsed && 'justify-start'
+                }`}
+              >
+                <Icon className="text-2xl" />
+                {!isCollapsed && <span className="ml-4">{label}</span>}
               </div>
-            )}
-          </div>
+            </Tooltip>
+          ))}
 
+          {/* Menú desplegable Cotizaciones */}
+          <Tooltip title={isCollapsed ? 'Cotizaciones' : ''} placement="right" arrow>
+            <div
+              className={`relative w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
+                !isCollapsed && 'justify-start'
+              }`}
+              onClick={toggleCotizacionesMenu}
+            >
+              <div className="relative">
+                <FaClipboardList className="text-2xl" />
+                {/* Indicador de notificación en la esquina superior derecha del ícono */}
+                {pendingCotizaciones > 0 && (
+                  <span className="absolute top-0 left-0 h-2 w-2 bg-red-600 rounded-full"></span>
+                )}
+              </div>
+              {!isCollapsed && (
+                <div className="flex justify-between w-full">
+                  <span className="ml-4">Cotizaciones</span>
+                  <span>{isCotizacionesOpen ? '▲' : '▼'}</span>
+                </div>
+              )}
+            </div>
+          </Tooltip>
           {!isCollapsed && isCotizacionesOpen && (
-            <div className="space-y-1">
+            <div className="ml-8 space-y-1">
               {role === 'Gerente de Operaciones' ? (
                 <>
-                  {/* Opción Cotizaciones Pendientes para Gerente de Operaciones */}
-                  <div
-                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
-                    onClick={() => handlePageChange('cotizaciones-pendientes')}
-                  >
-                    Cotizaciones Pendientes
+                  <div className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700" onClick={() => handlePageChange('cotizaciones-pendientes')}>
+                    <div className="relative">
+                      <FaAddressBook className="text-l" />
+                      {pendingCotizaciones > 0 && (
+                        <span className="absolute top-0 left-0 h-1.5 w-2 bg-red-600 rounded-full"></span>
+                      )}
+                    </div>
+                    <span className="ml-4">C. Pendientes</span>
                   </div>
-                  {/* Historial de Cotizaciones para Gerente de Operaciones */}
-                  <div
-                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
-                    onClick={() => handlePageChange('historial-cotizaciones')}
-                  >
-                    Historial de Cotizaciones
+                  <div className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700" onClick={() => handlePageChange('historial-cotizaciones')}>
+                    <FaAddressBook className="text-l" />
+                    <span className="ml-4">C. Historial</span>
                   </div>
                 </>
               ) : (
-                // Opción Cotizaciones Pendientes General y Historial de Cotizaciones General para otros roles
                 <>
-                  <div
-                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
-                    onClick={() => handlePageChange('cotizaciones-pendientes')}
-                  >
-                    Cotizaciones Pendientes
+                  <div className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700" onClick={() => handlePageChange('cotizaciones-pendientes')}>
+                    <FaAddressBook className="text-l" />
+                    <span className="ml-4">C. Pendientes</span>
                   </div>
-                  <div
-                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
-                    onClick={() => handlePageChange('historial-cotizaciones')}
-                  >
-                    Historial de Cotizaciones
+                  <div className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700" onClick={() => handlePageChange('historial-cotizaciones')}>
+                    <FaAddressBook className="text-l" />
+                    <span className="ml-4">C. Historial</span>
                   </div>
                 </>
               )}
             </div>
           )}
 
-          {/* Opción Clientes */}
-          <div
-            className={`w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
-              !isCollapsed && 'justify-start'
-            }`}
-            onClick={() => handlePageChange('clientes')}
-          >
-            <FaUsers className="text-2xl" />
-            {!isCollapsed && <span className="ml-4">Clientes</span>}
-          </div>
-
-          {/* Opción Oportunidades */}
-          <div
-            className={`w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
-              !isCollapsed && 'justify-start'
-            }`}
-            onClick={() => handlePageChange('oportunidades')}
-          >
-          <FaBoxes className="text-2xl" />
-          {!isCollapsed && <span className="ml-4">Oportunidades</span>}
-          </div>
-
-          {/* Opción Administrador */}
-          {isAdmin && ( // Solo mostramos esta sección si el usuario es administrador
-            <>
+          {/* Menú desplegable Administrador */}
+          {isAdmin && (
+            <Tooltip title={isCollapsed ? 'Administrador' : ''} placement="right" arrow>
               <div
                 className={`w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
                   !isCollapsed && 'justify-start'
                 }`}
-                onClick={toggleAdminMenu} // Para colapsar/expandir el menú
+                onClick={toggleAdminMenu}
               >
                 <FaUsers className="text-2xl" />
                 {!isCollapsed && (
                   <div className="flex justify-between w-full">
                     <span className="ml-4">Administrador</span>
-                    <span>{isAdminOpen ? '▲' : '▼'}</span> {/* Indicador de expandir */}
+                    <span>{isAdminOpen ? '▲' : '▼'}</span>
                   </div>
                 )}
               </div>
-
-              {/* Submenú de Administrador (solo visible si el menú está abierto) */}
-              {!isCollapsed && isAdminOpen && (
-                <div className="ml-9 space-y-1">
-                  <div
-                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
-                    onClick={() => handlePageChange('usuarios')}
-                  >
-                    Usuarios
-                  </div>
-                  <div
-                    className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700"
-                    onClick={() => handlePageChange('conceptos')}
-                  >
-                    Conceptos
-                  </div>
-                </div>
-              )}
-            </>
+            </Tooltip>
           )}
-
-          {/* Opción Logout */}
-          <div
-            className={`w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 ${
-              !isCollapsed && 'justify-start'
-            }`}
-            onClick={handleLogout}
-          >
-            <BiLogOut className="text-2xl" />
-            {!isCollapsed && <span className="ml-4">Logout</span>}
-          </div>
+          {!isCollapsed && isAdminOpen && (
+            <div className="ml-8 space-y-1">
+              <div className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700" onClick={() => handlePageChange('usuarios')}>
+                <FaUsers className="text-l" />
+                <span className="ml-4">Usuarios</span>
+              </div>
+              <div className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700" onClick={() => handlePageChange('conceptos')}>
+                <FaBook className="text-l" />
+                <span className="ml-4">Conceptos</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Logout siempre en la parte inferior */}
+      <Tooltip title={isCollapsed ? 'Logout' : ''} placement="right" arrow>
+        <div
+          className="flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors w-full"
+          onClick={handleLogout}
+        >
+          <BiLogOut className="text-2xl" />
+          {!isCollapsed && <span className="ml-4">Logout</span>}
+        </div>
+      </Tooltip>
     </div>
   );
 };

@@ -1,6 +1,36 @@
 from flask import Blueprint, request, jsonify
-from models import Oportunidad, db, Cliente, Concepto, DetalleConcepto, RecursoCotizacion, CotizacionSolicitada, ConceptoServicio
+from models import Oportunidad, db, Cliente, Concepto, DetalleConcepto, RecursoCotizacion, CotizacionSolicitada, ConceptoServicio, User
 from auth import token_required
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+def send_email(to_email, subject, body):
+    # Configuración del servidor SMTP de Gmail
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+    from_email = "xasco2004@gmail.com"  # Cambia esto por tu correo de Gmail
+    password = "vgsy srqw zqkz lyyw"  # Usa tu contraseña de Gmail o contraseña de aplicación
+
+    # Configurar el mensaje de correo
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        # Conectar al servidor SMTP de Gmail y enviar el correo
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()  # Iniciar conexión segura
+        server.login(from_email, password)
+        server.sendmail(from_email, to_email, msg.as_string())
+        server.quit()
+        print("Correo enviado exitosamente.")
+    except Exception as e:
+        print(f"Error al enviar el correo: {e}")
+
+#####################################################################
 
 oportunidades_bp = Blueprint('oportunidades', __name__)
 
@@ -120,6 +150,24 @@ def create_oportunidad(current_user):
 
         # Commit final para guardar todo en la base de datos
         db.session.commit()
+
+        # **Enviar correo solo a los gerentes asignados a conceptos de los servicios**
+        if servicios:
+            gerentes_a_notificar = set()  # Usamos un set para evitar duplicados
+
+            for servicio in servicios:
+                for concepto in servicio.get('conceptos', []):
+                    gerente_id = concepto.get('gerente_id')
+                    if gerente_id:
+                        gerente = User.query.get(gerente_id)
+                        if gerente and gerente.correo:
+                            gerentes_a_notificar.add(gerente)  # Agregar solo si tiene correo
+
+            # Enviar correo a cada gerente único
+            for gerente in gerentes_a_notificar:
+                subject = "Nueva cotización de servicio pendiente"
+                message = f"Estimado {gerente.username},\n\nTienes una nueva cotización pendiente para el cliente {cliente.nombre}."
+                send_email(gerente.correo, subject, message)
 
         return jsonify({
             'message': 'Oportunidad creada exitosamente',
@@ -422,6 +470,24 @@ def update_oportunidad_completa_by_id(current_user, id):
 
         # Hacer commit final
         db.session.commit()
+
+        # **Enviar correo solo a los gerentes asignados a conceptos de los servicios**
+        if servicios:
+            gerentes_a_notificar = set()  # Usamos un set para evitar duplicados
+            
+            for servicio in servicios:
+                for concepto in servicio.get('conceptos', []):
+                    gerente_id = concepto.get('gerente_id')
+                    if gerente_id:
+                        gerente = User.query.get(gerente_id)
+                        if gerente and gerente.correo:
+                            gerentes_a_notificar.add(gerente)  # Agregar solo si tiene correo
+
+            # Enviar correo a cada gerente único
+            for gerente in gerentes_a_notificar:
+                subject = "Nueva cotización de servicio pendiente"
+                message = f"Estimado {gerente.username},\n\nTienes una nueva cotización pendiente para el cliente {cliente.nombre}."
+                send_email(gerente.correo, subject, message)
 
         return jsonify({
             'id': oportunidad.id,

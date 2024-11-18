@@ -8,6 +8,7 @@ interface Usuario {
   username: string;
   name: string;
   role: string;
+  correo: string;
 }
 
 interface UsuariosPorRol {

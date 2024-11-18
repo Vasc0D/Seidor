@@ -21,7 +21,7 @@
 -- DELETE FROM Clientes WHERE id = 1
 
 -- UPDATE Users SET name = 'Jorge Rocca' WHERE id = '7e65e326-1467-49d8-b943-301c17cad43d';
-SELECT * FROM Users;
+-- SELECT * FROM Users;
 
 -- DROP TABLE Detalle_Conceptos;
 -- DROP TABLE Conceptos;
@@ -34,7 +34,7 @@ SELECT * FROM Users;
 
 -- INSERT INTO Users (username, password, role)
 
--- SELECT * FROM USERS
+SELECT * FROM USERS
 
 -- delete el usuario con username Jorge
 -- DELETE FROM Users WHERE username = 'Jorge'
@@ -46,6 +46,8 @@ SELECT * FROM Users;
 -- SELECT * FROM Conceptos;
 -- SELECT * FROM Detalle_Conceptos
 
+-- SELECT * FROM CotizacionesSolicitadas;
+-- SELECT * FROM Oportunidades
 -- SELECT * FROM ConceptosServicio;
 
 -- DELETE FROM RecursosCotizacion
@@ -55,25 +57,25 @@ SELECT * FROM Users;
 -- DELETE FROM CotizacionesSolicitadas
 -- DELETE FROM Oportunidades
 
--- DELETE FROM ConceptosServicio WHERE cotizacion_id = '6d9b8094-491f-4162-b3f4-bc7154710b2a'
--- DELETE FROM CotizacionesSolicitadas WHERE id = '6d9b8094-491f-4162-b3f4-bc7154710b2a'
--- DELETE FROM Oportunidades WHERE id = 'dc4fd9a4-c29b-4076-bc8b-2050ed4a7f5b';
+-- DELETE FROM ConceptosServicio WHERE cotizacion_id = 'caefcb6d-e5bc-49f7-bbfc-b29c20fb1d44';
+-- DELETE FROM CotizacionesSolicitadas WHERE oportunidad_id = 'b85250a8-2b52-43bc-a5ad-735578d46297';
+-- DELETE FROM Oportunidades WHERE id = 'bb8d7317-3482-4332-9e55-bbbaad47b2a1';
 
--- DELETE FROM ConceptosServicio WHERE cotizacion_id = '271b8ce0-6b7d-4b3a-bc2b-67122faa8034';
--- DELETE FROM CotizacionesSolicitadas WHERE id = '271b8ce0-6b7d-4b3a-bc2b-67122faa8034';
--- DELETE FROM Oportunidades WHERE id = 'ef840020-bdd7-4e91-a0ba-65c3fc90b6d7'
+-- DELETE FROM ConceptosServicio WHERE cotizacion_id = 'fe970e35-3a8e-412e-bd5a-68475b5b1082';
+-- DELETE FROM CotizacionesSolicitadas WHERE oportunidad_id = 'fc41bbfc-c3c4-4fb0-bf90-46fd5311b44f';
+-- DELETE FROM Oportunidades WHERE id = 'fc41bbfc-c3c4-4fb0-bf90-46fd5311b44f'
 
 -- UPDATE ConceptosServicio SET estado = 'Terminado' WHERE id = '71fb7b11-312e-4e24-b771-166a440be0dc';
 -- UPDATE CotizacionesSolicitadas SET estado = 'Terminada' WHERE id = '64945b72-fbd2-4b26-9de7-a64a1a0ed412';
 -- SELECT * FROM CotizacionesSolicitadas;
 
-UPDATE ConceptosServicio SET estado = 'En proceso' WHERE id = '599a447c-d6b4-417f-9274-065e5d8ed510';
+-- UPDATE ConceptosServicio SET estado = 'Terminado' WHERE id = '599a447c-d6b4-417f-9274-065e5d8ed510';
 
 -- DELETE FROM RecursosCotizacion
 
 -- SELECT * FROM CotizacionesSolicitadas;
-SELECT * FROM ConceptosServicio;
-SELECT * FROM RecursosCotizacion;
+-- SELECT * FROM ConceptosServicio;
+-- SELECT * FROM RecursosCotizacion;
 -- SELECT * FROM Users
 
 -- UPDATE ConceptosServicio SET estado = 'En proceso' WHERE id = 'ae27f361-4c2b-48a9-afef-5f0b370d07a6'

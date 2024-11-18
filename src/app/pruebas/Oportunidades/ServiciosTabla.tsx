@@ -41,10 +41,9 @@ const ServiciosTabla: React.FC<ServiciosTablaProps> = ({
   }
 
   return (
+    servicios.length > 0 && (
     <div className="mt-6">
-      <h3 className="text-lg font-semibold mb-3">Servicios</h3>
-
-      {servicios.length > 0 ? (
+      <h3 className="text-base font-semibold mb-3">Servicios</h3>
         <table className="min-w-full bg-white border border-gray-200 text-sm">
           <thead>
             <tr>
@@ -121,11 +120,9 @@ const ServiciosTabla: React.FC<ServiciosTablaProps> = ({
             ))}
           </tbody>
         </table>
-      ) : (
-        <p className="text-base text-center text-gray-500">No hay servicios registrados</p>
-      )}
-    </div>
+      </div>
+    )
   );
-};
+}
 
 export default ServiciosTabla;

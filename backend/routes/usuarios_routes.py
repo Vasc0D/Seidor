@@ -33,6 +33,7 @@ def create_user():
     name = data.get('name')
     password = data.get('password')
     role = data.get('role')
+    correo = data.get('correo')
 
     # Verificar si todos los campos necesarios están presentes
     if not username :
@@ -46,6 +47,9 @@ def create_user():
     
     if not role:
         return jsonify({'message': 'Falta el rol'}), 400
+    
+    if not correo:
+        return jsonify({'message': 'Falta el correo'}), 400
 
     # Verificar si el usuario ya existe
     existing_user = User.query.filter_by(username=username).first()
@@ -55,9 +59,8 @@ def create_user():
     # Encriptar la contraseña
     hashed_password = generate_password_hash(password)
 
-
     # Crear nuevo usuario
-    new_user = User(username=username, name=name, password=hashed_password, role=role)
+    new_user = User(username=username, name=name, password=hashed_password, role=role, correo=correo)
 
     # Guardar en la base de datos
     try:
@@ -84,6 +87,7 @@ def update_user(user_id):
     username = data.get('username')
     name = data.get('name')
     role = data.get('role')
+    correo = data.get('correo')
 
     if username:
         user.username = username
@@ -93,6 +97,9 @@ def update_user(user_id):
     
     if role:
         user.role = role
+
+    if correo:
+        user.correo = correo
 
     # Actualizar la contraseña solo si se proporciona
     if 'password' in data:
