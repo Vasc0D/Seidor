@@ -976,8 +976,8 @@ const calcularSubtotales = () => {
   
             <div className="flex justify-between w-full">
               {/* Botón para regresar a la vista de oportunidades */}
-              <Button className="bg-blue-500 text-white" onClick={volverAHome}>
-                Volver a Oportunidades
+              <Button className="bg-red-500 text-white" onClick={volverAHome}>
+                Cancelar
               </Button>
 
               {/* Botón para abrir modal de agregar item */}
@@ -1173,7 +1173,7 @@ const calcularSubtotales = () => {
                       <th className="py-2 px-4 border-b">Métricas</th>
                       <th className="py-2 px-4 border-b">Costo</th>
                       <th className="py-2 px-4 border-b">Cantidad</th>
-                      <th className="py-2 px-4 border-b">Total</th>
+                      <th className="py-2 px-6 border-b">Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1289,37 +1289,38 @@ const calcularSubtotales = () => {
               </div>
             )}
 
-              {/* Tabla de Licencias Seidor */}
-              {subtipoCotizacion === 'Licencias Seidor' && (
+            {/* Tabla de Licencias Seidor */}
+            {subtipoCotizacion === 'Licencias Seidor' && (solution == 'OP' || solution == 'OC') && (
               <div className="overflow-auto max-h-72">
                 <h3 className="text-md font-semibold">Licencias Seidor</h3>
                 <table className="min-w-full bg-white border border-gray-200 text-sm">
                   <thead>
                     <tr>
-                      <th className="py-2 px-4 border-b">Tipo de Licencia</th>
-                      <th className="py-2 px-4 border-b">Costo</th>
-                      <th className="py-2 px-4 border-b">Cantidad</th>
-                      <th className="py-2 px-4 border-b">Total</th>
+                      <th className="py-2 px-4 border-b text-left align-middle">Tipo de Licencia</th>
+                      <th className="py-2 px-4 border-b text-center align-middle">Costo</th>
+                      <th className="py-2 px-16 border-b text-left align-middle">Cantidad</th>
+                      <th className="py-2 px-6 border-b text-center align-middle">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {licenciasSeidor.map((licencia) => (
-                          <tr key={licencia.id}>
-                            <td className="px-4 py-2 border-b">{licencia.name}</td>
-                            <td className="px-4 py-2 border-b text-center">
-                              {obtenerPrecioPorTipo(licencia.price_type, solution)}
-                            </td>
-                            <td className="px-4 py-2 border-b text-center">
-                              <HookUsage
-                                value={cantidadesLicenciasSeidor[licencia.id] || 0}
-                                onChange={(value) => handleCantidadChange(licencia.id, Number(value))}
-                              />
-                            </td>
-                            <td className="px-4 py-2 border-b text-center">
-                              {(cantidadesLicenciasSeidor[licencia.id] || 0) * (obtenerPrecioPorTipo(licencia.price_type, solution))}
-                            </td>
-                          </tr>
-                        ))}
+                      <tr key={licencia.id}>
+                        <td className="px-4 py-2 border-b">{licencia.name}</td>
+                        <td className="px-4 py-2 border-b text-center">
+                          {obtenerPrecioPorTipo(licencia.price_type, solution)}
+                        </td>
+                        <td className="px-4 py-2 border-b text-center">
+                          <HookUsage
+                            value={cantidadesLicenciasSeidor[licencia.id] || 0}
+                            onChange={(value) => handleCantidadChange(licencia.id, Number(value))}
+                          />
+                        </td>
+                        <td className="px-4 py-2 border-b text-center align-middle">
+                          {(cantidadesLicenciasSeidor[licencia.id] || 0) *
+                            obtenerPrecioPorTipo(licencia.price_type, solution)}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -1345,38 +1346,41 @@ const calcularSubtotales = () => {
                   {subtipoCotizacion === 'Licencias SAP' && (
                     <div className="flex justify-between items-center">
                       <label className="font-medium text-sm">Descuento por Volumen:</label>
-                      <Input
-                        value={descuentoPorVolumenPorcentaje}
-                        readOnly
-                        className='w-12 text-center text-sm'
-                      />
-                      <span className="ml-4 text-red-600 font-bold text-sm">- {formatNumber(descuentoPorVolumen)}</span>
+                      <div className="flex items-center">
+                        <Input
+                          value={descuentoPorVolumenPorcentaje}
+                          readOnly
+                          className="w-16 text-center text-sm"
+                        />
+                        <span className="ml-2 text-sm">%</span>
+                      </div>
+                      <span className="ml-4 text-red-600 font-bold text-sm w-24 text-right">- {formatNumber(descuentoPorVolumen)}</span>
                     </div>
                   )}
 
                   {/* Descuento Especial - Siempre visible */}
                   <div className="flex justify-between items-center">
                     <label className="font-medium text-sm">Descuento Especial:</label>
-                    <div className="flex items-center">
-                    <Input
-                      value={descuentoEspecial}
-                      onChange={(e) => {
-                        const newDescuentoEspecial = parseFloat(e.target.value) || 0;
-
-                        setDescuentoEspecial(newDescuentoEspecial);
-                        calcularSubtotales();
-                      }}
-                      className="w-12 text-center text-sm"
-                    />
+                    <div className="flex items-center ml-8">
+                      <Input
+                        value={descuentoEspecial}
+                        onChange={(e) => {
+                          const newDescuentoEspecial = parseFloat(e.target.value) || 0;
+                          setDescuentoEspecial(newDescuentoEspecial);
+                          calcularSubtotales();
+                        }}
+                        className="w-16 text-center text-sm"
+                      />
+                      <span className="ml-2 text-sm">%</span>
                     </div>
-                    <span className="ml-4 text-red-600 font-bold text-sm">- {formatNumber(subtotalUsuario * descuentoEspecial / 100)}</span>
+                    <span className="ml-4 text-red-600 font-bold text-sm w-24 text-right">- {formatNumber(subtotalUsuario * descuentoEspecial / 100)}</span>
                   </div>
 
                   {/* Descuento Especial Partner solo para SAP */}
                   {subtipoCotizacion === 'Licencias SAP' && (
                     <div className="flex justify-between items-center">
                       <label className="font-medium text-sm">Descuento Especial Partner:</label>
-                      <div className="flex items-center">
+                      <div className="flex items-center mr-5">
                         <Input
                           value={descuentoEspecialPartner}
                           onChange={(e) => {
@@ -1384,10 +1388,11 @@ const calcularSubtotales = () => {
                             setDescuentoEspecialPartner(newDescuentoEspecialPartner);
                             calcularSubtotales();
                           }}
-                          className="w-12 text-center text-sm"
+                          className="w-16 text-center text-sm"
                         />
+                        <span className="ml-2 text-sm">%</span>
                       </div>
-                      <span className="ml-4 text-green-600 font-bold text-sm">- {formatNumber((descuentoEspecialPartner / 100) * (subtotalUsuario - descuentoPorVolumen))}</span>
+                      <span className="ml-4 text-green-600 font-bold text-sm w-24 text-right">- {formatNumber((descuentoEspecialPartner / 100) * (subtotalUsuario - descuentoPorVolumen))}</span>
                     </div>
                   )}
                   

@@ -34,7 +34,7 @@
 
 -- INSERT INTO Users (username, password, role)
 
-SELECT * FROM USERS
+-- SELECT * FROM USERS
 
 -- delete el usuario con username Jorge
 -- DELETE FROM Users WHERE username = 'Jorge'
@@ -42,20 +42,21 @@ SELECT * FROM USERS
 -- SELECT * FROM Detalle_Conceptos WHERE concepto_id = 1
 -- SELECT * FROM Conceptos
 
--- SELECT * FROM Oportunidades
+-- SELECT * FROM Oportunidades;
 -- SELECT * FROM Conceptos;
--- SELECT * FROM Detalle_Conceptos
+-- SELECT * FROM Detalle_Conceptos;
 
 -- SELECT * FROM CotizacionesSolicitadas;
 -- SELECT * FROM Oportunidades
 -- SELECT * FROM ConceptosServicio;
 
+
 -- DELETE FROM RecursosCotizacion
--- DELETE FROM Detalle_Conceptos
--- DELETE FROM Conceptos
--- DELETE FROM ConceptosServicio
--- DELETE FROM CotizacionesSolicitadas
--- DELETE FROM Oportunidades
+-- DELETE FROM Detalle_Conceptos;
+-- DELETE FROM Conceptos;
+-- DELETE FROM ConceptosServicio;
+-- DELETE FROM CotizacionesSolicitadas;
+-- DELETE FROM Oportunidades;
 
 -- DELETE FROM ConceptosServicio WHERE cotizacion_id = 'caefcb6d-e5bc-49f7-bbfc-b29c20fb1d44';
 -- DELETE FROM CotizacionesSolicitadas WHERE oportunidad_id = 'b85250a8-2b52-43bc-a5ad-735578d46297';

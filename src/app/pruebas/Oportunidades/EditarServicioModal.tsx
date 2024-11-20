@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Servicio, Concepto, RecursoCotizacion } from "./interfaces";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EditarRecursosModal from "./EditarConceptoModal";
+import { FaTrash } from "react-icons/fa";
 
 interface EditarServicioModalProps {
   servicio: Servicio;
@@ -89,6 +90,24 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
     }
     return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
+
+  const handleEliminarConcepto = (identificador: string) => {
+    // Confirmación de eliminación
+    const confirmacion = window.confirm("¿Estás seguro de que deseas eliminar este concepto? Esta acción no se puede deshacer.");
+    if (!confirmacion) return;
+  
+    // Actualizar el estado, verificando si existe 'id' o usando 'nombre_concepto'
+    setConceptos((prevConceptos) => {
+      const nuevosConceptos = prevConceptos.filter((concepto) => {
+        const conceptoIdentificador = concepto.id || concepto.nombre_concepto;
+        console.log("Comparando:", conceptoIdentificador, "con", identificador);
+        return conceptoIdentificador !== identificador;
+      });
+      console.log("Conceptos después de eliminar:", nuevosConceptos);
+      return nuevosConceptos;
+    });
+  };
+  
   
   return (
     <Dialog open={isOpen} onOpenChange={onCancelar}>
@@ -126,13 +145,21 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
                   <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.costo_venta)}</td>
                   <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.margen_venta)}</td>
                   <td className="border px-4 py-2 text-right">{concepto.porcentaje_margen}%</td>
-                  <td className="border px-4 py-2 text-center">
-                    <Button
-                      className="bg-yellow-500 text-white rounded-full px-3 py-1"
-                      onClick={() => handleAbrirRecursosModal(concepto)}
-                    >
-                      Editar
-                    </Button>
+                  <td className="border px-1 py-2 text-center">
+                    <div className="flex justify-center">
+                      <Button
+                        className="bg-yellow-500 text-white rounded-full px-3 py-1 text-xs"
+                        onClick={() => handleAbrirRecursosModal(concepto)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        className="bg-red-500 text-white rounded-full px-3 py-1 ml-2 text-xs"
+                        onClick={() => handleEliminarConcepto(concepto.id || concepto.nombre_concepto)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

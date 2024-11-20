@@ -25,6 +25,27 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
 
   // Manejar cambios en los inputs
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    const value = e.target.value;
+
+    // Validación específica para el RUC
+    if (field === "ruc") {
+      // Permitir solo números y limitar la longitud máxima a 12
+      if (!/^\d*$/.test(value)) return; // Ignorar caracteres no numéricos
+      if (value.length > 12) return; // Limitar a 12 dígitos
+    }
+
+    // Validacion de sociedades 200 es el maximo
+    if (field === "sociedades") {
+      if (!/^\d*$/.test(value)) return; // Ignorar caracteres no numéricos
+      if (parseInt(value) > 200) return; // Limitar a 200 sociedades
+    }
+
+    // Validacion de empleados 10000 es el maximo
+    if (field === "empleados") {
+      if (!/^\d*$/.test(value)) return; // Ignorar caracteres no numéricos
+      if (parseInt(value) > 10000) return; // Limitar a 10000 empleados
+    }
+
     setCliente({
       ...cliente,
       [field]: e.target.value,
@@ -39,7 +60,10 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
   const validarCampos = () => {
     const nuevosErrores = {
       nombre: cliente.nombre ? '' : 'El nombre es obligatorio.',
-      ruc: cliente.ruc ? '' : 'El RUC es obligatorio.',
+      ruc:
+      cliente.ruc && cliente.ruc.length >= 10 && cliente.ruc.length <= 12
+        ? ''
+        : 'El RUC debe tener entre 10 y 12 dígitos.',
       sociedades: cliente.sociedades ? '' : 'El número de sociedades es obligatorio.',
       empleados: cliente.empleados ? '' : 'El número de empleados es obligatorio.',
     };
@@ -113,7 +137,7 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
             <Input
               value={cliente.sociedades}
               onChange={(e) => handleInputChange(e, 'sociedades')}
-              placeholder="N° de Sociedades..."
+              placeholder="Max 200 Sociedades..."
               className={errores.sociedades ? 'border-red-500' : ''}
             />
             {errores.sociedades && <p className="text-red-500 text-xs">{errores.sociedades}</p>}
@@ -123,7 +147,7 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
             <Input
               value={cliente.empleados}
               onChange={(e) => handleInputChange(e, 'empleados')}
-              placeholder="N° de empleados..."
+              placeholder="Max 10 000 empleados..."
               className={errores.empleados ? 'border-red-500' : ''}
             />
             {errores.empleados && <p className="text-red-500 text-xs">{errores.empleados}</p>}

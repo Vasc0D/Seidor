@@ -58,3 +58,71 @@ def create_cliente(current_user):
     except Exception as e:
         print("Error al crear cliente:", str(e))
         return jsonify({"error": "Error al crear cliente"}), 500
+    
+@clientes_bp.route('/<string:cliente_id>', methods=['PUT'])
+@token_required
+def update_cliente(current_user, cliente_id):
+    try:
+        # Buscar el cliente por su ID
+        cliente = Cliente.query.get(cliente_id)
+
+        if not cliente:
+            return jsonify({"error": "Cliente no encontrado"}), 404
+
+        # Verificar permisos (si no es administrador, solo puede editar clientes que él creó)
+        if current_user.role != 'admin' and cliente.owner != current_user.id:
+            return jsonify({"error": "No tienes permiso para editar este cliente"}), 403
+
+        # Obtener datos del cuerpo de la solicitud
+        data = request.json
+        nombre = data.get('nombre')
+        ruc = data.get('ruc')
+        sociedades = data.get('sociedades')
+        empleados = data.get('empleados')
+
+        # Validar campos requeridos
+        if not nombre or not ruc or not sociedades or not empleados:
+            return jsonify({"error": "Todos los campos son obligatorios"}), 400
+
+        # Actualizar los datos del cliente
+        cliente.nombre = nombre
+        cliente.ruc = ruc
+        cliente.sociedades = sociedades
+        cliente.empleados = empleados
+
+        # Guardar los cambios
+        db.session.commit()
+
+        return jsonify({
+            'id': cliente.id,
+            'nombre': cliente.nombre,
+            'ruc': cliente.ruc,
+            'sociedades': cliente.sociedades,
+            'empleados': cliente.empleados
+        }), 200
+    except Exception as e:
+        print("Error al actualizar cliente:", str(e))
+        db.session.rollback()
+        return jsonify({"error": "Error al actualizar cliente"}), 500
+
+@clientes_bp.route('/<string:cliente_id>', methods=['DELETE'])
+@token_required
+def delete_cliente(current_user, cliente_id):
+    try:
+        # Buscar el cliente por su ID
+        cliente = Cliente.query.get(cliente_id)
+
+        if not cliente:
+            return jsonify({"error": "Cliente no encontrado"}), 404
+
+        # Eliminar el cliente
+        db.session.delete(cliente)
+        db.session.commit()
+
+        return jsonify({"message": "Cliente eliminado correctamente"}), 200
+    except Exception as e:
+        print("Error al eliminar cliente:", str(e))
+        db.session.rollback()
+        return jsonify({"error": "Error al eliminar cliente"}), 500
+    
+

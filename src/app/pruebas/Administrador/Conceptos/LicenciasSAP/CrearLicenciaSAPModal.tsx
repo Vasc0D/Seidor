@@ -12,7 +12,7 @@ interface CrearLicenciasSAPModalProps {
 
 interface PriceRange {
     from_range: number | '';
-    to_range: number | '';
+    to_range: number | '' | null;
     price: number | '';
 }
 
@@ -24,11 +24,20 @@ const CrearLicenciasSAPModal: React.FC<CrearLicenciasSAPModalProps> = ({ isOpen,
     const [salesUnit, setSalesUnit] = useState('');
     const [metric, setMetric] = useState('');
     const [feeType, setFeeType] = useState('');
-    const [dbengine, setDbEngine] = useState('');
+    const [dbengine, setDbEngine] = useState<string | null>(null);
     const [priceRanges, setPriceRanges] = useState<PriceRange[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
+        const isValid = priceRanges.every(
+            (range) => range.from_range !== '' && range.price !== '' && range.from_range !== null && range.price !== null
+        );
+    
+        if (!isValid) {
+            alert('Todos los rangos de precios deben tener un valor válido en "Desde" y "Precio".');
+            return;
+        }
+
         setIsSubmitting(true);  // Inicia el estado de carga
         try {
             // Prepara los datos a enviar
@@ -73,6 +82,17 @@ const CrearLicenciasSAPModal: React.FC<CrearLicenciasSAPModalProps> = ({ isOpen,
         }
     };
 
+    const handlePriceRangeChange = (index: number, field: keyof PriceRange, value: string) => {
+        const updatedRanges = [...priceRanges];
+        if (field === 'to_range') {
+            updatedRanges[index][field] = value === '' ? null : parseFloat(value);
+        } else {
+            updatedRanges[index][field] = value === '' ? '' : parseFloat(value); // Mantén '' si está vacío, no null
+        }
+        setPriceRanges(updatedRanges);
+    };
+    
+
     const handleAddPriceRange = () => {
         setPriceRanges([...priceRanges, { from_range: '', to_range: '', price: '' }]);
     };
@@ -80,13 +100,7 @@ const CrearLicenciasSAPModal: React.FC<CrearLicenciasSAPModalProps> = ({ isOpen,
     const handleRemovePriceRange = (index: number) => {
         setPriceRanges(priceRanges.filter((_, i) => i !== index));
     };
-
-    const handlePriceRangeChange = (index: number, field: keyof PriceRange, value: string) => {
-        const updatedRanges = [...priceRanges];
-        updatedRanges[index][field] = value === '' ? '' : parseFloat(value);
-        setPriceRanges(updatedRanges);
-    };
-
+    
     return (
         isOpen ? (
             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -183,14 +197,14 @@ const CrearLicenciasSAPModal: React.FC<CrearLicenciasSAPModalProps> = ({ isOpen,
 
                         <div>
                             <label className="block text-sm font-medium mb-2">Motor de Base de Datos</label>
-                            <Select onValueChange={(value) => setDbEngine(value)}>
+                            <Select onValueChange={(value) => setDbEngine(value === "Ninguna" ? null : value)}>
                                 <SelectTrigger className="w-full">
                                     <span>{dbengine || "Seleccione una opción"}</span>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="HANA">HANA</SelectItem>
                                     <SelectItem value="SQL Server">SQL</SelectItem>
-                                    <SelectItem value="NULL">NULL</SelectItem>
+                                    <SelectItem value="Ninguna">Ninguna</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -210,9 +224,9 @@ const CrearLicenciasSAPModal: React.FC<CrearLicenciasSAPModalProps> = ({ isOpen,
                                 />
                                 <input
                                     type="number"
-                                    value={range.to_range}
+                                    value={range.to_range === null ? '' : range.to_range}
                                     onChange={(e) => handlePriceRangeChange(index, 'to_range', e.target.value)}
-                                    placeholder="Hasta"
+                                    placeholder="Hasta (vacío para infinito)"
                                     className="w-1/3 border rounded px-3 py-1"
                                 />
                                 <input

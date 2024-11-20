@@ -92,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
         }`}
         onClick={handleToggle}
       >
-        {isCollapsed ? '>' : '<'}
+        {isCollapsed ? '<-' : '<-'}
       </button>
 
       <div className="flex flex-col items-center">
@@ -132,7 +132,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
               onClick={toggleCotizacionesMenu}
             >
               <div className="relative">
-                <FaClipboardList className="text-2xl" />
+                <FaClipboardList className={`text-${isCollapsed ? 'lg' : '2xl'}`} />
                 {/* Indicador de notificación en la esquina superior derecha del ícono */}
                 {pendingCotizaciones > 0 && (
                   <span className="absolute top-0 left-0 h-2 w-2 bg-red-600 rounded-full"></span>
