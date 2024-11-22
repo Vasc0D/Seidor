@@ -13,10 +13,13 @@ class Session(db.Model):
 class Cliente(db.Model):
     __tablename__ = 'Clientes'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)  # UUID
-    nombre = db.Column(db.String(255), nullable=False)
-    ruc = db.Column(db.String(20), nullable=False)
-    sociedades = db.Column(db.Integer, nullable=False)
-    empleados = db.Column(db.Integer, nullable=False)
+    razon_social = db.Column(db.String(255), nullable=True)
+    nombre = db.Column(db.String(255), nullable=True)
+    ruc = db.Column(db.String(20), nullable=True)
+    sociedades = db.Column(db.Integer, nullable=True)
+    empleados = db.Column(db.Integer, nullable=True)
+    vip = db.Column(db.Boolean, nullable=True, default=False)
+    activo = db.Column(db.Boolean, nullable=True, default=True)
     owner = db.Column(db.String(36), db.ForeignKey('Users.id'), nullable=False)  # UUID FK
 
     owner_relacion = db.relationship('User', backref='clientes')

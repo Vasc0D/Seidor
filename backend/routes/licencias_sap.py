@@ -54,7 +54,7 @@ def create_licencia_sap(current_user):
         data = request.get_json()
 
         # Validar campos requeridos
-        required_fields = ['name', 'type', 'user_type', 'sales_unit', 'fee_type', 'price_ranges']
+        required_fields = ['name', 'type', 'user_type', 'sales_unit', 'fee_type']
         for field in required_fields:
             if field not in data or not data[field]:
                 return jsonify({"error": f"El campo '{field}' es requerido"}), 400

@@ -153,9 +153,9 @@ const EditarLicenciaSAPModal: React.FC<EditarLicenciaSAPModalProps> = ({ isOpen,
 
               <div>
                 <label className="block text-sm font-medium mb-2">Motor de Base de Datos</label>
-                <Select onValueChange={(value) => handleFieldChange('db_engine', value)}>
+                <Select onValueChange={(value) => handleFieldChange('db_engine', value === 'Ninguna' ? null : value)}>
                     <SelectTrigger className="w-full">
-                        <span>{licenciaData.db_engine || 'Seleccione una opción'}</span>
+                        <span>{licenciaData.db_engine === null ? "Ninguna" : licenciaData.db_engine || 'Seleccione una opción'}</span>
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="HANA">HANA</SelectItem>

@@ -192,8 +192,8 @@ def create_oportunidad(current_user):
 def get_oportunidades(current_user):
     try:
         oportunidades = []
-        if current_user.role == 'admin':
-            # Si el usuario es administrador, obtener todas las oportunidades
+        if current_user.role == 'Administrador':
+            # Si el usuario es Administrador, obtener todas las oportunidades
             oportunidades = Oportunidad.query.all()
         else:
             # Si es un usuario normal, filtrar por las oportunidades del cotizador
@@ -222,8 +222,8 @@ def get_oportunidad_by_id(current_user, id):
         if not oportunidad:
             return jsonify({"error": "Oportunidad no encontrada"}), 404
 
-        # Asegurar que el usuario actual es el propietario (cotizador) o es admin
-        if oportunidad.owner != current_user.id and current_user.role != 'admin':
+        # Asegurar que el usuario actual es el propietario (cotizador) o es Administrador
+        if oportunidad.owner != current_user.id and current_user.role != 'Administrador':
             return jsonify({"error": "No tienes permiso para ver esta oportunidad"}), 403
 
         # Obtener los conceptos/licencias asociados con la oportunidad
@@ -326,8 +326,8 @@ def update_oportunidad_by_id(current_user, id):
         if not oportunidad:
             return jsonify({"error": "Oportunidad no encontrada"}), 404
 
-        # Asegurar que el usuario actual es el propietario (cotizador) o es admin
-        if oportunidad.owner != current_user.id and current_user.role != 'admin':
+        # Asegurar que el usuario actual es el propietario (cotizador) o es Administrador
+        if oportunidad.owner != current_user.id and current_user.role != 'Administrador':
             return jsonify({"error": "No tienes permiso para actualizar esta oportunidad"}), 403
 
         estado = data.get('estado')
@@ -366,8 +366,8 @@ def update_oportunidad_completa_by_id(current_user, id):
         if not oportunidad:
             return jsonify({"error": "Oportunidad no encontrada"}), 404
 
-        # Asegurar que el usuario actual es el propietario o admin
-        if oportunidad.owner != current_user.id and current_user.role != 'admin':
+        # Asegurar que el usuario actual es el propietario o Administrador
+        if oportunidad.owner != current_user.id and current_user.role != 'Administrador':
             return jsonify({"error": "No tienes permiso para actualizar esta oportunidad"}), 403
 
         # Verificar que el cliente exista

@@ -199,7 +199,7 @@ const CrearLicenciasSAPModal: React.FC<CrearLicenciasSAPModalProps> = ({ isOpen,
                             <label className="block text-sm font-medium mb-2">Motor de Base de Datos</label>
                             <Select onValueChange={(value) => setDbEngine(value === "Ninguna" ? null : value)}>
                                 <SelectTrigger className="w-full">
-                                    <span>{dbengine || "Seleccione una opción"}</span>
+                                <span>{dbengine === null ? "Ninguna" : dbengine || "Seleccione una opción"}</span>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="HANA">HANA</SelectItem>

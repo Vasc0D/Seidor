@@ -10,13 +10,17 @@ interface CrearClienteModalProps {
 const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
   const [isCreatingClient, setIsCreatingClient] = useState(false);
   const [cliente, setCliente] = useState({
+    razon_social: '',
     nombre: '',
     ruc: '',
     sociedades: '',
     empleados: '',
+    vip: false,
+    activo: true,
   });
 
   const [errores, setErrores] = useState({
+    razon_social: '',
     nombre: '',
     ruc: '',
     sociedades: '',
@@ -29,49 +33,58 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
 
     // Validación específica para el RUC
     if (field === "ruc") {
-      // Permitir solo números y limitar la longitud máxima a 12
       if (!/^\d*$/.test(value)) return; // Ignorar caracteres no numéricos
       if (value.length > 12) return; // Limitar a 12 dígitos
     }
 
-    // Validacion de sociedades 200 es el maximo
+    // Validación para sociedades
     if (field === "sociedades") {
       if (!/^\d*$/.test(value)) return; // Ignorar caracteres no numéricos
-      if (parseInt(value) > 200) return; // Limitar a 200 sociedades
+      if (parseInt(value) > 200) return; // Limitar a 200
     }
 
-    // Validacion de empleados 10000 es el maximo
+    // Validación para empleados
     if (field === "empleados") {
       if (!/^\d*$/.test(value)) return; // Ignorar caracteres no numéricos
-      if (parseInt(value) > 10000) return; // Limitar a 10000 empleados
+      if (parseInt(value) > 10000) return; // Limitar a 10000
     }
 
     setCliente({
       ...cliente,
-      [field]: e.target.value,
+      [field]: value,
     });
+
     setErrores({
       ...errores,
-      [field]: '', // Limpiar el error al cambiar el input
+      [field]: '', // Limpiar error al cambiar input
     });
   };
 
-  // Validación simple
+  // Manejar cambios en checkboxes
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    setCliente({
+      ...cliente,
+      [field]: e.target.checked,
+    });
+  };
+
+  // Validar campos
   const validarCampos = () => {
     const nuevosErrores = {
+      razon_social: cliente.razon_social ? '' : 'La razón social es obligatoria.',
       nombre: cliente.nombre ? '' : 'El nombre es obligatorio.',
       ruc:
-      cliente.ruc && cliente.ruc.length >= 10 && cliente.ruc.length <= 12
-        ? ''
-        : 'El RUC debe tener entre 10 y 12 dígitos.',
+        cliente.ruc && cliente.ruc.length >= 10 && cliente.ruc.length <= 12
+          ? ''
+          : 'El RUC debe tener entre 10 y 12 dígitos.',
       sociedades: cliente.sociedades ? '' : 'El número de sociedades es obligatorio.',
       empleados: cliente.empleados ? '' : 'El número de empleados es obligatorio.',
     };
     setErrores(nuevosErrores);
-    return !Object.values(nuevosErrores).some(error => error !== '');
+    return !Object.values(nuevosErrores).some((error) => error !== '');
   };
 
-  // Función para agregar cliente
+  // Agregar cliente
   const agregarCliente = async () => {
     if (!validarCampos()) return;
 
@@ -82,18 +95,25 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
           'Content-Type': 'application/json',
         },
         credentials: 'include', // Incluir cookies para la autenticación
-        body: JSON.stringify(cliente),
+        body: JSON.stringify({
+          ...cliente,
+          sociedades: parseInt(cliente.sociedades), // Convertir a número
+          empleados: parseInt(cliente.empleados), // Convertir a número
+        }),
       });
 
       if (response.ok) {
         onCreate(); // Refrescar la lista de clientes
-        setIsCreatingClient(false); // Cerrar el modal
+        setIsCreatingClient(false); // Cerrar modal
         setCliente({
+          razon_social: '',
           nombre: '',
           ruc: '',
           sociedades: '',
           empleados: '',
-        }); // Limpiar el formulario
+          vip: false,
+          activo: true,
+        }); // Limpiar formulario
       } else {
         console.error('Error al crear cliente');
       }
@@ -112,6 +132,16 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
           <DialogTitle>Agregar Cliente</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Razón Social</label>
+            <Input
+              value={cliente.razon_social}
+              onChange={(e) => handleInputChange(e, 'razon_social')}
+              placeholder="Razón Social..."
+              className={errores.razon_social ? 'border-red-500' : ''}
+            />
+            {errores.razon_social && <p className="text-red-500 text-xs">{errores.razon_social}</p>}
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1">Nombre</label>
             <Input
@@ -151,6 +181,22 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
               className={errores.empleados ? 'border-red-500' : ''}
             />
             {errores.empleados && <p className="text-red-500 text-xs">{errores.empleados}</p>}
+          </div>
+          <div className="flex items-center space-x-4">
+            <label className="block text-sm font-medium">VIP</label>
+            <input
+              type="checkbox"
+              checked={cliente.vip}
+              onChange={(e) => handleCheckboxChange(e, 'vip')}
+            />
+          </div>
+          <div className="flex items-center space-x-4">
+            <label className="block text-sm font-medium">Activo</label>
+            <input
+              type="checkbox"
+              checked={cliente.activo}
+              onChange={(e) => handleCheckboxChange(e, 'activo')}
+            />
           </div>
         </div>
 

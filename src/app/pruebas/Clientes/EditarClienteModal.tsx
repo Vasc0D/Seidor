@@ -5,10 +5,13 @@ import { Input } from '@/components/ui/input';
 
 interface Cliente {
   id: string;
+  razon_social: string;
   nombre: string;
   ruc: string;
-  sociedades: number;
-  empleados: number;
+  sociedades: number | null;
+  empleados: number | null;
+  vip: boolean;
+  activo: boolean;
 }
 
 interface EditarClienteModalProps {
@@ -20,11 +23,12 @@ interface EditarClienteModalProps {
 const EditarClienteModal: React.FC<EditarClienteModalProps> = ({ cliente, onEdit, onClose }) => {
   const [clienteEditado, setClienteEditado] = useState({
     ...cliente,
-    sociedades: cliente.sociedades.toString(), // Convertir a string
-    empleados: cliente.empleados.toString(), // Convertir a string
+    sociedades: cliente.sociedades?.toString() || '', // Convertir a string o establecer como ''
+    empleados: cliente.empleados?.toString() || '', // Convertir a string o establecer como ''
   });
 
   const [errores, setErrores] = useState({
+    razon_social: '',
     nombre: '',
     ruc: '',
     sociedades: '',
@@ -32,18 +36,16 @@ const EditarClienteModal: React.FC<EditarClienteModalProps> = ({ cliente, onEdit
   });
 
   useEffect(() => {
-    // Actualizar el estado cuando cambie el cliente seleccionado
     setClienteEditado({
       ...cliente,
-      sociedades: cliente.sociedades.toString(), // Convertir a string
-      empleados: cliente.empleados.toString(), // Convertir a string
+      sociedades: cliente.sociedades?.toString() || '',
+      empleados: cliente.empleados?.toString() || '',
     });
   }, [cliente]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     const value = e.target.value;
 
-    // Validaciones específicas
     if (field === "ruc" && (!/^\d*$/.test(value) || value.length > 12)) return;
     if (field === "sociedades" && (!/^\d*$/.test(value) || parseInt(value) > 200)) return;
     if (field === "empleados" && (!/^\d*$/.test(value) || parseInt(value) > 10000)) return;
@@ -55,12 +57,20 @@ const EditarClienteModal: React.FC<EditarClienteModalProps> = ({ cliente, onEdit
 
     setErrores({
       ...errores,
-      [field]: '', // Limpiar error al cambiar
+      [field]: '', // Limpiar error al cambiar el input
+    });
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    setClienteEditado({
+      ...clienteEditado,
+      [field]: e.target.checked,
     });
   };
 
   const validarCampos = () => {
     const nuevosErrores = {
+      razon_social: clienteEditado.razon_social ? '' : 'La razón social es obligatoria.',
       nombre: clienteEditado.nombre ? '' : 'El nombre es obligatorio.',
       ruc:
         clienteEditado.ruc &&
@@ -87,8 +97,8 @@ const EditarClienteModal: React.FC<EditarClienteModalProps> = ({ cliente, onEdit
         credentials: 'include', // Incluir cookies para la autenticación
         body: JSON.stringify({
           ...clienteEditado,
-          sociedades: parseInt(clienteEditado.sociedades), // Convertir a número para enviar al backend
-          empleados: parseInt(clienteEditado.empleados), // Convertir a número para enviar al backend
+          sociedades: parseInt(clienteEditado.sociedades) || null, // Convertir a número o null
+          empleados: parseInt(clienteEditado.empleados) || null, // Convertir a número o null
         }),
       });
 
@@ -112,6 +122,16 @@ const EditarClienteModal: React.FC<EditarClienteModalProps> = ({ cliente, onEdit
         </DialogHeader>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
+            <label className="block text-sm font-medium mb-1">Razón Social</label>
+            <Input
+              value={clienteEditado.razon_social}
+              onChange={(e) => handleInputChange(e, 'razon_social')}
+              placeholder="Razón Social..."
+              className={errores.razon_social ? 'border-red-500' : ''}
+            />
+            {errores.razon_social && <p className="text-red-500 text-xs">{errores.razon_social}</p>}
+          </div>
+          <div>
             <label className="block text-sm font-medium mb-1">Nombre</label>
             <Input
               value={clienteEditado.nombre}
@@ -124,7 +144,7 @@ const EditarClienteModal: React.FC<EditarClienteModalProps> = ({ cliente, onEdit
           <div>
             <label className="block text-sm font-medium mb-1">RUC</label>
             <Input
-              value={clienteEditado.ruc}
+              value={clienteEditado.ruc || ''}
               onChange={(e) => handleInputChange(e, 'ruc')}
               placeholder="RUC..."
               className={errores.ruc ? 'border-red-500' : ''}
@@ -150,6 +170,22 @@ const EditarClienteModal: React.FC<EditarClienteModalProps> = ({ cliente, onEdit
               className={errores.empleados ? 'border-red-500' : ''}
             />
             {errores.empleados && <p className="text-red-500 text-xs">{errores.empleados}</p>}
+          </div>
+          <div className="flex items-center space-x-4">
+            <label className="block text-sm font-medium">VIP</label>
+            <input
+              type="checkbox"
+              checked={clienteEditado.vip}
+              onChange={(e) => handleCheckboxChange(e, 'vip')}
+            />
+          </div>
+          <div className="flex items-center space-x-4">
+            <label className="block text-sm font-medium">Activo</label>
+            <input
+              type="checkbox"
+              checked={clienteEditado.activo}
+              onChange={(e) => handleCheckboxChange(e, 'activo')}
+            />
           </div>
         </div>
 
