@@ -24,7 +24,7 @@ const Clientes = () => {
   // Función para cargar los clientes desde el backend
   const fetchClientes = async () => {
     try {
-      const response = await fetch('http://localhost:5015/api/clientes', {
+      const response = await fetch(process.env.API_IP + '/api/clientes', {
         method: 'GET',
         credentials: 'include',
       });
@@ -51,7 +51,7 @@ const Clientes = () => {
     if (!confirmacion) return;
 
     try {
-      const response = await fetch(`http://localhost:5015/api/clientes/${id}`, {
+      const response = await fetch(process.env.API_IP + `/api/clientes/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });

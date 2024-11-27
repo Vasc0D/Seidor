@@ -154,7 +154,7 @@ const CrearPlantilla: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5015/api/plantillas/", {
+      const response = await fetch(process.env.API_IP + "/api/plantillas/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

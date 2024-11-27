@@ -89,7 +89,7 @@ const EditarClienteModal: React.FC<EditarClienteModalProps> = ({ cliente, onEdit
     if (!validarCampos()) return;
 
     try {
-      const response = await fetch(`http://localhost:5015/api/clientes/${clienteEditado.id}`, {
+      const response = await fetch(process.env.API_IP + `/api/clientes/${clienteEditado.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

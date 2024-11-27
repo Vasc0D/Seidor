@@ -55,7 +55,7 @@ const CotizacionesPendientes = () => {
 
   const fetchCotizacionesPendientes = async () => {
     try {
-      const response = await fetch('http://localhost:5015/api/cotizaciones_servicios/pendientes', {
+      const response = await fetch(process.env.API_IP + '/api/cotizaciones_servicios/pendientes', {
         method: 'GET',
         credentials: 'include',
       });
@@ -96,7 +96,7 @@ const CotizacionesPendientes = () => {
 
   const handleEnviarCotizacion = async (cotizacionId: string) => {
     try {
-      const response = await fetch(`http://localhost:5015/api/cotizaciones_servicios/enviar/${cotizacionId}`, {
+      const response = await fetch(process.env.API_IP + `/api/cotizaciones_servicios/enviar/${cotizacionId}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {
@@ -117,7 +117,7 @@ const CotizacionesPendientes = () => {
 
   const handleEditar = async (concepto: Concepto) => {
     try {
-      const response = await fetch(`http://localhost:5015/api/cotizaciones_servicios/recursos/${concepto.id}`, {
+      const response = await fetch(process.env.API_IP + `/api/cotizaciones_servicios/recursos/${concepto.id}`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -173,7 +173,7 @@ const CotizacionesPendientes = () => {
   
     try {
       // Enviar el nuevo estado al backend
-      const response = await fetch(`http://localhost:5015/api/cotizaciones_servicios/conceptos/${conceptoId}/estado`, {
+      const response = await fetch(process.env.API_IP + `/api/cotizaciones_servicios/conceptos/${conceptoId}/estado`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {

@@ -195,7 +195,7 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
           porcentaje_margen: parseFloat(recurso.porcentaje_margen.toString()) || 0,
         }));
 
-        const response = await fetch(`http://localhost:5015/api/cotizaciones_servicios/recursos/${concepto.id}`, {
+        const response = await fetch(process.env.API_IP + `/api/cotizaciones_servicios/recursos/${concepto.id}`, {
             method: 'POST',
             credentials: 'include',
             headers: {

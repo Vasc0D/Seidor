@@ -28,7 +28,7 @@ const HistorialCotizacionesGerenteOperaciones = () => {
   // Fetch de las cotizaciones terminadas
   const fetchHistorialCotizaciones = async () => {
     try {
-      const response = await fetch('http://localhost:5015/api/cotizaciones_servicios/historial', {
+      const response = await fetch(process.env.API_IP + '/api/cotizaciones_servicios/historial', {
         method: 'GET',
         credentials: 'include',
       });

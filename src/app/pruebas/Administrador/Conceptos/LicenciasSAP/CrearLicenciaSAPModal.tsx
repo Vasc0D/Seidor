@@ -54,7 +54,7 @@ const CrearLicenciasSAPModal: React.FC<CrearLicenciasSAPModalProps> = ({ isOpen,
             };
 
             // Realiza la solicitud POST al backend
-            const response = await fetch('http://localhost:5015/api/licencias_sap', {
+            const response = await fetch(process.env.API_IP + '/api/licencias_sap', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

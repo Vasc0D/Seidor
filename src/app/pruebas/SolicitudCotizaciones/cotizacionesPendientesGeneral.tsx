@@ -30,7 +30,7 @@ const CotizacionesPendientesGeneral = () => {
   // Fetch de las cotizaciones pendientes generales
   const fetchCotizacionesPendientesGeneral = async () => {
     try {
-      const response = await fetch('http://localhost:5015/api/cotizaciones_servicios/pendientes_general', {
+      const response = await fetch(process.env.API_IP + '/api/cotizaciones_servicios/pendientes_general', {
         method: 'GET',
         credentials: 'include',
       });

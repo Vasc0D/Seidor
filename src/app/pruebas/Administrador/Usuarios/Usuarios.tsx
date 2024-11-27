@@ -31,7 +31,7 @@ const Usuarios = () => {
   // Obtener usuarios de la API
   const fetchUsuarios = async () => {
     try {
-      const response = await fetch('http://localhost:5015/api/usuarios', {
+      const response = await fetch(process.env.API_IP + '/api/usuarios', {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

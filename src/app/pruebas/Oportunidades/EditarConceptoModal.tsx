@@ -44,7 +44,7 @@ const EditarRecursosModal: React.FC<EditarRecursosModalProps> = ({
 
   const actualizarRecursos = async () => {
     try {
-      const response = await fetch(`http://localhost:5015/api/cotizaciones_servicios/recursos/actualizar`, {
+      const response = await fetch(process.env.API_IP + `/api/cotizaciones_servicios/recursos/actualizar`, {
         method: "PATCH",
         credentials: "include",
         headers: {
