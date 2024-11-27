@@ -39,7 +39,7 @@ const MostrarPlantillas: React.FC = () => {
     // Obtener las plantillas desde la API
     const fetchPlantillas = async () => {
       try {
-        const response = await fetch("http://localhost:5015/api/plantillas/");
+        const response = await fetch(process.env.API_IP + "/api/plantillas/");
         if (response.ok) {
           const data = await response.json();
           setPlantillas(data);
@@ -70,7 +70,7 @@ const MostrarPlantillas: React.FC = () => {
     if (!confirmacion) return;
   
     try {
-      const response = await fetch(`http://localhost:5015/api/plantillas/${id}`, {
+      const response = await fetch(process.env.API_IP + `/api/plantillas/${id}`, {
         method: "DELETE",
       });
   
