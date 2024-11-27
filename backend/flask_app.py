@@ -30,7 +30,7 @@ register_routes(app)
 
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')  # Origen correcto
+    response.headers.add('Access-Control-Allow-Origin', '*')  # Origen correcto
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')  # Incluye Authorization
     response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS,PUT')  # Métodos permitidos
