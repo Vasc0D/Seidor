@@ -1,7 +1,7 @@
 # cotizaciones_servicios.py
 
 from flask import Blueprint, request, jsonify
-from models import CotizacionSolicitada, ConceptoServicio, RecursoCotizacion, db
+from models import CotizacionSolicitada, ConceptoServicio, RecursoCotizacion, db, ConceptoPlantilla
 from auth import token_required
 from sqlalchemy import or_
 

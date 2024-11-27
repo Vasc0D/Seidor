@@ -124,6 +124,7 @@ const CotizacionesPendientes = () => {
 
       if (response.ok) {
         const recursos = await response.json();
+        console.log('Recursos:', recursos);
         setConceptoSeleccionado({ ...concepto, recursos });
       } else {
         alert('Error al cargar los recursos.');

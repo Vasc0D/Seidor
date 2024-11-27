@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Servicio, Concepto, RecursoCotizacion } from "./interfaces";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EditarRecursosModal from "./EditarConceptoModal";
 import { FaTrash } from "react-icons/fa";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+
+interface Gerente {
+  id: string;
+  username: string;
+}
 
 interface EditarServicioModalProps {
   servicio: Servicio;
@@ -23,6 +29,29 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
   const [conceptoSeleccionado, setConceptoSeleccionado] = useState<Concepto | null>(null);
   const [conceptos, setConceptos] = useState<Concepto[]>(servicio.conceptos);
   const [isRecursosModalOpen, setIsRecursosModalOpen] = useState(false);
+  const [gerentesDisponibles, setGerentesDisponibles] = useState<Gerente[]>([]);
+
+  // Cargar gerentes disponibles desde la API
+  useEffect(() => {
+    const fetchGerentes = async () => {
+      try {
+        const response = await fetch('http://localhost:5015/api/usuarios/gerentes_operaciones', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error("Error al cargar los gerentes de operaciones");
+        }
+        const data = await response.json();
+        setGerentesDisponibles(data);
+      } catch (error) {
+        console.error("Error al cargar gerentes:", error);
+      }
+    };
+
+    fetchGerentes();
+  }, []);
   
   const handleAbrirRecursosModal = (concepto: Concepto) => {
     setConceptoSeleccionado(concepto);
@@ -111,7 +140,7 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={onCancelar}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-5xl">
         <DialogHeader>
           <DialogTitle>Editar Servicio</DialogTitle>
         </DialogHeader>
@@ -126,45 +155,71 @@ const EditarServicioModal: React.FC<EditarServicioModalProps> = ({
             />
           </div>
 
-          <table className="min-w-full bg-white border border-gray-200 text-sm mb-6">
-            <thead>
-              <tr>
-                <th className="border-b px-4 py-2 text-left">Conceptos</th>
-                <th className="border-b px-4 py-2 text-right">Total Venta</th>
-                <th className="border-b px-4 py-2 text-right">Costo Venta</th>
-                <th className="border-b px-4 py-2 text-right">Margen Venta</th>
-                <th className="border-b px-4 py-2 text-right">% Margen Venta</th>
-                <th className="border-b px-4 py-2 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {conceptos.map((concepto) => (
-                <tr key={concepto.id}>
-                  <td className="border px-4 py-2">{concepto.nombre_concepto}</td>
-                  <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.total_venta)}</td>
-                  <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.costo_venta)}</td>
-                  <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.margen_venta)}</td>
-                  <td className="border px-4 py-2 text-right">{concepto.porcentaje_margen}%</td>
-                  <td className="border px-1 py-2 text-center">
-                    <div className="flex justify-center">
-                      <Button
-                        className="bg-yellow-500 text-white rounded-full px-3 py-1 text-xs"
-                        onClick={() => handleAbrirRecursosModal(concepto)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        className="bg-red-500 text-white rounded-full px-3 py-1 ml-2 text-xs"
-                        onClick={() => handleEliminarConcepto(concepto.id || concepto.nombre_concepto)}
-                      >
-                        <FaTrash />
-                      </Button>
-                    </div>
-                  </td>
+          <div className="max-h-[250px] overflow-y-auto">
+            <table className="min-w-full bg-white border border-gray-200 text-sm mb-6">
+              <thead>
+                <tr>
+                  <th className="border-b px-4 py-2 text-left">Conceptos</th>
+                  <th className="border-b px-4 py-2 text-center">Gerente</th>
+                  <th className="border-b px-4 py-2 text-right">Total Venta</th>
+                  <th className="border-b px-4 py-2 text-right">Costo Venta</th>
+                  <th className="border-b px-4 py-2 text-right">Margen Venta</th>
+                  <th className="border-b px-4 py-2 text-right">% Margen Venta</th>
+                  <th className="border-b px-4 py-2 text-center">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {conceptos.map((concepto, index) => (
+                  <tr key={concepto.id}>
+                    <td className="border px-4 py-2">{concepto.nombre_concepto}</td>
+                    <td className="border px-4 py-2 text-right">
+                      <Select
+                        value={concepto.gerente_id || ""}
+                        onValueChange={(value) => {
+                          setConceptos((prevConceptos) =>
+                            prevConceptos.map((c, i) =>
+                              i === index ? { ...c, gerente_id: value } : c
+                            )
+                          );
+                        }}
+                      >
+                        <SelectTrigger className="rounded-full w-full">
+                          <SelectValue placeholder="Seleccionar Gerente" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gerentesDisponibles.map((gerente) => (
+                            <SelectItem key={gerente.id} value={gerente.id}>
+                              {gerente.username}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.total_venta)}</td>
+                    <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.costo_venta)}</td>
+                    <td className="border px-4 py-2 text-right">{formatNumberWithCommas(concepto.margen_venta)}</td>
+                    <td className="border px-4 py-2 text-right">{concepto.porcentaje_margen}%</td>
+                    <td className="border px-1 py-2 text-center">
+                      <div className="flex justify-center">
+                        <Button
+                          className="bg-yellow-500 text-white rounded-full px-3 py-1 text-xs"
+                          onClick={() => handleAbrirRecursosModal(concepto)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          className="bg-red-500 text-white rounded-full px-3 py-1 ml-2 text-xs"
+                          onClick={() => handleEliminarConcepto(concepto.id || concepto.nombre_concepto)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {conceptoSeleccionado && (
             <EditarRecursosModal

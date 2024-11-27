@@ -12,6 +12,7 @@ import HistorialCotizaciones from './SolicitudCotizaciones/historialCotizaciones
 import CotizacionesPendientesGeneral from './SolicitudCotizaciones/cotizacionesPendientesGeneral'; // Importar
 import HistorialCotizacionesGeneral from './SolicitudCotizaciones/historialCotizacionesGeneral'; // Importar
 import Home from './HomePage/home';
+import Plantilla from './Administrador/Plantillas/Plantillas';
 
 const Page = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -119,6 +120,16 @@ const Page = () => {
             <Conceptos />
           </div>
         )}
+
+        {/* Plantillas de Cotizaciones */}
+        {activePage === 'plantillas' && (
+          <div>
+            <h1 className="text-3xl font-bold mb-6">Plantillas de Cotizaciones</h1>
+            <Plantilla />
+          </div>
+        )}
+
+        {/* Cerrar Sesión */}
 
         {activePage === 'logout' && (
           <div>

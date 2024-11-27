@@ -6,6 +6,7 @@ from .user_routes import user_bp
 from .licencias_sap import licencias_sap_bp
 from .licencias_seidor import licencias_seidor_bp
 from .cotizaciones_servicios import cotizaciones_servicios_bp
+from .plantillas_routes import plantillas_bp
 
 def register_routes(app):
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -16,3 +17,4 @@ def register_routes(app):
     app.register_blueprint(licencias_sap_bp, url_prefix='/api/licencias_sap')
     app.register_blueprint(licencias_seidor_bp, url_prefix='/api/licencias_seidor')
     app.register_blueprint(cotizaciones_servicios_bp, url_prefix='/api/cotizaciones_servicios')
+    app.register_blueprint(plantillas_bp, url_prefix='/api/plantillas')

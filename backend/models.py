@@ -170,15 +170,52 @@ class RecursoCotizacion(db.Model):
     recurso = db.Column(db.String(100), nullable=False)  # Ej. "Gerente de Proyecto"
     tarifa_lista = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     tarifa_venta = db.Column(db.Numeric(10, 2), nullable=False, default=0)
-    preparacion = db.Column(db.Integer, nullable=False, default=0)
-    bbp = db.Column(db.Integer, nullable=False, default=0)
-    r_dev = db.Column(db.Integer, nullable=False, default=0)
-    r_pya = db.Column(db.Integer, nullable=False, default=0)
-    pi_pya = db.Column(db.Integer, nullable=False, default=0)
-    pi_deply = db.Column(db.Integer, nullable=False, default=0)
-    acompanamiento = db.Column(db.Integer, nullable=False, default=0)
-    total_dias = db.Column(db.Integer, nullable=False, default=0)
+    preparacion = db.Column(db.Float, nullable=False, default=0)
+    bbp = db.Column(db.Float, nullable=False, default=0)
+    r_dev = db.Column(db.Float, nullable=False, default=0)
+    r_pya = db.Column(db.Float, nullable=False, default=0)
+    pi_pya = db.Column(db.Float, nullable=False, default=0)
+    pi_deply = db.Column(db.Float, nullable=False, default=0)
+    acompanamiento = db.Column(db.Float, nullable=False, default=0)
+    total_dias = db.Column(db.Float, nullable=False, default=0)
     total_venta = db.Column(db.Numeric(10, 2), default=0)
     costo_venta = db.Column(db.Numeric(10, 2), default=0)
     margen_venta = db.Column(db.Numeric(10, 2), default=0)
     porcentaje_margen = db.Column(db.Numeric(5, 2), default=0)
+
+class Plantilla(db.Model):
+    __tablename__ = 'Plantillas'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)
+    nombre = db.Column(db.String(100), nullable=False, unique=True)  # Nombre de la plantilla
+    fecha_creacion = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    conceptos = db.relationship('ConceptoPlantilla', backref='plantilla')
+
+class ConceptoPlantilla(db.Model):
+    __tablename__ = 'ConceptosPlantilla'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)
+    plantilla_id = db.Column(db.String(36), db.ForeignKey('Plantillas.id'), nullable=False)
+    nombre_concepto = db.Column(db.String(100), nullable=False)
+
+    recursos = db.relationship('RecursoPlantilla', backref='concepto')
+
+class RecursoPlantilla(db.Model):
+    __tablename__ = 'RecursosPlantilla'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True)
+    concepto_id = db.Column(db.String(36), db.ForeignKey('ConceptosPlantilla.id'), nullable=False)
+    recurso = db.Column(db.String(100), nullable=False)  # Ej. "Gerente de Proyecto"
+    tarifa_lista = db.Column(db.Numeric(10, 2), nullable=True, default=0)
+    tarifa_venta = db.Column(db.Numeric(10, 2), nullable=True, default=0)
+    preparacion = db.Column(db.Float, nullable=True, default=0)
+    bbp = db.Column(db.Float, nullable=True, default=0)
+    r_dev = db.Column(db.Float, nullable=True, default=0)
+    r_pya = db.Column(db.Float, nullable=True, default=0)
+    pi_pya = db.Column(db.Float, nullable=True, default=0)
+    pi_deply = db.Column(db.Float, nullable=True, default=0)
+    acompanamiento = db.Column(db.Float, nullable=True, default=0)
+    total_dias = db.Column(db.Float, nullable=True, default=0)
+    total_venta = db.Column(db.Numeric(10, 2), default=0)
+    costo_venta = db.Column(db.Numeric(10, 2), default=0)
+    margen_venta = db.Column(db.Numeric(10, 2), default=0)
+    porcentaje_margen = db.Column(db.Numeric(5, 2), default=0)
+

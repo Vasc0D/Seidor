@@ -52,7 +52,7 @@
 -- SELECT * FROM ConceptosServicio;
 
 
--- DELETE FROM RecursosCotizacion
+-- DELETE FROM RecursosCotizacion;
 -- DELETE FROM Detalle_Conceptos;
 -- DELETE FROM Conceptos;
 -- DELETE FROM ConceptosServicio;
@@ -259,4 +259,12 @@
 -- DELETE FROM LicenciasSAP WHERE id = '1234567'
 
 
--- SELECT * FROM USERS
+
+
+-- SELECT * FROM Plantillas;
+-- SELECT * FROM ConceptosPlantilla;
+-- SELECT * FROM RecursosPlantilla;
+
+-- DELETE FROM RecursosPlantilla;
+-- DELETE FROM ConceptosPlantilla;
+-- DELETE FROM Plantillas;

@@ -986,89 +986,6 @@ const calcularSubtotales = () => {
               </Button>
             </div>
 
-            {/* Tabla de ítems agregados a la cotización */}
-            {itemsCotizacion && itemsCotizacion.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-base font-semibold mb-4">Conceptos Licencias</h3>
-                <table className="min-w-full bg-white border border-gray-200 text-sm">
-                  <thead>
-                    <tr>
-                      <th className="py-2 px-4 border-b"></th>
-                      <th className="py-2 px-4 border-b">Tipo de Concepto</th>
-                      <th className="py-2 px-4 border-b">Base de Datos</th>
-                      <th className="py-2 px-4 border-b">Solution</th>
-                      <th className="py-2 px-4 border-b">Total Venta</th>
-                      <th className="py-2 px-4 border-b">Costo Venta</th>
-                      <th className="py-2 px-4 border-b">Margen Venta</th>
-                      <th className="py-2 px-4 border-b">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {itemsCotizacion.map((item, index) => (
-                      <React.Fragment key={index}>
-                        <tr>
-                          <td className="px-4 py-2 border text-center">
-                            {/* Botón para desplegar/contraer */}
-                            <button onClick={() => toggleDespliegue(index)}>
-                              {desplegados.includes(index) ? '▼' : '▶'}
-                            </button>
-                          </td>
-                          <td className="px-4 py-1 border-b">{item.tipoCotizacion}</td>
-                          <td className="px-4 py-1 border-b text-center">{item.baseDeDatos}</td>
-                          <td className="px-4 py-1 border-b text-center">{item.solution}</td>
-                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.totalVenta)}</td>
-                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.costoVenta)}</td>
-                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.margenVenta)}</td>
-                          <td className="px-4 py-1 border-b text-center">
-                            <Button
-                              className="bg-yellow-500 text-white rounded-full px-3 py-1 mr-2"
-                              onClick={() => editarItemCotizacion(index)}
-                            >
-                              Editar
-                            </Button>
-                            <Button
-                              className="bg-red-500 text-white rounded-full px-3 py-1"
-                              onClick={() => eliminarItemCotizacion(index)}
-                            >
-                              Eliminar
-                            </Button>
-                          </td>
-                        </tr>
-                        {/* Fila de detalles adicionales, visible solo si está desplegado */}
-                        {desplegados.includes(index) && (
-                        <tr>
-                          <td colSpan={7} className="px-4 py-2 border-b bg-blue-50">
-                            {/* Aquí se muestra la tabla con las licencias seleccionadas */}
-                            <table>
-                              <thead>
-                                <tr>
-                                  <th className="px-4 py-2">Licencia</th>
-                                  <th className="px-4 py-2 text-center">Cantidad</th>
-                                  <th className="px-4 py-2 text-center">Costo</th>
-                                  <th className="px-4 py-2 text-center">Total</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {item.licenciasSeleccionadas.map((licencia: LicenciaSeleccionada, licIndex: number) => (
-                                  <tr key={licIndex}>
-                                    <td className="px-4 py-2">{licencia.name}</td>
-                                    <td className="px-4 py-2 text-center">{licencia.cantidad}</td>
-                                    <td className="px-4 py-2 text-center">{formatNumber(licencia.costo)}</td>
-                                    <td className="px-4 py-2 text-center">{formatNumber(licencia.total)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </td>
-                        </tr>
-                      )}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
-            </div>
-            )}
-
             {/* Primer Pop-up para seleccionar tipo y subtipo de cotización */}
             <Dialog open={mostrarModalTipo} onOpenChange={setMostrarModalTipo}>
               <DialogContent>
@@ -1428,24 +1345,109 @@ const calcularSubtotales = () => {
             </DialogContent>
           </Dialog>
 
-          {/* Mostrar modal servicios */}
-          <MostrarModalServicios
-            isOpen={mostrarModalServicio}
-            onClose={() => setMostrarModalServicio(false)}
-            onGuardarServicio={agregarServicio}
-          />
-
-          <div>
-            <ServiciosTabla servicios={servicios} setServicios={setServicios} onEditar={handleEditarServicio} />
-
-            {servicioSeleccionado && (
-              <EditarServicio
-                servicio={servicioSeleccionado}
-                isOpen={!!servicioSeleccionado}
-                onGuardar={handleGuardarServicio}
-                onCancelar={handleCancelarEdicion}
-              />
+          <div className="max-h-[200px] overflow-y-auto overflow-x-">
+            {/* Tabla de ítems agregados a la cotización */}
+            {itemsCotizacion && itemsCotizacion.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-base font-semibold mb-4">Conceptos Licencias</h3>
+                <table className="min-w-full bg-white border border-gray-200 text-sm">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b"></th>
+                      <th className="py-2 px-4 border-b">Tipo de Concepto</th>
+                      <th className="py-2 px-4 border-b">Base de Datos</th>
+                      <th className="py-2 px-4 border-b">Solution</th>
+                      <th className="py-2 px-4 border-b">Total Venta</th>
+                      <th className="py-2 px-4 border-b">Costo Venta</th>
+                      <th className="py-2 px-4 border-b">Margen Venta</th>
+                      <th className="py-2 px-4 border-b">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {itemsCotizacion.map((item, index) => (
+                      <React.Fragment key={index}>
+                        <tr>
+                          <td className="px-4 py-2 border text-center">
+                            {/* Botón para desplegar/contraer */}
+                            <button onClick={() => toggleDespliegue(index)}>
+                              {desplegados.includes(index) ? '▼' : '▶'}
+                            </button>
+                          </td>
+                          <td className="px-4 py-1 border-b">{item.tipoCotizacion}</td>
+                          <td className="px-4 py-1 border-b text-center">{item.baseDeDatos}</td>
+                          <td className="px-4 py-1 border-b text-center">{item.solution}</td>
+                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.totalVenta)}</td>
+                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.costoVenta)}</td>
+                          <td className="px-4 py-1 border-b text-center">{formatNumber(item.margenVenta)}</td>
+                          <td className="px-4 py-1 border-b text-center">
+                            <Button
+                              className="bg-yellow-500 text-white rounded-full px-3 py-1 mr-2"
+                              onClick={() => editarItemCotizacion(index)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              className="bg-red-500 text-white rounded-full px-3 py-1"
+                              onClick={() => eliminarItemCotizacion(index)}
+                            >
+                              Eliminar
+                            </Button>
+                          </td>
+                        </tr>
+                        {/* Fila de detalles adicionales, visible solo si está desplegado */}
+                        {desplegados.includes(index) && (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-2 border-b bg-blue-50">
+                            {/* Aquí se muestra la tabla con las licencias seleccionadas */}
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th className="px-4 py-2">Licencia</th>
+                                  <th className="px-4 py-2 text-center">Cantidad</th>
+                                  <th className="px-4 py-2 text-center">Costo</th>
+                                  <th className="px-4 py-2 text-center">Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {item.licenciasSeleccionadas.map((licencia: LicenciaSeleccionada, licIndex: number) => (
+                                  <tr key={licIndex}>
+                                    <td className="px-4 py-2">{licencia.name}</td>
+                                    <td className="px-4 py-2 text-center">{licencia.cantidad}</td>
+                                    <td className="px-4 py-2 text-center">{formatNumber(licencia.costo)}</td>
+                                    <td className="px-4 py-2 text-center">{formatNumber(licencia.total)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+            </div>
             )}
+
+            {/* Mostrar modal servicios */}
+            <MostrarModalServicios
+              isOpen={mostrarModalServicio}
+              onClose={() => setMostrarModalServicio(false)}
+              onGuardarServicio={agregarServicio}
+            />
+
+            <div>
+              <ServiciosTabla servicios={servicios} setServicios={setServicios} onEditar={handleEditarServicio} />
+
+              {servicioSeleccionado && (
+                <EditarServicio
+                  servicio={servicioSeleccionado}
+                  isOpen={!!servicioSeleccionado}
+                  onGuardar={handleGuardarServicio}
+                  onCancelar={handleCancelarEdicion}
+                />
+              )}
+            </div>
           </div>
 
           <div className="mt-6 flex justify-end">

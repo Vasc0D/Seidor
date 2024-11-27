@@ -208,6 +208,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
                 <FaBook className="text-l" />
                 <span className="ml-4">Conceptos</span>
               </div>
+              <div className="w-full flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-700" onClick={() => handlePageChange('plantillas')}>
+                <FaClipboardList className="text-l" />
+                <span className="ml-4">Plantillas</span>
+              </div>
             </div>
           )}
         </div>

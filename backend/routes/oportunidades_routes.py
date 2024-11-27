@@ -129,7 +129,7 @@ def create_oportunidad(current_user):
                 # Insertar los Recursos asociados al concepto de servicio
                 for recurso in concepto.get('recursos', []):
                     nuevo_recurso = RecursoCotizacion(
-                        cotizacion_id=nueva_cotizacion_servicio.id,
+                        concepto_id=nuevo_concepto_servicio.id,
                         recurso=recurso.get('recurso', ''),
                         tarifa_lista=recurso.get('tarifa_lista', 0),
                         tarifa_venta=recurso.get('tarifa_venta', 0),

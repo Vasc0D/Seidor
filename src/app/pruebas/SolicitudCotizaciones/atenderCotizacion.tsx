@@ -50,10 +50,15 @@ interface RecursosCotizacionProps {
 
 // Recursos disponibles para seleccionar
 const recursosDisponibles: Recurso[] = [
-  { id: '1', recurso: 'Gerente de Proyecto', tarifa_lista: 480 },
-  { id: '2', recurso: 'Líder de Proyecto', tarifa_lista: 360 },
-  { id: '3', recurso: 'Consultor Senior', tarifa_lista: 320 },
-  { id: '4', recurso: 'Consultor Junior', tarifa_lista: 288 },
+  { id: "1", recurso: "Gerente de Proyecto X08", tarifa_lista: 480 },
+  { id: "1", recurso: "Gerente de Proyecto X06/X05", tarifa_lista: 480 },
+  { id: "2", recurso: "Líder Técnico", tarifa_lista: 320 },
+  { id: "3", recurso: "Consultor Senior", tarifa_lista: 320 },
+  { id: "4", recurso: "Consultor Desarrollador", tarifa_lista: 288 },
+  { id: "5", recurso: "Consultor de Apoyo", tarifa_lista: 224 },
+  { id: "6", recurso: "Consultor HR", tarifa_lista: 288 },
+  { id: "6", recurso: "Consultor OE", tarifa_lista: 288 },
+  { id: "6", recurso: "Consultora Infraestructura", tarifa_lista: 320 },
 ];
 
 const RecursosCotizacion: React.FC<RecursosCotizacionProps> = ({ concepto, recursosGuardados, onClose, onGuardar }) => {
