@@ -19,7 +19,7 @@ interface RecursoCotizacion {
   tarifa_venta: number;
   preparacion: number;
   bbp: number;
-  r_Desarrollador: number;
+  r_dev: number;
   r_pya: number;
   pi_pya: number;
   pi_deply: number;
@@ -70,7 +70,7 @@ const RecursosCotizacion: React.FC<RecursosCotizacionProps> = ({ concepto, recur
         tarifa_venta: 0,
         preparacion: 0,
         bbp: 0,
-        r_Desarrollador: 0,
+        r_dev: 0,
         r_pya: 0,
         pi_pya: 0,
         pi_deply: 0,
@@ -99,7 +99,7 @@ const RecursosCotizacion: React.FC<RecursosCotizacionProps> = ({ concepto, recur
         tarifa_venta: 0,
         preparacion: 0,
         bbp: 0,
-        r_Desarrollador: 0,
+        r_dev: 0,
         r_pya: 0,
         pi_pya: 0,
         pi_deply: 0,
@@ -148,7 +148,7 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
     const totalDias =
       recurso.preparacion +
       recurso.bbp +
-      recurso.r_Desarrollador +
+      recurso.r_dev +
       recurso.r_pya +
       recurso.pi_pya +
       recurso.pi_deply +
@@ -183,7 +183,7 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
           tarifa_venta: parseFloat(recurso.tarifa_venta.toString()) || 0,
           preparacion: parseFloat(recurso.preparacion.toString()) || 0, // Cambiar a parseFloat
           bbp: parseFloat(recurso.bbp.toString()) || 0, // Cambiar a parseFloat
-          r_Desarrollador: parseFloat(recurso.r_Desarrollador.toString()) || 0, // Cambiar a parseFloat
+          r_dev: parseFloat(recurso.r_dev.toString()) || 0, // Cambiar a parseFloat
           r_pya: parseFloat(recurso.r_pya.toString()) || 0, // Cambiar a parseFloat
           pi_pya: parseFloat(recurso.pi_pya.toString()) || 0, // Cambiar a parseFloat
           pi_deply: parseFloat(recurso.pi_deply.toString()) || 0, // Cambiar a parseFloat
@@ -235,7 +235,7 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
       totales[tipo] = {
         preparacion: 0,
         bbp: 0,
-        Desarrollador: 0,
+        r_dev: 0,
         pya: 0,
         pi_pya: 0,
         pi_deply: 0,
@@ -248,7 +248,7 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
       if (totales[recurso.recurso]) {
         totales[recurso.recurso].preparacion += recurso.preparacion || 0;
         totales[recurso.recurso].bbp += recurso.bbp || 0;
-        totales[recurso.recurso].Desarrollador += recurso.r_Desarrollador || 0;
+        totales[recurso.recurso].r_dev += recurso.r_dev || 0;
         totales[recurso.recurso].pya += recurso.r_pya || 0;
         totales[recurso.recurso].pi_pya += recurso.pi_pya || 0;
         totales[recurso.recurso].pi_deply += recurso.pi_deply || 0;
@@ -262,7 +262,7 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
       factoresSemana[tipo] = {
         preparacion: totales[tipo]?.preparacion ? totales[tipo].preparacion / 5 : 0,
         bbp: totales[tipo]?.bbp ? totales[tipo].bbp / 5 : 0,
-        Desarrollador: totales[tipo]?.Desarrollador ? totales[tipo].Desarrollador / 5 : 0,
+        r_dev: totales[tipo]?.r_dev ? totales[tipo].r_dev / 5 : 0,
         pya: totales[tipo]?.pya ? totales[tipo].pya / 5 : 0,
         pi_pya: totales[tipo]?.pi_pya ? totales[tipo].pi_pya / 5 : 0,
         pi_deply: totales[tipo]?.pi_deply ? totales[tipo].pi_deply / 5 : 0,
@@ -287,7 +287,7 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
               <th className="px-2 py-1">Tarifa</th>
               <th className="px-2 py-1">Prep</th>
               <th className="px-2 py-1">BBP</th>
-              <th className="px-2 py-1">Desarrollador</th>
+              <th className="px-2 py-1">DEV</th>
               <th className="px-2 py-1">PYA</th>
               <th className="px-2 py-1">PYA</th>
               <th className="px-2 py-1">DEPLY</th>
@@ -344,8 +344,8 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
                   <Input
                     type="number" // Asegúrate de que el tipo sea "number"
                     min="0"
-                    value={recurso.r_Desarrollador}
-                    onChange={(e) => handleChange(index, 'r_Desarrollador', e.target.value)}
+                    value={recurso.r_dev}
+                    onChange={(e) => handleChange(index, 'r_dev', e.target.value)}
                     className="text-left rounded bg-gray-50 text-xs"
                   />
                 </td>
@@ -416,7 +416,7 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
                 <td colSpan={1}></td>
                 <td>{totales[tipo].preparacion.toFixed(2)}</td>
                 <td>{totales[tipo].bbp.toFixed(2)}</td>
-                <td>{totales[tipo].Desarrollador.toFixed(2)}</td>
+                <td>{totales[tipo].r_dev.toFixed(2)}</td>
                 <td>{totales[tipo].pya.toFixed(2)}</td>
                 <td>{totales[tipo].pi_pya.toFixed(2)}</td>
                 <td>{totales[tipo].pi_deply.toFixed(2)}</td>
@@ -439,8 +439,8 @@ const handleChange = (index: number, key: keyof RecursoCotizacion, value: string
                 </td>
                 <td>
                   {tipo === "Consultor Senior"
-                    ? (totales[tipo].Desarrollador / 0.5 / 5).toFixed(2)
-                    : (totales[tipo].Desarrollador / 5).toFixed(2)}
+                    ? (totales[tipo].r_dev / 0.5 / 5).toFixed(2)
+                    : (totales[tipo].r_dev / 5).toFixed(2)}
                 </td>
                 <td>
                   {tipo === "Consultor Senior"
