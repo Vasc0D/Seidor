@@ -85,7 +85,7 @@ export default function Home() {
   // Función para obtener las oportunidades
   const fetchOportunidades = async () => {
     try {
-      const response = await fetch(process.env.API_IP + '/api/oportunidades', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/oportunidades`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -116,7 +116,7 @@ export default function Home() {
           throw new Error('No se encontró el token');
         }
   
-        const response = await fetch(process.env.API_IP + '/api/clientes', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/clientes`, {
           method: 'GET',
           credentials: 'include', 
         });
@@ -162,7 +162,7 @@ export default function Home() {
   
     try {
       // Hacer la petición PATCH a la API
-      const response = await fetch(process.env.API_IP + `/api/oportunidades/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/oportunidades/${id}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {
@@ -187,7 +187,7 @@ export default function Home() {
   `` 
   const handleEditarOportunidad = async (id: number) => {
     try {
-      const response = await fetch(process.env.API_IP + `/api/oportunidades/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/oportunidades/${id}`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -305,7 +305,7 @@ export default function Home() {
     // Función para obtener las licencias SAP
     const fetchLicenciasSAP = async () => {
       try {
-        const response = await fetch(process.env.API_IP + '/api/licencias_sap', { 
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/licencias_sap`, { 
             method: 'GET',
             credentials: 'include',
         });
@@ -324,7 +324,7 @@ export default function Home() {
     // Función para obtener las licencias Seidor
     const fetchLicenciasSeidor = async () => {
       try {
-        const response = await fetch(process.env.API_IP + '/api/licencias_seidor', { 
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/licencias_seidor`, { 
             method: 'GET',
             credentials: 'include',
         });
@@ -710,7 +710,7 @@ const calcularSubtotales = () => {
       let message;
       // Si estamos editando (oportunidadEnEdicion tiene un id), entonces hacemos un PUT
       if (oportunidadEnEdicion) {
-        response = await fetch(process.env.API_IP + `/api/oportunidades/${oportunidadEnEdicion}`, {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/oportunidades/${oportunidadEnEdicion}`, {
           method: 'PUT',  // PUT para editar
           credentials: 'include',
           headers: {
@@ -721,7 +721,7 @@ const calcularSubtotales = () => {
         message = 'Oportunidad actualizada con éxito';
       } else {
         // Si no hay id, estamos creando una nueva oportunidad
-        response = await fetch(process.env.API_IP + '/api/oportunidades', {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/oportunidades`, {
           method: 'POST',  // POST para crear una nueva oportunidad
           credentials: 'include',
           headers: {

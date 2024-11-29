@@ -29,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
 
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch(process.env.API_IP + '/api/user', { method: 'GET', credentials: 'include' });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/user`, { method: 'GET', credentials: 'include' });
         if (response.ok) {
           const data = await response.json();
           setUsername(data.username);
@@ -43,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
       // Obtener número de cotizaciones pendientes
       const fetchPendingCotizaciones = async () => {
         try {
-          const response = await fetch(process.env.API_IP + '/api/cotizaciones_servicios/pendientes', { method: 'GET', credentials: 'include' });
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/cotizaciones_servicios/pendientes`, { method: 'GET', credentials: 'include' });
           if (response.ok) {
             const data = await response.json();
             setPendingCotizaciones(data.length);
@@ -62,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, handleToggle, handlePage
 
   const handleLogout = async () => {
     try {
-      const response = await fetch(process.env.API_IP + '/api/auth/logout', { method: 'POST', credentials: 'include' });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/auth/logout`, { method: 'POST', credentials: 'include' });
       if (response.ok) {
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('role');

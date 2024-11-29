@@ -51,7 +51,7 @@ const MostrarModalServicios: React.FC<MostrarModalServiciosProps> = ({ isOpen, o
   useEffect(() => {
     const fetchGerentesOperaciones = async () => {
       try {
-        const response = await fetch(process.env.API_IP + '/api/usuarios/gerentes_operaciones', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/usuarios/gerentes_operaciones`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -68,7 +68,7 @@ const MostrarModalServicios: React.FC<MostrarModalServiciosProps> = ({ isOpen, o
     // Cargar plantillas disponibles
     const fetchPlantillas = async () => {
       try {
-        const response = await fetch(process.env.API_IP + '/api/plantillas/', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/plantillas/`, {
           method: 'GET',
           credentials: 'include',
         });

@@ -47,8 +47,8 @@ const CrearUsuarioModal: React.FC<CrearUsuarioModalProps> = ({ onCreate, onUpdat
         : { username, name, password, role: rol, correo };
 
       const url = existingUser
-        ? process.env.API_IP + `/api/usuarios/${existingUser.id}`
-        : process.env.API_IP + '/api/usuarios';
+        ? `${process.env.NEXT_PUBLIC_API_IP}/api/usuarios/${existingUser.id}`
+        : `${process.env.NEXT_PUBLIC_API_IP}/api/usuarios`;
 
       const method = existingUser ? 'PUT' : 'POST';
 

@@ -35,6 +35,12 @@ interface ConceptoPlantilla {
   recursos: RecursoPlantilla[];
 }
 
+interface Plantilla {
+  id: string;
+  nombre: string;
+  conceptos: ConceptoPlantilla[];
+}
+
 const recursosDisponibles: Recurso[] = [
   { id: "1", recurso: "Gerente de Proyecto X08", tarifa_lista: 480 },
   { id: "1", recurso: "Gerente de Proyecto X06/X05", tarifa_lista: 480 },
@@ -51,6 +57,7 @@ const CrearPlantilla: React.FC = () => {
   const [nombrePlantilla, setNombrePlantilla] = useState<string>("");
   const [conceptos, setConceptos] = useState<ConceptoPlantilla[]>([]);
   const [modo, setModo] = useState<"crear" | "mostrar">("crear");
+  const [editandoPlantillaId, setEditandoPlantillaId] = useState<string | null>(null);
 
   // Agregar un nuevo concepto
   const handleAgregarConcepto = () => {
@@ -148,16 +155,30 @@ const CrearPlantilla: React.FC = () => {
     setConceptos(nuevosConceptos);
   };
 
-  // Guardar la plantilla
+  // Método para guardar o actualizar plantilla
   const handleGuardarPlantilla = async () => {
     if (!nombrePlantilla) {
       alert("El nombre de la plantilla es obligatorio.");
       return;
     }
 
+    const url = editandoPlantillaId
+      ? `${process.env.NEXT_PUBLIC_API_IP}/api/plantillas/${editandoPlantillaId}`
+      : `${process.env.NEXT_PUBLIC_API_IP}/api/plantillas/`;
+
+    const method = editandoPlantillaId ? "PUT" : "POST";
+
+    console.log("URL:", url);
+    console.log("Method:", method);
+    console.log("Payload:", {
+    nombre: nombrePlantilla,
+    conceptos,
+
+    });
+
     try {
-      const response = await fetch(process.env.API_IP + "/api/plantillas/", {
-        method: "POST",
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -168,9 +189,11 @@ const CrearPlantilla: React.FC = () => {
       });
 
       if (response.ok) {
-        alert("Plantilla creada exitosamente.");
+        alert(editandoPlantillaId ? "Plantilla actualizada exitosamente." : "Plantilla creada exitosamente.");
         setNombrePlantilla("");
         setConceptos([]);
+        setEditandoPlantillaId(null);
+        setModo("mostrar");
       } else {
         alert("Error al guardar la plantilla.");
       }
@@ -187,10 +210,20 @@ const CrearPlantilla: React.FC = () => {
     return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
+  const handleEditarPlantilla = (plantilla: Plantilla) => {
+    console.log(plantilla.id)
+    setModo("crear");
+    setNombrePlantilla(plantilla.nombre);
+    setConceptos(plantilla.conceptos);
+    setEditandoPlantillaId(plantilla.id);
+  };
+
   return (
       <div className="p-6 bg-white rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-bold">{modo === "crear" ? "Crear Plantilla" : "Plantillas Creadas"}</h1>
+          <h1 className="text-xl font-bold">
+            {modo === "crear" ? (editandoPlantillaId ? "Editar Plantilla" : "Crear Plantilla") : "Plantillas Creadas"}
+          </h1>
           <div>
             <Button onClick={() => setModo("crear")} className="mr-2">
               Crear Plantilla
@@ -315,12 +348,32 @@ const CrearPlantilla: React.FC = () => {
             <Button onClick={handleAgregarConcepto} className="ml-1">
               Agregar Concepto
             </Button>
-            <Button onClick={handleGuardarPlantilla}>Guardar Plantilla</Button>
           </div>
+        </div>
+        <div className="flex justify-between w-full mt-5">
+          <Button
+            onClick={() => {
+              setNombrePlantilla("");
+              setConceptos([]);
+            }}
+            variant="secondary"
+            className="bg-red-600 text-white"
+          >
+            Cancelar
+          </Button>
+          <Button onClick={handleGuardarPlantilla}>Guardar Plantilla</Button>
         </div>
         </>
         ) : (
-          <MostrarPlantillas />
+          <MostrarPlantillas
+            onEditar={(plantilla) => {
+              console.log("Plantilla seleccionada para editar:", plantilla); // Verifica que tenga datos
+              setModo("crear");
+              setNombrePlantilla(plantilla.nombre);
+              setConceptos(plantilla.conceptos);
+              setEditandoPlantillaId(plantilla.id);
+            }}
+          />
         )}
     </div>
   );

@@ -28,7 +28,7 @@ const SubirClientes: React.FC<{ onUpload: () => void }> = ({ onUpload }) => {
     formData.append('file', file);
 
     try {
-      const response = await fetch(process.env.API_IP + '/api/clientes/upload', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/clientes/upload`, {
         method: 'POST',
         credentials: 'include',
         body: formData,

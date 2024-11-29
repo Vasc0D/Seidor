@@ -32,7 +32,7 @@ const Page = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const response = await fetch(process.env.API_IP + '/api/user', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/user`, {
           method: 'GET',
           credentials: 'include',
         });

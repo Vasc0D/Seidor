@@ -89,7 +89,7 @@ const CrearClienteModal: React.FC<CrearClienteModalProps> = ({ onCreate }) => {
     if (!validarCampos()) return;
 
     try {
-      const response = await fetch(process.env.API_IP + '/api/clientes', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/clientes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

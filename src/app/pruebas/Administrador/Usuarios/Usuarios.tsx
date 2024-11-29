@@ -31,12 +31,9 @@ const Usuarios = () => {
   // Obtener usuarios de la API
   const fetchUsuarios = async () => {
     try {
-      const response = await fetch(process.env.API_IP + '/api/usuarios', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/usuarios`, {
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
+        method: 'GET'
       });
       if (response.ok) {
         const data = await response.json();

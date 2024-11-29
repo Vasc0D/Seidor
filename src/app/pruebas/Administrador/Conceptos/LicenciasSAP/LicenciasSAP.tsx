@@ -37,7 +37,7 @@ const LicenciasSAPTable: React.FC<LicenciasSAPTableProps> = ({licencias, onLicen
   const handleDeleteLicense = async (licenseId: string) => {
     if (window.confirm('¿Estás seguro de eliminar esta licencia?')) {
       try {
-        const response = await fetch(process.env.API_IP + `/api/licencias_sap/${licenseId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/licencias_sap/${licenseId}`, {
           method: 'DELETE',
           credentials: 'include',
         });

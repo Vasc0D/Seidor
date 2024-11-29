@@ -25,7 +25,7 @@ const LicenciasSeidorTable: React.FC<LicenciasSeidorTableProps> = ({licencias, o
   const handleDeleteLicense = async (licenseId: string) => {
     if (window.confirm('¿Estás seguro de eliminar esta licencia?')) {
       try {
-        const response = await fetch(process.env.API_IP + `/api/licencias_seidor/${licenseId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/licencias_seidor/${licenseId}`, {
           method: 'DELETE',
           credentials: 'include',
         });

@@ -21,7 +21,7 @@ const CrearLicenciaSeidorModal: React.FC<CrearLicenciaSeidorModalProps> = ({ isO
   const handleCreate = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(process.env.API_IP + '/api/licencias_seidor', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/licencias_seidor`, {
         method: 'POST',
         credentials: 'include',
         headers: {

@@ -23,7 +23,7 @@ const Conceptos = () => {
 
   const fetchLicenciasSAP = async () => {
     try {
-      const response = await fetch(process.env.API_IP + '/api/licencias_sap', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/licencias_sap`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -37,7 +37,7 @@ const Conceptos = () => {
 
   const fetchLicenciasSeidor = async () => {
     try {
-      const response = await fetch(process.env.API_IP + '/api/licencias_seidor', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/licencias_seidor`, {
         method: 'GET',
         credentials: 'include',
       });

@@ -16,7 +16,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch(process.env.API_IP + '/api/auth/login', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

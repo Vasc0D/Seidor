@@ -27,7 +27,7 @@ const EditarLicenciaSAPModal: React.FC<EditarLicenciaSAPModalProps> = ({ isOpen,
     const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
-            const response = await fetch(process.env.API_IP + `/api/licencias_sap/${licenciaData.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_IP}/api/licencias_sap/${licenciaData.id}`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
